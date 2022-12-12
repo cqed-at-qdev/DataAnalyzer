@@ -1,0 +1,25 @@
+# Author: Malthe Asmus Marciniak Nielsen
+# figure size settings
+font.size: 16
+figure.figsize: 14, 6
+
+# axes settings
+axes.labelsize: 17
+# axes.titlesize: 14
+
+
+# gridlines settings
+axes.grid: True
+grid.linewidth: 1
+grid.linestyle: :
+grid.color: k
+
+# plot layout settings
+figure.constrained_layout.use: False
+figure.autolayout: False
+
+# latex settings
+text.usetex: False
+
+# savefig settings
+savefig.dpi: 400

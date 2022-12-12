@@ -1,6 +1,6 @@
-Copyright (c) Malthe Asmus Marciniak Nielsen.
+Copyright (c) Malthe Asums Marciniak Nielsen.
 
-DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C is available under the `MIT open-source
+dataanalyzer is available under the `MIT open-source
 license <https://opensource.org/licenses/MIT>`__ :
 
 Permission is hereby granted, free of charge, to any person obtaining a

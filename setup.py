@@ -1,5 +1,5 @@
 """
-Installs the DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C package
+Installs the dataanalyzer package
 """
 
 from setuptools import setup, find_packages
@@ -10,18 +10,18 @@ import versioneer
 readme_file_path = Path(__file__).absolute().parent / "README.md"
 
 required_packages = ['opencensus-ext-azure']
-package_data = {"DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C": ["conf/telemetry.ini"] }
+package_data = {"dataanalyzer": ["conf/telemetry.ini"] }
 
 
 setup(
-    name="DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C",
+    name="dataanalyzer",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     python_requires=">=3.9",
     install_requires=required_packages,
-    author= "Malthe Asmus Marciniak Nielsen",
+    author= "Malthe Asums Marciniak Nielsen",
     author_email="vpq602@alumni.ku.dk",
-    description="Plotter and Fitter for data",
+    description="package_description",
     long_description=readme_file_path.open().read(),
     long_description_content_type="text/markdown",
     license="",

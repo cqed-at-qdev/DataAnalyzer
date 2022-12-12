@@ -1,4 +1,4 @@
-# DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C
+# dataanalyzer
 
 # Description
 
@@ -8,9 +8,9 @@
 
 ## Running the tests
 
-If you have gotten 'DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C' from source, you may run the tests locally.
+If you have gotten 'dataanalyzer' from source, you may run the tests locally.
 
-Install `DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C` along with its test dependencies into your virtual environment by executing the following in the root folder
+Install `dataanalyzer` along with its test dependencies into your virtual environment by executing the following in the root folder
 
 ```bash
 $ pip install .
@@ -21,9 +21,9 @@ Then run `pytest` in the `tests` folder.
 
 ## Building the documentation
 
-If you have gotten `DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C` from source, you may build the docs locally.
+If you have gotten `dataanalyzer` from source, you may build the docs locally.
 
-Install `DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C` along with its documentation dependencies into your virtual environment by executing the following in the root folder
+Install `dataanalyzer` along with its documentation dependencies into your virtual environment by executing the following in the root folder
 
 ```bash
 $ pip install .

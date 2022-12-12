@@ -1,0 +1,8 @@
+name: DataAnalyzer[D[D[D[D[D[D[D[D[D[D[d[C[C[C[C[C[C[C[D[D[a[C[C[C[C[C[C[C
+channels:
+ - defaults
+dependencies:
+ - python=3.9
+ - pip
+ - pandoc
+

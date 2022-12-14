@@ -101,7 +101,11 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
 
-        self.ax.plot(x.value, y.value, **kwargs)
+        try:
+            self.ax.plot(x.value, y.value, **kwargs)
+        except ValueError:
+            self.ax.plot(x.value, y.value.T, **kwargs)
+            print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
     def scatter(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -115,11 +119,20 @@ class Plotter:
         kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
-        self.ax.scatter(
-            x=x.value,
-            y=y.value,
-            **kwargs,
-        )
+        try:
+            self.ax.scatter(x.value, y.value, **kwargs)
+        except ValueError:
+            try:
+                [
+                    self.ax.scatter(x.value, y.value[i], **kwargs)
+                    for i in range(y.value.shape[0])
+                ]
+            except ValueError:
+                [
+                    self.ax.scatter(x.value, y.value[:, i], **kwargs)
+                    for i in range(y.value.shape[1])
+                ]
+                print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
     def bar(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -132,7 +145,11 @@ class Plotter:
         """
         kwargs.setdefault("width", 0.5)
 
-        self.ax.bar(x.value, y.value, **kwargs)
+        try:
+            self.ax.bar(x.value, y.value, **kwargs)
+        except ValueError:
+            self.ax.bar(x.value, y.value.T, **kwargs)
+            print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
     def errorbar(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -147,7 +164,19 @@ class Plotter:
         kwargs.setdefault("elinewidth", 2)
         kwargs.setdefault("capsize", 3)
 
-        self.ax.errorbar(x.value, y.value, y.error, **kwargs)
+        yerr = kwargs.pop("yerr", y.error)
+        xerr = kwargs.pop("xerr", x.error)
+
+        if isinstance(yerr, Valueclass):
+            yerr = yerr.value
+        if isinstance(xerr, Valueclass):
+            xerr = xerr.value
+
+        try:
+            self.ax.errorbar(x=x.value, y=y.value, yerr=yerr, xerr=xerr, **kwargs)
+        except ValueError:
+            self.ax.errorbar(x=x.value, y=y.value.T, yerr=yerr.T, xerr=xerr, **kwargs)
+            print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
     def _2d_genereal_plot(

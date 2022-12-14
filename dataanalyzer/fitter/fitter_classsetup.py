@@ -101,4 +101,3 @@ def not_zero(value):
 
 def common_member(*lists):
     return bool(set.intersection(*map(set, lists)))
-

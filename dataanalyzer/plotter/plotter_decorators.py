@@ -17,11 +17,10 @@ def matplotlib_decorator(func: Callable[..., Any]):
     def _matplotlib_genereal(
         self, ax=None, **kwargs
     ) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
-        """Wrapper for matplotlib functions to make them return a Valueclass object.
-        """
+        """Wrapper for matplotlib functions to make them return a Valueclass object."""
 
         if ax:
-            self._last_ax = ax
+            self.ax = self.axs[ax]
 
         _x: Union[list, tuple, np.ndarray] = kwargs.pop("x", None)
         _y: Union[list, tuple, np.ndarray] = kwargs.pop("y", None)
@@ -42,25 +41,24 @@ def matplotlib_decorator(func: Callable[..., Any]):
 
         xlabel = kwargs.pop("xlabel", f"{x.name} [{x.unit}]" if x.unit else x.name)
         if xlabel != "x data":
-            self.axs[self._last_ax].set_xlabel(xlabel)
+            self.ax.set_xlabel(xlabel)
 
         ylabel = kwargs.pop("ylabel", f"{y.name} [{y.unit}]" if y.unit else y.name)
         if ylabel != "y data":
-            self.axs[self._last_ax].set_ylabel(ylabel)
+            self.ax.set_ylabel(ylabel)
 
         z = from_float_to_valueclass(_z, "z data") if _z is not None else None
 
         if x and y and x.name != "x data" and y.name != "y data":
             title = kwargs.pop("title", f"{x.name} vs {y.name}")
-            self.axs[self._last_ax].set_title(title)
+            self.ax.set_title(title)
 
         self.metadata += kwargs.pop("metadata", "")
 
         return x, y, z, kwargs
 
     def _plot_legends(self):
-        """Adds legends to the plot if the user has specified them.
-        """
+        """Adds legends to the plot if the user has specified them."""
         [
             ax.legend()
             for ax in self.axs.flatten()
@@ -87,11 +85,11 @@ def matplotlib_decorator(func: Callable[..., Any]):
         x, y, z, kwargs = _matplotlib_genereal(self, x=x, y=y, z=z, ax=ax, **kwargs)
 
         if kwargs.get("title"):
-            self.axs[self._last_ax].set_title(kwargs.pop("title"))
+            self.ax.set_title(kwargs.pop("title"))
 
         if z:
             grid = kwargs.pop("grid", False)
-            self.axs[self._last_ax].grid(grid)
+            self.ax.grid(grid)
             func(self, x=x, y=y, z=z, ax=ax, *args, **kwargs)
             _plot_legends(self)
             return

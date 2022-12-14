@@ -33,6 +33,7 @@ class Plotter:
 
         self.axs_anotate = self.axs[:, -1]
         self.axs = self.axs[0:, 0:-1]
+        self.ax = self.axs[0, 0]
 
         for ax in self.axs_anotate:
             ax.axis("off")
@@ -57,9 +58,9 @@ class Plotter:
     def set_default_settings(self, default_settings: Union[dict, str, bool] = True):
         """Sets the default settings for the plotter. This function is a wrapper for matplotlib.pyplot.style.use
 
-            Args:
-                default_settings (Union[dict, str, bool], optional): The default settings to use. Defaults to True.
-            """
+        Args:
+            default_settings (Union[dict, str, bool], optional): The default settings to use. Defaults to True.
+        """
         if default_settings is True or default_settings == "quantum_calibrator":
             dirname = os.path.dirname(__file__)
             plt.style.use(
@@ -86,7 +87,11 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
+        self,
+        x: Valueclass,
+        y: Valueclass,
+        ax: tuple = (),
+        **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -96,7 +101,7 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
 
-        self.axs[self._last_ax].plot(x.value, y.value, **kwargs)
+        self.ax.plot(x.value, y.value, **kwargs)
 
     @matplotlib_decorator
     def scatter(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -110,8 +115,10 @@ class Plotter:
         kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
-        self.axs[self._last_ax].scatter(
-            x=x.value, y=y.value, **kwargs,
+        self.ax.scatter(
+            x=x.value,
+            y=y.value,
+            **kwargs,
         )
 
     @matplotlib_decorator
@@ -125,7 +132,7 @@ class Plotter:
         """
         kwargs.setdefault("width", 0.5)
 
-        self.axs[self._last_ax].bar(x.value, y.value, **kwargs)
+        self.ax.bar(x.value, y.value, **kwargs)
 
     @matplotlib_decorator
     def errorbar(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -140,7 +147,7 @@ class Plotter:
         kwargs.setdefault("elinewidth", 2)
         kwargs.setdefault("capsize", 3)
 
-        self.axs[self._last_ax].errorbar(x.value, y.value, y.error, **kwargs)
+        self.ax.errorbar(x.value, y.value, y.error, **kwargs)
 
     @matplotlib_decorator
     def _2d_genereal_plot(
@@ -169,30 +176,30 @@ class Plotter:
         kwargs.setdefault("vmax", np.max(z.value))
 
         if plot_type == "pcolormesh":
-            c = self.axs[self._last_ax].pcolormesh(x.value, y.value, z.value, **kwargs)
+            c = self.ax.pcolormesh(x.value, y.value, z.value, **kwargs)
 
         elif plot_type == "contour":
-            c = self.axs[self._last_ax].contour(x.value, y.value, z.value, **kwargs)
+            c = self.ax.contour(x.value, y.value, z.value, **kwargs)
 
         elif plot_type == "contourf":
-            c = self.axs[self._last_ax].contourf(x.value, y.value, z.value, **kwargs)
+            c = self.ax.contourf(x.value, y.value, z.value, **kwargs)
 
         elif plot_type == "tricontour":
-            c = self.axs[self._last_ax].tricontour(x.value, y.value, z.value, **kwargs)
+            c = self.ax.tricontour(x.value, y.value, z.value, **kwargs)
 
         elif plot_type == "tricontourf":
-            c = self.axs[self._last_ax].tricontourf(x.value, y.value, z.value, **kwargs)
+            c = self.ax.tricontourf(x.value, y.value, z.value, **kwargs)
 
         elif plot_type == "tripcolor":
-            c = self.axs[self._last_ax].tripcolor(x.value, y.value, z.value, **kwargs)
+            c = self.ax.tripcolor(x.value, y.value, z.value, **kwargs)
 
         else:
             raise ValueError(f"plot_type {plot_type} not recognized")
 
-        self.axs[self._last_ax].axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
+        self.ax.axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
         label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
-        colorbar = self.fig.colorbar(c, ax=self.axs[self._last_ax], label=label)
-        self.axs[self._last_ax].colorbar = colorbar
+        colorbar = self.fig.colorbar(c, ax=self.ax, label=label)
+        self.ax.colorbar = colorbar
 
     def pcolormesh(
         self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
@@ -302,16 +309,18 @@ class Plotter:
             max (float): maximum x value to plot.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        ax = ax or self._last_ax
+        if ax:
+            self.ax = self.axs[ax]
+
         kwargs |= {"xmin": xmin, "xmax": xmax, "linestyle": linestyle}
 
         if isinstance(y, Valueclass):
-            self.axs[self._last_ax].axhline(y=y.value, **kwargs)
+            self.ax.axhline(y=y.value, **kwargs)
         elif isinstance(y, (tuple, list)):
             for y_ in y:
-                self.axs[self._last_ax].axhline(y=y_, **kwargs)
+                self.ax.axhline(y=y_, **kwargs)
         else:
-            self.axs[self._last_ax].axhline(y=y, **kwargs)
+            self.ax.axhline(y=y, **kwargs)
 
         [
             ax.legend()
@@ -336,16 +345,18 @@ class Plotter:
             max (float): maximum y value to plot.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        ax = ax or self._last_ax
+        if ax:
+            self.ax = self.axs[ax]
+
         kwargs |= {"ymin": ymin, "ymax": ymax, "linestyle": linestyle}
 
         if isinstance(x, Valueclass):
-            self.axs[self._last_ax].axvline(x=x.value, **kwargs)
+            self.ax.axvline(x=x.value, **kwargs)
         elif isinstance(x, (tuple, list)):
             for x_ in x:
-                self.axs[self._last_ax].axvline(x=x_, **kwargs)
+                self.ax.axvline(x=x_, **kwargs)
         else:
-            self.axs[self._last_ax].axvline(x=x, **kwargs)
+            self.ax.axvline(x=x, **kwargs)
 
         [
             ax.legend()
@@ -366,9 +377,8 @@ class Plotter:
         kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
-        ax = ax or self._last_ax
         ax_shape = np.shape(self.axs)
-        axarg = np.where(self.axs.flatten() == self.axs[ax])[0][0]
+        axarg = np.where(self.axs.flatten() == self.ax)[0][0]
 
         gs = gridspec.GridSpec(
             ax_shape[0],
@@ -377,13 +387,13 @@ class Plotter:
             wspace=0.00,
         )
 
-        self.axs[ax].set_subplotspec(gs[axarg])
+        self.ax.set_subplotspec(gs[axarg])
         self.yres = self.fig.add_subplot(gs[axarg + 1])
 
         self.yres.scatter(x.value, y.value, **kwargs)
         self.yres.axvline(x=0, linestyle=":", color="red")
 
-        self.yres.sharey(self.axs[ax])
+        self.yres.sharey(self.ax)
         self.yres.label_outer()  # type: ignore
 
         xlabel = kwargs.pop(
@@ -404,9 +414,8 @@ class Plotter:
         kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
-        ax = ax or self._last_ax
         ax_shape = np.shape(self.axs)
-        axarg = np.where(self.axs.flatten() == self.axs[ax])[0][0]
+        axarg = np.where(self.axs.flatten() == self.ax)[0][0]
 
         gs = gridspec.GridSpec(
             2 * ax_shape[0],
@@ -415,17 +424,15 @@ class Plotter:
             hspace=0.00,
         )
 
-        self.axs[ax].set_subplotspec(gs[axarg])
+        self.ax.set_subplotspec(gs[axarg])
         self.xres = self.fig.add_subplot(gs[1 + ax_shape[0]])
 
         self.xres.scatter(x.value, y.value, **kwargs)
         self.xres.axhline(y=0, linestyle=":", color="red")
 
-        # self.xres.sharex(self.axs[ax])
-        self.axs[ax].sharex(self.xres)
-        self.xres.set_xlabel(self.axs[ax].get_xlabel())
-        # self.xres.label_outer()  # type: ignore
-        self.axs[ax].label_outer()  # type: ignore
+        self.ax.sharex(self.xres)
+        self.xres.set_xlabel(self.ax.get_xlabel())
+        self.ax.label_outer()  # type: ignore
 
         ylabel = kwargs.pop(
             "ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals"
@@ -443,10 +450,11 @@ class Plotter:
             overwrite (bool, optional): If True, the metadata is overwritten. If False, the metadata is added to the existing metadata. Defaults to False.
         """
         if ax:
-            self._last_ax = ax
+            self.ax = self.axs[ax]
 
         self.metadata = metadata if overwrite else f"{self.metadata}{metadata}"
-        ax_anotate = self.axs_anotate[self._last_ax[1]]
+        axarg = np.where(self.axs == self.ax)[1][0]
+        ax_anotate = self.axs_anotate[axarg]
 
         x = kwargs.pop("x", 0.05)
         y = kwargs.pop("y", 0.95)
@@ -461,11 +469,14 @@ class Plotter:
         self._remove_axs_anotate = False
 
     def _get_default_transform(self):
-        right_axs = self.axs[self._last_ax[0], np.size(self.axs, axis=1) - 1]
-        if not hasattr(right_axs, "colorbar"):
-            return self.axs[self._last_ax].transAxes
-        print("colorbar:", right_axs.colorbar)
-        return right_axs.colorbar.ax.transAxes
+        axarg = np.where(self.axs == self.ax)[0][0]
+        right_axs = self.axs[axarg, np.size(self.axs, axis=1) - 1]
+
+        return (
+            right_axs.colorbar.ax.transAxes
+            if hasattr(right_axs, "colorbar")
+            else self.ax.transAxes
+        )
 
     def _label_with_unit_prefix(self, label: str, unit_prefix: str):
         return (
@@ -560,4 +571,3 @@ class Plotter:
             path (str): The path to save the plot to.
         """
         plt.savefig(path)
-

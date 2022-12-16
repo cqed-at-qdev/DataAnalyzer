@@ -1,8 +1,8 @@
 # Author: Malthe Asmus Marciniak Nielsen
-import contextlib
 import os
 from typing import Union
-from matplotlib import gridspec
+from matplotlib import gridspec, ticker
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,6 +16,7 @@ class Plotter:
         self,
         subplots=(1, 1),
         default_settings: Union[dict, str, bool] = True,
+        interactive: bool = False,
         **kwargs,
     ):
         """The Plotter class is a wrapper for matplotlib.pyplot. It is used to plot data in a consistent way.
@@ -23,37 +24,42 @@ class Plotter:
         Args:
             subplots (tuple, optional): The shape of the subplots. Defaults to (1, 1).
         """
-        self.set_default_settings(default_settings)
+
+        if interactive:
+            matplotlib.use("Qt5Agg")
 
         self.kwargs = kwargs
 
-        subplots_plus_col = (subplots[0], subplots[1] + 1)
-        self.fig, axs = plt.subplots(*subplots_plus_col)
-        self.axs = np.array(axs).reshape(subplots_plus_col)  # type: ignore
+        self.set_default_settings(default_settings)
+        self._setup_fig_and_ax(subplots)
+        self._setup_ax_anotate()
 
-        self.axs_anotate = self.axs[:, -1]
+        self.metadata = ""
+
+    def _setup_fig_and_ax(self, subplots: tuple):
+        self.fig = self.kwargs.pop("fig", None)
+        subplots_plus_col = (subplots[0], subplots[1] + 1)
+
+        if self.fig is not None:
+            self.fig.clf()
+            axs = self.fig.subplots(*subplots_plus_col)
+        else:
+            self.fig, axs = plt.subplots(*subplots_plus_col)
+
+        self.axs = np.array(axs).reshape(subplots_plus_col)
+        self.ax_anotate = self.axs[0:, -1]
         self.axs = self.axs[0:, 0:-1]
         self.ax = self.axs[0, 0]
 
-        for ax in self.axs_anotate:
-            ax.axis("off")
-            ax.set_title(" ")
+    def _setup_ax_anotate(self):
+        gs = self.ax_anotate[0].get_gridspec()
 
-        self._remove_axs_anotate = True
-        self._last_ax = (0, 0)
-        self.metadata = ""
+        for ax in self.ax_anotate:
+            ax.remove()
 
-        self._axs_rescale = np.full(
-            np.shape(self.axs),
-            {
-                "x_unit_prefix": None,
-                "x_unit_scale": None,
-                "y_unit_prefix": None,
-                "y_unit_scale": None,
-                "z_unit_prefix": None,
-                "z_unit_scale": None,
-            },
-        )
+        self.ax_anotate = self.fig.add_subplot(gs[0:, -1])
+        self.ax_anotate.axis("off")
+        self._remove_ax_anotate = True
 
     def set_default_settings(self, default_settings: Union[dict, str, bool] = True):
         """Sets the default settings for the plotter. This function is a wrapper for matplotlib.pyplot.style.use
@@ -351,11 +357,7 @@ class Plotter:
         else:
             self.ax.axhline(y=y, **kwargs)
 
-        [
-            ax.legend()
-            for ax in self.axs.flatten()
-            if ax.get_legend_handles_labels() != ([], [])
-        ]
+        self._plot_legends()
 
     def axvline(
         self,
@@ -387,11 +389,7 @@ class Plotter:
         else:
             self.ax.axvline(x=x, **kwargs)
 
-        [
-            ax.legend()
-            for ax in self.axs.flatten()
-            if ax.get_legend_handles_labels() != ([], [])
-        ]
+        self._plot_legends()
 
     @matplotlib_decorator
     def add_yresiuals(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -482,20 +480,17 @@ class Plotter:
             self.ax = self.axs[ax]
 
         self.metadata = metadata if overwrite else f"{self.metadata}{metadata}"
-        axarg = np.where(self.axs == self.ax)[1][0]
-        ax_anotate = self.axs_anotate[axarg]
-
         x = kwargs.pop("x", 0.05)
         y = kwargs.pop("y", 0.95)
         va = kwargs.pop("va", "top")
         ha = kwargs.pop("ha", "left")
-        transfrom = kwargs.pop("transform", ax_anotate.transAxes)
+        transfrom = kwargs.pop("transform", self.ax_anotate.transAxes)
 
-        ax_anotate.text(
+        self.ax_anotate.text(
             x, y, self.metadata, va=va, ha=ha, transform=transfrom, **kwargs
         )
 
-        self._remove_axs_anotate = False
+        self._remove_ax_anotate = False
 
     def _get_default_transform(self):
         axarg = np.where(self.axs == self.ax)[0][0]
@@ -518,80 +513,114 @@ class Plotter:
 
     def _rescale_axes(self):
         for ax in self.axs.flatten():
-            xticks = ax.get_xticks() if hasattr(ax, "get_xticks") else None
-            yticks = ax.get_yticks() if hasattr(ax, "get_yticks") else None
-            cticks = ax.colorbar.get_ticks() if hasattr(ax, "colorbar") else None
+            self._get_set_ticks("x")(self, ax)
+            self._get_set_ticks("y")(self, ax)
 
-            self._set_xticks(ax, xticks)
-            self._set_yticks(ax, yticks)
-            self._set_cticks(ax, cticks)
+            if hasattr(ax, "colorbar"):
+                self._get_set_ticks("y")(self, ax.colorbar)
+                self._get_set_ticks("x")(self, ax.colorbar)
 
         if hasattr(self, "yres"):
-            ax = self.yres
-            xticks = ax.get_xticks() if hasattr(ax, "get_xticks") else None
-            self._set_xticks(ax, xticks)
+            self._get_set_ticks("x")(self, self.yres)
 
         if hasattr(self, "xres"):
-            ax = self.xres
-            xticks = ax.get_xticks() if hasattr(ax, "get_xticks") else None
-            yticks = ax.get_yticks() if hasattr(ax, "get_yticks") else None
-            self._set_xticks(ax, xticks)
-            self._set_yticks(ax, yticks)
+            self._get_set_ticks("x")(self, self.xres)
+            self._get_set_ticks("y")(self, self.xres)
 
-    def _set_xticks(self, ax, xticks):
-        if xticks is not None:
-            xlim = ax.get_xlim()
-            ax.set_xticks(xticks)
-            ax.set_xlim(xlim)
-            rescaled_xticks, x_unit_prefix, _ = convert_array_with_unit(xticks)
-            ax.set_xticklabels([f"{xtick:g}" for xtick in rescaled_xticks])
-            if not hasattr(ax, "original_xlabel"):
-                ax.original_xlabel = ax.get_xlabel()
-            ax.set_xlabel(
-                self._label_with_unit_prefix(ax.original_xlabel, x_unit_prefix)
-            )
+    def _set_ticks(self, axis, ticks):
+        _, unit_prefix, scale = convert_array_with_unit(ticks)
+        ticks = ticker.FuncFormatter(lambda v, pos: "{0:g}".format(v * scale))
+        axis.set_major_formatter(ticks)
+        return unit_prefix
 
-    def _set_cticks(self, ax, cticks):
-        if cticks is not None:
-            clim = ax.colorbar.ax.get_ylim()
-            ax.colorbar.ax.set_yticks(cticks)
-            ax.colorbar.ax.set_ylim(clim)
-            rescaled_cticks, c_unit_prefix, _ = convert_array_with_unit(cticks)
-            ax.colorbar.ax.set_yticklabels([f"{ctick:g}" for ctick in rescaled_cticks])
-            if not hasattr(ax.colorbar, "original_label"):
-                ax.colorbar.original_label = ax.colorbar.ax.get_ylabel()
-            ax.colorbar.ax.set_ylabel(
-                self._label_with_unit_prefix(ax.colorbar.original_label, c_unit_prefix)
-            )
+    def _get_set_ticks(self, axis: str = "x"):
+        if axis not in ["x", "y"]:
+            raise ValueError(f"Unknown axis: {axis}")
 
-    def _set_yticks(self, ax, yticks):
-        if yticks is not None:
-            ylim = ax.get_ylim()
-            ax.set_yticks(yticks)
-            ax.set_ylim(ylim)
-            rescaled_yticks, y_unit_prefix, _ = convert_array_with_unit(yticks)
-            ax.set_yticklabels([f"{ytick:g}" for ytick in rescaled_yticks])
-            if not hasattr(ax, "original_ylabel"):
-                ax.original_ylabel = ax.get_ylabel()
-            ax.set_ylabel(
-                self._label_with_unit_prefix(ax.original_ylabel, y_unit_prefix)
-            )
+        orig_label = f"original_{axis}label"
+        get_ticks = f"get_{axis}ticks"
+        get_label = f"get_{axis}label"
 
-    def show(self):
+        def _set_ticks(self, ax):
+            if not hasattr(ax, get_ticks):
+                return
+
+            ticks = getattr(ax, get_ticks)()
+            unit_prefix = self._set_ticks(getattr(ax, f"{axis}axis"), ticks)
+
+            if not hasattr(ax, orig_label):
+                setattr(ax, orig_label, getattr(ax, get_label)())
+
+            original_label = getattr(ax, orig_label)
+            updated_label = self._label_with_unit_prefix(original_label, unit_prefix)
+
+            if axis == "x":
+                ax.set_xlabel(updated_label)
+            else:
+                ax.set_ylabel(updated_label)
+
+        return _set_ticks
+
+    def _plot_legends(self):
+        """Adds legends to the plot if the user has specified them."""
+        [
+            ax.legend()
+            for ax in self.axs.flatten()
+            if ax.get_legend_handles_labels() != ([], [])
+        ]
+
+    def _resize_figure(self, reverse=False):
+        """Resizes the figure to fit the plot."""
+        if self._remove_ax_anotate == reverse:
+            return
+
+        self._remove_ax_anotate = reverse
+        # self._resize_figure_to_one_less_column(reverse)
+        # self._even_spacing_in_columns(reverse)
+        self._hide_axs_anotate(reverse)
+
+    def _resize_figure_to_one_less_column(self, reverse=False):
+        # n_cols = self.axs_anotate[0].get_subplotspec().get_geometry()[1]
+        n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1]
+        width, height = self.fig.get_size_inches()
+
+        if reverse:
+            self.fig.set_size_inches((width / (n_cols - 1)) * n_cols, height)
+        else:
+            self.fig.set_size_inches((width / n_cols) * (n_cols - 1), height)
+
+    def _even_spacing_in_columns(self, reverse=False):
+        scaling = 1 if reverse else 0
+        # n_cols = self.axs_anotate[0].get_subplotspec().get_geometry()[1] - 1
+        # gridspec = self.axs_anotate[0].get_subplotspec().get_gridspec()
+
+        n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1] - 1
+        gridspec = self.ax_anotate.get_subplotspec().get_gridspec()
+
+        if not reverse:
+            gridspec.set_width_ratios([1] * n_cols + [scaling])
+
+    def _hide_axs_anotate(self, reverse=False):
+        self.ax_anotate.remove()
+        # for ax in self.axs_anotate.flatten():
+        #     ax.visible = reverse
+        #     ax.remove()
+
+    def show(self, return_fig: bool = False):
         """Shows the plot. This function is a wrapper for matplotlib.pyplot.show
 
         Returns:
             fig: The figure object
         """
-        if self._remove_axs_anotate:
-            for ax in self.axs_anotate.flatten():
-                with contextlib.suppress(ValueError):
-                    ax.remove()
+        plt.figure(self.fig)
+
+        if self._remove_ax_anotate:
+            self._resize_figure()
 
         self._rescale_axes()
-        plt.figure(self.fig)
         plt.tight_layout()
-        return plt.show()
+        plt.pause(0.001)
+        return self.fig if return_fig else plt.show()
 
     def save(self, path: str):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig

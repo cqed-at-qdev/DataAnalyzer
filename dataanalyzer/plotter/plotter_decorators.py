@@ -1,4 +1,5 @@
 # Author: Malthe Asmus Marciniak Nielsen
+import contextlib
 from typing import Any, Callable, Optional, Union
 
 import numpy as np
@@ -19,17 +20,49 @@ def matplotlib_decorator(func: Callable[..., Any]):
     ) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
         """Wrapper for matplotlib functions to make them return a Valueclass object."""
 
-        if ax:
-            self.ax = self.axs[ax]
+        self.ax = self.axs[ax] if ax else self.ax
 
-        _x: Union[list, tuple, np.ndarray] = kwargs.pop("x", None)
-        _y: Union[list, tuple, np.ndarray] = kwargs.pop("y", None)
-        _z: Union[list, tuple, np.ndarray] = kwargs.pop("z", None)
+        x, y, z, xlabel, ylabel, title = _set_all_data(kwargs)
 
-        x = from_float_to_valueclass(_x, "x data")
-        y = from_float_to_valueclass(_y, "y data")
-        z = from_float_to_valueclass(_z, "z data") if _z is not None else None
+        self.ax.set_title(title)
 
+        with contextlib.suppress(TypeError):
+            self.ax.set_xlabel(xlabel)
+            self.ax.set_ylabel(ylabel)
+
+        self.metadata += kwargs.pop("metadata", "")
+
+        return x, y, z, kwargs
+
+    def _set_all_data(kwargs: dict[str, Any]):
+        x, xlabel = _set_data("x", kwargs)
+        y, ylabel = _set_data("y", kwargs)
+        z = _set_data("z", kwargs) if "z" in kwargs else None
+
+        _check_and_update_fft(x, y)
+
+        title = kwargs.pop("title", f"{x.name} vs {y.name}")
+
+        return x, y, z, xlabel, ylabel, title
+
+    def _set_data(data_name: str, kwargs: dict[str, Any]):
+        dn = data_name
+        data_float: Union[list, tuple, np.ndarray] = kwargs.pop(dn, None)
+
+        if data_float is None:
+            return None
+
+        data = from_float_to_valueclass(data_float, f"{dn} data")
+
+        if dn != "z":
+            default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
+            label = kwargs.pop(f"{dn}label", default_label)
+
+            return data, label
+        return data
+
+    def _check_and_update_fft(x: Valueclass, y: Valueclass):
+        """Checks if the x and y data is fft or not and sets the fft_type accordingly."""
         if y.fft_type == "fft_y" and x.fft_type != "fft_x":
             x = copy.deepcopy(x.fftfreq)
         elif y.fft_type == "fft_x" and x.fft_type != "fft_y":
@@ -38,24 +71,6 @@ def matplotlib_decorator(func: Callable[..., Any]):
             y = copy.deepcopy(y.fftfreq)
         elif x.fft_type == "fft_y" and y.fft_type != "fft_x":
             y = copy.deepcopy(y.fft)
-
-        xlabel = kwargs.pop("xlabel", f"{x.name} [{x.unit}]" if x.unit else x.name)
-        if xlabel != "x data":
-            self.ax.set_xlabel(xlabel)
-
-        ylabel = kwargs.pop("ylabel", f"{y.name} [{y.unit}]" if y.unit else y.name)
-        if ylabel != "y data":
-            self.ax.set_ylabel(ylabel)
-
-        z = from_float_to_valueclass(_z, "z data") if _z is not None else None
-
-        if x and y and x.name != "x data" and y.name != "y data":
-            title = kwargs.pop("title", f"{x.name} vs {y.name}")
-            self.ax.set_title(title)
-
-        self.metadata += kwargs.pop("metadata", "")
-
-        return x, y, z, kwargs
 
     def _plot_legends(self):
         """Adds legends to the plot if the user has specified them."""
@@ -84,12 +99,11 @@ def matplotlib_decorator(func: Callable[..., Any]):
         """
         x, y, z, kwargs = _matplotlib_genereal(self, x=x, y=y, z=z, ax=ax, **kwargs)
 
-        if kwargs.get("title"):
-            self.ax.set_title(kwargs.pop("title"))
+        if x is None or y is None:
+            raise ValueError("x and y data must be specified.")
 
         if z:
-            grid = kwargs.pop("grid", False)
-            self.ax.grid(grid)
+            self.ax.grid(False)
             func(self, x=x, y=y, z=z, ax=ax, *args, **kwargs)
             _plot_legends(self)
             return

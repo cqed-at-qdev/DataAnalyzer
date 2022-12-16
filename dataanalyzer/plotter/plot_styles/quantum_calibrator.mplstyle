@@ -1,7 +1,7 @@
 # Author: Malthe Asmus Marciniak Nielsen
 # figure size settings
 font.size: 10
-figure.figsize: 14, 6
+figure.figsize: 14, 8
 
 # gridlines settings
 axes.grid: True

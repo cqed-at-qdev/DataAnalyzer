@@ -4,6 +4,7 @@ import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import signal
 
 
 @dataclass
@@ -38,7 +39,7 @@ class Valueclass:
         Returns:
             item: Sliced Valueclass object.
         """
-        if isinstance(key, (slice, int, np.ndarray, list, tuple)):
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
             return Valueclass(self.v[key], self.e[key], self.name, self.unit)
         return self[key]
 
@@ -355,6 +356,21 @@ class Valueclass:
 
     @property
     def phase(self):
+        error = np.unwrap(np.angle(self.e))
+        if not np.any(np.isnan(error)):
+            print(error)
+            signal.detrend(error)
+
+        return Valueclass(
+            signal.detrend(np.unwrap(np.angle(self.v))),
+            error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def angle(self):
         return Valueclass(
             np.unwrap(np.angle(self.v)),
             np.unwrap(np.angle(self.e)),

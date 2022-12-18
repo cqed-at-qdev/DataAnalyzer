@@ -1,8 +1,6 @@
 # Author: Malthe Asmus Marciniak Nielsen
 from typing import Tuple
-
 import numpy as np
-
 from dataanalyzer.utilities.valueclass import Valueclass
 
 
@@ -34,59 +32,74 @@ def load_labber_file(labber_path: str, insepct: bool = False) -> Tuple[Valueclas
                 ]
         return []
 
+    def _get_parameters(f):
+        step_channels = f.getStepChannels()
+
+        parameters = _get_vna_data(step_channels)
+        parameters += [
+            Valueclass(name=step["name"], value=step["values"], unit=step["unit"])
+            for step in step_channels
+            if len(step["values"]) > 1
+        ]
+        return parameters
+
+    def _get_data(f):
+        log_channel = f.getLogChannels()[0]
+        d = f.getData()
+        data = Valueclass(
+            name=log_channel["name"],
+            value=d[0] if len(d) < 2 else d,
+            unit=log_channel["unit"],
+        )
+        return [data]
+
     try:
         import Labber
     except ImportError:
         import dataanalyzer.local_labber as Labber
 
     f = Labber.LogFile(labber_path)
-    step_channels = f.getStepChannels()
-    log_channel = f.getLogChannels()[0]
 
-    parameters = _get_vna_data(step_channels)
-    parameters += [
-        Valueclass(name=step["name"], value=step["values"], unit=step["unit"])
-        for step in step_channels
-        if len(step["values"]) > 1
-    ]
-
-    d = f.getData()
-    data = Valueclass(
-        name=log_channel["name"],
-        value=d[0] if len(d) < 2 else d,
-        unit=log_channel["unit"],
-    )
+    parameters = _get_parameters(f)
+    data = _get_data(f)
 
     if insepct:
-        parameter_names = [param.name for param in parameters] + [data.name]
-        print(
-            f"Insepcting Labber File...\nFile is containing {len(parameter_names)} parameters:"
-        )
-        for param in parameter_names:
-            print(f"\t{param}")
-        print("\n")
+        print("Insepcting Json File...")
+        print_values_from_list("parameters", parameters)
+        print_values_from_list("results", data)
 
-    return *parameters, data
+    return *parameters, *data
 
 
 def load_json_file(json_path: str, insepct: bool = False) -> Tuple[Valueclass, ...]:
+    def _get_parameters_and_results(data_dict):
+        experiment_dict = data_dict["experiment_settings"]
+        parameters = [
+            Valueclass.fromdict(value)
+            for value in experiment_dict["experiment_settings"].values()
+        ]
+        result = [
+            Valueclass.fromdict(value)
+            for value in experiment_dict["experiment_results"].values()
+        ]
+        return parameters, result
+
     import json
 
     with open(json_path, "r") as f:
         data_dict = json.load(f)
 
-    parameters = [
-        Valueclass.fromdict(value)
-        for key, value in data_dict["experiment_data"].items()
-    ]
+    parameters, result = _get_parameters_and_results(data_dict)
 
     if insepct:
-        parameter_names = [param.name for param in parameters]
-        print(
-            f"Insepcting Json File...\nFile is containing {len(parameter_names)} parameters:"
-        )
-        for param in parameter_names:
-            print(f"\t{param}")
-        print("\n")
+        print("Insepcting Json File...")
+        print_values_from_list("parameters", parameters)
+        print_values_from_list("results", result)
 
-    return tuple(parameters)
+    return tuple(parameters), tuple(result)
+
+
+def print_values_from_list(name: str, value_list: list[Valueclass]):
+    print(f"File is containing {len(value_list)} {name}:")
+    for value in value_list:
+        print(f"\t{value.name}")

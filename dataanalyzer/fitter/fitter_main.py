@@ -140,8 +140,7 @@ class Fitter:
         self._set_intial_values_only_from_inital_values()
 
     def _set_intial_values_only_from_inital_values(self):
-        """Set the initial values of the fit parameters in the correct format for minuit
-        """
+        """Set the initial values of the fit parameters in the correct format for minuit"""
         self._initial_values_only: dict[str, Union[float, None]] = {
             key: value.values
             for key, value in self.intial_values.items()
@@ -149,8 +148,7 @@ class Fitter:
         }
 
     def _update_minuit_with_values_limits_and_fixed(self):
-        """Update the minuit object with the values, limits and fixed values from the initial values
-        """
+        """Update the minuit object with the values, limits and fixed values from the initial values"""
         for p in self.param_names:
             if isinstance(self.intial_values[p], Fitparam):
                 self.minuit.values[p] = self.intial_values[p].values
@@ -212,7 +210,10 @@ class Fitter:
         self._update_minuit_with_values_limits_and_fixed()
 
     def do_fit(
-        self, linspace_start=None, linspace_stop=None, linspace_steps=1000,
+        self,
+        linspace_start=None,
+        linspace_stop=None,
+        linspace_steps=1000,
     ) -> tuple[np.ndarray, np.ndarray, dict, str]:
         """Do the fit
 
@@ -236,11 +237,15 @@ class Fitter:
         x_fit = np.linspace(linspace_start, linspace_stop, linspace_steps)
         y_fit = np.array(self.func.func(x=x_fit, **self.minuit.values.to_dict()))
 
+        if type(self.x) == Valueclass:
+            x_fit = Valueclass(value=x_fit, name=self.x.name, unit=self.x.unit)
+        if type(self.y) == Valueclass:
+            y_fit = Valueclass(value=y_fit, name=self.y.name, unit=self.y.unit)
+
         return x_fit / self._x_cf, y_fit / self._y_cf, self.params, self._report_string
 
     def _calculate_prob(self):
-        """Calculate the probability of the fit
-        """
+        """Calculate the probability of the fit"""
         self.nvar = len(self.minuit.parameters)  # Number of variables
         self.ndof = len(self._x.value) - self.nvar  # type: ignore # Ndof = n data points - n variables
         self.chi2 = self.minuit.fval  # The chi2 value
@@ -248,23 +253,20 @@ class Fitter:
         self._update_iminuit_report()
 
     def _update_iminuit_report(self):
-        """Update the iminuit report
-        """
+        """Update the iminuit report"""
         self._update_iminuit_report_with_function()
         self._update_imuniut_report_with_parameters()
         self._update_iminuit_report_with_statistics()
 
     def _update_iminuit_report_with_function(self):
-        """Update the iminuit report with the function
-        """
+        """Update the iminuit report with the function"""
         funcname = (
             self.func.funcname_latex() if self.use_latex else self.func.funcname()
         )
         self._report_string = f"Function: \n${funcname}$:\n\n"
 
     def _update_imuniut_report_with_parameters(self):
-        """Update the iminuit report with the parameters
-        """
+        """Update the iminuit report with the parameters"""
         poly_degree = getattr(self.func, "poly_degree", None)
         values = self.minuit.values.to_dict().items()
         errors = self.minuit.errors.to_dict().values()
@@ -299,8 +301,7 @@ class Fitter:
         return self.func.units(x=x_unit, y=y_unit)  # type: ignore
 
     def _update_iminuit_report_with_statistics(self):
-        """Update the iminuit report with the probability and the chi2 value
-        """
+        """Update the iminuit report with the probability and the chi2 value"""
         if any([self.chi2, self.ndof, self.prob]):
             self._report_string += "\nFit statistics:\n"
 
@@ -318,8 +319,7 @@ class Fitter:
         self._report_string += "\n"
 
     def get_report(self):
-        """Get the report string
-        """
+        """Get the report string"""
         return self.minuit
 
     def get_params(self, *param_names) -> dict:

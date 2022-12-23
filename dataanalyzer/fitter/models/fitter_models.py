@@ -304,6 +304,42 @@ class LinearModel(ModelABC):
 
 
 ####################################################################################################
+#                   Proportional Model                                                                   #
+####################################################################################################
+class ProportionalModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix="", **kwargs):
+        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+        super().__init__(**kwargs)
+
+    def func(self, x, slope=1.0):
+        x = np.array(x)
+        return slope * x
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        slope = (y[-1] - y[0]) / (x[-1] - x[0])
+        return self._make_parameters(slope=slope)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self.param_names
+
+        return f"proportional(x) = {params[0]}*x "
+
+    def funcname_latex(self, *params) -> str:
+        if not params:
+            params = self.param_names
+        return f"\\mathrm{{proportional}}(x) = {params[0]}* x"
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {"slope": "y/x"}
+
+    def get_estrema(self, params: dict) -> dict[str, float]:
+        raise ValueError("Proportional model has no estrema")
+
+
+####################################################################################################
 #                   Gaussian Model                                                                 #
 ####################################################################################################
 class GaussianModel(ModelABC):
@@ -399,7 +435,7 @@ class LorentzianModel(ModelABC):
 
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
         x = np.array(x)
-        return amplitude * sigma ** 2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+        return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
 
     def guess(
         self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
@@ -442,7 +478,7 @@ class LorentzianConstantModel(ModelABC):
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
         x = np.array(x)
         return (
-            amplitude * sigma ** 2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+            amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
             + offset
         )
 
@@ -651,15 +687,15 @@ class PolynomialModel(ModelABC):
 ####################################################################################################
 class DampedOscillationModel(ModelABC):
     def __init__(self, independent_vars=None, prefix="", **kwargs):
+        self.angular = kwargs.pop("angular", False)
         kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
         x = np.array(x)
-        return (
-            amplitude * np.sin(frequency * (2 * np.pi) * x + phi) * np.exp(-x / decay)
-            + offset
-        )
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x + phi) * np.exp(-x / decay) + offset
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
@@ -683,10 +719,10 @@ class DampedOscillationModel(ModelABC):
         c = y.mean()
         T = x[round(len(x) / 2)]
         yhat = fftpack.rfft(y - y.mean())
-        idx = (yhat ** 2).argmax()
+        idx = (yhat**2).argmax()
         freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
         w = freqs[idx]
-
+        f = w if self.angular else w / (2 * np.pi)
         dx = x[1] - x[0]
         indices_per_period = np.pi * 2 / w / dx
         std_window = round(indices_per_period)
@@ -698,23 +734,25 @@ class DampedOscillationModel(ModelABC):
                 T = x[i]
                 break
         p = 0
-        return [a, T, w, p, c]
+        return [a, T, f, p, c]
 
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_names
-        return f"{params[0]} * sin({params[1]} * x + {params[2]}) * exp(-x / {params[3]}) + {params[4]}"
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return f"{params[0]} * sin({f} * x + {params[2]}) * exp(-x / {params[3]}) + {params[4]}"
 
     def funcname_latex(self, *params) -> str:
         if not params:
             params = self.param_names
-        return f"{params[0]} \\sin({params[1]} x + {params[2]}) \\exp(-x / {params[3]}) + {params[4]}"
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return f"{params[0]} \\sin({f} x + {params[2]}) \\exp(-x / {params[3]}) + {params[4]}"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {
             "amplitude": "y",
-            "frequency": "x",
+            "frequency": "x**(-1)",
             "phi": "x",
             "decay": "x**(-1)",
             "offset": "y",
@@ -731,7 +769,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
 
     def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
         x = np.array(x)
-        return amplitude * phase ** x + offset
+        return amplitude * phase**x + offset
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
@@ -788,4 +826,3 @@ class ExponentialDecayModel(ModelABC):
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "decay": "x**(-1)", "offset": "y"}
-

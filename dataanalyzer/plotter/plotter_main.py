@@ -232,9 +232,10 @@ class Plotter:
             raise ValueError(f"plot_type {plot_type} not recognized")
 
         self.ax.axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
-        label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
-        colorbar = self.fig.colorbar(c, ax=self.ax, label=label)
-        self.ax.colorbar = colorbar
+
+        # label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
+        # colorbar = self.fig.colorbar(c, ax=self.ax, label=label)   # Turned off for now to avoid multiple colorbars on same plot
+        # self.ax.colorbar = colorbar
 
     def pcolormesh(
         self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
@@ -486,11 +487,16 @@ class Plotter:
         ha = kwargs.pop("ha", "left")
         transfrom = kwargs.pop("transform", self.ax_anotate.transAxes)
 
+        self.ax_anotate.texts.clear()
         self.ax_anotate.text(
             x, y, self.metadata, va=va, ha=ha, transform=transfrom, **kwargs
         )
 
         self._remove_ax_anotate = False
+
+    def clear_metadata(self):
+        self.metadata = ""
+        self.ax_anotate.texts.clear()
 
     def _get_default_transform(self):
         axarg = np.where(self.axs == self.ax)[0][0]

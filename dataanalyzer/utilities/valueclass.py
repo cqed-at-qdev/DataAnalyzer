@@ -55,7 +55,7 @@ class Valueclass:
         Args:
             value (Union[float, list, tuple, np.ndarray]): Value to set.
         """
-        if isinstance(value, (float, np.integer)):
+        if isinstance(value, (float, int, np.integer)):
             self.v = np.array([value])
         elif isinstance(value, (list, tuple, np.ndarray)):
             self.v = np.array(value)
@@ -224,6 +224,12 @@ class Valueclass:
             self.fft_type,
         )
 
+    def __len__(self):
+        return len(self.v)
+
+    def __max__(self):
+        return max(self.v)
+
     @property
     def db(self):
         return Valueclass(
@@ -375,7 +381,7 @@ class Valueclass:
             np.unwrap(np.angle(self.v)),
             np.unwrap(np.angle(self.e)),
             self.name,
-            self.unit,
+            "rad",
             self.fft_type,
         )
 

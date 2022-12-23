@@ -15,7 +15,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
         func: The function to be decorated.
     """
 
-    def _matplotlib_genereal(
+    def _matplotlib_general(
         self, ax=None, **kwargs
     ) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
         """Wrapper for matplotlib functions to make them return a Valueclass object."""
@@ -25,6 +25,10 @@ def matplotlib_decorator(func: Callable[..., Any]):
         x, y, z, xlabel, ylabel, title = _set_all_data(kwargs)
 
         self.ax.set_title(title)
+        overwrite = kwargs.pop("overwrite", False)
+        if overwrite:
+            self.ax.lines.clear()
+            self.ax.set_prop_cycle(None)
 
         with contextlib.suppress(TypeError):
             self.ax.set_xlabel(xlabel)
@@ -41,7 +45,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
 
         _check_and_update_fft(x, y)
 
-        title = kwargs.pop("title", f"{x.name} vs {y.name}")
+        title = kwargs.pop("title", f"{y.name} vs {x.name}")
 
         return x, y, z, xlabel, ylabel, title
 
@@ -97,7 +101,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
             z (Valueclass, optional): The z data. Defaults to None.
             ax (tuple, optional): The axes to plot on. Defaults to ().
         """
-        x, y, z, kwargs = _matplotlib_genereal(self, x=x, y=y, z=z, ax=ax, **kwargs)
+        x, y, z, kwargs = _matplotlib_general(self, x=x, y=y, z=z, ax=ax, **kwargs)
 
         if x is None or y is None:
             raise ValueError("x and y data must be specified.")

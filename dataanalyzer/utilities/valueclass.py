@@ -15,7 +15,7 @@ class Valueclass:
         _type_: _description_
     """
 
-    value: Union[float, list, tuple, np.ndarray]  # type: ignore
+    value: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
     error: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
     name: str = ""
     unit: str = ""
@@ -103,16 +103,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v + other,
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v + other, self.e, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
                 self.v + other.v,
-                np.sqrt(self.e**2 + other.e**2),
+                np.sqrt(self.e ** 2 + other.e ** 2),
                 self.name,
                 self.unit,
             )
@@ -128,16 +124,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v - other,
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v - other, self.e, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
                 self.v - other.v,
-                np.sqrt(self.e**2 + other.e**2),
+                np.sqrt(self.e ** 2 + other.e ** 2),
                 self.name,
                 self.unit,
             )
@@ -145,11 +137,7 @@ class Valueclass:
     def __mul__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v * other,
-                self.e * other,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v * other, self.e * other, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
@@ -162,17 +150,13 @@ class Valueclass:
     def __truediv__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v / other,
-                self.e / other,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v / other, self.e / other, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
                 self.v / other.v,
                 np.sqrt(
-                    (self.e / other.v) ** 2 + (self.v * other.e / other.v**2) ** 2
+                    (self.e / other.v) ** 2 + (self.v * other.e / other.v ** 2) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -181,17 +165,17 @@ class Valueclass:
     def __pow__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v**other,
+                self.v ** other,
                 self.e * other * self.v ** (other - 1),
                 self.name,
                 self.unit,
             )
         else:
             return Valueclass(
-                self.v**other.v,
+                self.v ** other.v,
                 np.sqrt(
                     (self.e * other.v * self.v ** (other.v - 1)) ** 2
-                    + (self.v**other.v * other.e * np.log(self.v)) ** 2
+                    + (self.v ** other.v * other.e * np.log(self.v)) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -209,7 +193,7 @@ class Valueclass:
     def __rtruediv__(self, other) -> "Valueclass":
         return Valueclass(
             other / self.v,
-            other * self.e / self.v**2,
+            other * self.e / self.v ** 2,
             self.name,
             self.unit,
             self.fft_type,
@@ -217,8 +201,8 @@ class Valueclass:
 
     def __rpow__(self, other) -> "Valueclass":
         return Valueclass(
-            other**self.v,
-            other**self.v * self.e * np.log(other),
+            other ** self.v,
+            other ** self.v * self.e * np.log(other),
             self.name,
             self.unit,
             self.fft_type,
@@ -233,17 +217,14 @@ class Valueclass:
     @property
     def db(self):
         return Valueclass(
-            20 * np.log10(self.v),
-            20 * self.e / (np.log(10) * self.v),
-            self.name,
-            "dB",
+            20 * np.log10(self.v), 20 * self.e / (np.log(10) * self.v), self.name, "dB",
         )
 
     @property
     def norm(self):
         return Valueclass(
-            self.v / np.sqrt(np.sum(self.v**2)),
-            self.e / np.sqrt(np.sum(self.v**2)),
+            self.v / np.sqrt(np.sum(self.v ** 2)),
+            self.e / np.sqrt(np.sum(self.v ** 2)),
             self.name,
             self.unit,
             self.fft_type,
@@ -339,21 +320,13 @@ class Valueclass:
     @property
     def real(self):
         return Valueclass(
-            np.real(self.v),
-            np.real(self.e),
-            self.name,
-            self.unit,
-            self.fft_type,
+            np.real(self.v), np.real(self.e), self.name, self.unit, self.fft_type,
         )
 
     @property
     def imag(self):
         return Valueclass(
-            np.imag(self.v),
-            np.imag(self.e),
-            self.name,
-            self.unit,
-            self.fft_type,
+            np.imag(self.v), np.imag(self.e), self.name, self.unit, self.fft_type,
         )
 
     @property
@@ -392,21 +365,11 @@ class Valueclass:
             "individual",
             "Individual",
         ):
-            return Valueclass(
-                self.v,
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            return Valueclass(self.v, self.e, self.name, self.unit, self.fft_type,)
 
         elif operation in ("Substract first", "substract first", "first", "First"):
             return Valueclass(
-                self.v - self.v[0],
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v - self.v[0], self.e, self.name, self.unit, self.fft_type,
             )
 
         elif operation in ("Substract mean", "substract mean", "mean", "Mean"):
@@ -420,11 +383,7 @@ class Valueclass:
 
         elif operation in ("Substract last", "substract last", "last", "Last"):
             return Valueclass(
-                self.v - self.v[-1],
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.v - self.v[-1], self.e, self.name, self.unit, self.fft_type,
             )
 
         elif operation in ("Substract min", "substract min", "min", "Min"):
@@ -463,13 +422,7 @@ class Valueclass:
             v = self.v - np.roll(self.v, 1, axis=0)  # type: ignore
             v[0] = np.zeros(self.v.shape[1])
 
-            return Valueclass(
-                v,
-                self.e,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            return Valueclass(v, self.e, self.name, self.unit, self.fft_type,)
 
         elif operation in ("Average", "average"):
             return Valueclass(
@@ -544,6 +497,7 @@ class Valueclass:
         return Valueclass(self.v.T, self.e.T, self.name, self.unit, self.fft_type)
 
     def clip(self, a_min=None, a_max=None, out=None):
+        # TODO: Check if this is correct
         return Valueclass(
             np.clip(self.v, a_min, a_max, out),
             np.clip(self.e, a_min, a_max, out),

@@ -283,10 +283,10 @@ class Fitter:
                 break
 
     def _add_parameter_string(self, unit_names, key, val, err):
-        val, err = round_on_error(val, err, n_digits=2)
+        value_string = round_on_error(val, err, n_digits=2)
         unit = f"[{unit_names[key]}]" if unit_names else ""
-
-        self._report_string += f"{key}: {val:.4g} ± {err:.3g} {unit}\n"
+        self._report_string += f"{key}: {value_string} {unit}\n"
+        # self._report_string += f"{key}: {val} ± {err:.2g} {unit}\n"
 
     def _get_func_units(self) -> dict:
         if not hasattr(self.func, "units"):
@@ -346,8 +346,14 @@ class Fitter:
 
         return {"value": value / convertion_fator, "error": error / convertion_fator}
 
-    def get_estrema(self):
+    def get_extrema(self):
         if not hasattr(self, "params"):
             self.do_fit()
 
-        return self.func.get_estrema(self.params)
+        return self.func.get_extrema(self.params)
+
+    def get_period(self):
+        if not hasattr(self, "params"):
+            self.do_fit()
+
+        return self.func.get_period(self.params)

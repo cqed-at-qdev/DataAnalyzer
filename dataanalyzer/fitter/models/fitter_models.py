@@ -142,8 +142,11 @@ class ModelABC(ABC):
 
         return units
 
-    def get_estrema(self, params: dict) -> dict:
-        raise NotImplementedError("get_estrema not implemented for this model")
+    def get_extrema(self, params: dict) -> dict:
+        raise NotImplementedError("get_extrema not implemented for this model")
+
+    def get_period(self, params: dict) -> float:
+        raise NotImplementedError("get_period not implemented for this model")
 
     def __add__(self, other):
         return SumModel(self, other)
@@ -255,16 +258,16 @@ class SumModel(ModelABC):
             units |= model.units(x=x, y=y)
         return units
 
-    def get_estrema(self, params: dict) -> dict[str, dict[str, float]]:
-        estrema = {}
+    def get_extrema(self, params: dict) -> dict[str, dict[str, float]]:
+        extrema = {}
         for i, model in enumerate(self.models):
             p = self._postfix[i]
             model_params = {
                 k.replace(p, ""): v for k, v in params.items() if k in model.param_names
             }
             model_name = f"{model.__class__.__name__}{p}"
-            estrema |= {model_name: model.get_estrema(model_params)}
-        return estrema
+            extrema |= {model_name: model.get_extrema(model_params)}
+        return extrema
 
 
 ####################################################################################################
@@ -299,8 +302,8 @@ class LinearModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"slope": "y/x", "intercept": "y"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
-        raise ValueError("Linear model has no estrema")
+    def get_extrema(self, params: dict) -> dict[str, float]:
+        raise ValueError("Linear model has no extrema")
 
 
 ####################################################################################################
@@ -335,8 +338,8 @@ class ProportionalModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"slope": "y/x"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
-        raise ValueError("Proportional model has no estrema")
+    def get_extrema(self, params: dict) -> dict[str, float]:
+        raise ValueError("Proportional model has no extrema")
 
 
 ####################################################################################################
@@ -376,7 +379,7 @@ class GaussianModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "center": "x", "sigma": "x"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         return params["center"]
 
 
@@ -420,7 +423,7 @@ class GaussianConstantModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "center": "x", "sigma": "x", "offset": "y"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         return params["center"]
 
 
@@ -462,7 +465,7 @@ class LorentzianModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "center": "x", "sigma": "x"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         return params["center"]
 
 
@@ -510,7 +513,7 @@ class LorentzianConstantModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "center": "x", "sigma": "x", "offset": "y"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         return params["center"]
 
 
@@ -603,7 +606,7 @@ class SplitLorentzianModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return {"amplitude": "y", "center": "x", "sigma": "x", "split": "x"}
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         return params["center"]
 
 
@@ -649,7 +652,7 @@ class PolynomialModel(ModelABC):
 
         return coeffs_units
 
-    def get_estrema(self, params: dict) -> dict[str, float]:
+    def get_extrema(self, params: dict) -> dict[str, float]:
         if self.poly_degree == 1:
             raise ValueError("Cannot find extrema for a linear function")
         elif self.poly_degree == 2:
@@ -658,8 +661,8 @@ class PolynomialModel(ModelABC):
             c1 = ufloat(params["c1"]["value"], params["c1"]["error"])
             c2 = ufloat(params["c2"]["value"], params["c2"]["error"])
 
-            estrema = -c1 / (2 * c2)  # type: ignore
-            return {"value": estrema.n, "error": estrema.s}
+            extrema = -c1 / (2 * c2)  # type: ignore
+            return {"value": extrema.n, "error": extrema.s}
         else:
             return self._find_mulitpolinomial_minima(params)
 
@@ -674,12 +677,92 @@ class PolynomialModel(ModelABC):
         maxima = roots[np.argmax(np_poly(roots))]
 
         print(
-            "Warning: Estrema for polynomial model is not implemented yet",
+            "Warning: extrema for polynomial model is not implemented yet",
             "Returning the maximum of the first derivative",
             "Unsertainties are not calculated, but sqrt(maxima) is returned",
         )
 
         return {"value": maxima, "error": np.sqrt(maxima)}
+
+
+####################################################################################################
+#                   Oscillation Model                                                       #
+####################################################################################################
+class OscillationModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix="", **kwargs):
+        self.angular = kwargs.pop("angular", False)
+        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+        super().__init__(**kwargs)
+
+    def func(self, x, A=1.0, f=0.0, φ=0.0, c=0.0):
+        x = np.array(x)
+        if not self.angular:
+            f = f * 2 * np.pi
+        return A * np.sin(f * x + φ) + c
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
+
+        return self._make_parameters(
+            A=amplitude,
+            f=frequency,
+            φ=phi,
+            c=offset,
+        )
+
+    def _oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+
+        dx = x[1] - x[0]
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+
+        phi = np.angle(
+            sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2)))
+        )
+
+        return [a, f, phi, c]
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self.param_names
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return f"{params[0]} * sin({f} * x + {params[2]}) + {params[3]}"
+
+    def funcname_latex(self, *params) -> str:
+        if not params:
+            params = self.param_names
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return f"{params[0]} \\sin({f} x + {params[2]}) + {params[3]}"
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {
+            "A": "y",
+            "f": "x**(-1)",
+            "φ": "x",
+            "c": "y",
+        }
+
+    def get_period(self, params: dict) -> dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params["f"]["value"])
+            error = params["f"]["error"] / params["f"]["value"] ** 2 / (2 * np.pi)
+        else:
+            period = 1 / params["f"]["value"]
+            error = params["f"]["error"] / params["f"]["value"] ** 2
+
+        return {"value": period, "error": error}
 
 
 ####################################################################################################

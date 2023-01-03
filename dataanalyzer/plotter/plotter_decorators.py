@@ -25,9 +25,10 @@ def matplotlib_decorator(func: Callable[..., Any]):
         x, y, z, xlabel, ylabel, title = _set_all_data(kwargs)
 
         self.ax.set_title(title)
+
         overwrite = kwargs.pop("overwrite", False)
         if overwrite:
-            self.ax.lines.clear()
+            self.ax.clear()
             self.ax.set_prop_cycle(None)
 
         with contextlib.suppress(TypeError):

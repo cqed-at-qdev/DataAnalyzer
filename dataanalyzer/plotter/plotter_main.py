@@ -206,6 +206,7 @@ class Plotter:
         Raises:
             ValueError: If plot_type is not a valid option.
         """
+        keep_colorbar = kwargs.get("keep_colorbar", False)
         kwargs.setdefault("cmap", "RdBu")
         kwargs.setdefault("vmin", np.min(z.value))
         kwargs.setdefault("vmax", np.max(z.value))
@@ -233,9 +234,18 @@ class Plotter:
 
         self.ax.axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
 
-        # label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
-        # colorbar = self.fig.colorbar(c, ax=self.ax, label=label)   # Turned off for now to avoid multiple colorbars on same plot
-        # self.ax.colorbar = colorbar
+        # self._add_colorbar(c, z, keep_colorbar)
+
+    def _add_colorbar(self, c, z, keep_colorbar):
+        if hasattr(self.ax, "colorbar") and keep_colorbar:
+            self.ax.colorbar.remove()
+
+        label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
+        colorbar = self.fig.colorbar(c, ax=self.ax, label=label)
+
+        for ax in self.axs.flatten():
+            if ax == self.ax:
+                ax.colorbar = colorbar
 
     def pcolormesh(
         self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
@@ -458,14 +468,15 @@ class Plotter:
         self.xres.scatter(x.value, y.value, **kwargs)
         self.xres.axhline(y=0, linestyle=":", color="red")
 
-        self.ax.sharex(self.xres)
-        self.xres.set_xlabel(self.ax.get_xlabel())
-        self.ax.label_outer()  # type: ignore
+        if self.ax._sharex is None or self.xres is self.ax._sharex:
+            self.ax.sharex(self.xres)
+            self.xres.set_xlabel(self.ax.get_xlabel())
+            self.ax.label_outer()  # type: ignore
 
-        ylabel = kwargs.pop(
-            "ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals"
-        )
-        self.xres.set_ylabel(ylabel)
+            ylabel = kwargs.pop(
+                "ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals"
+            )
+            self.xres.set_ylabel(ylabel)
 
     def add_metadata(
         self, metadata: str, ax: tuple = (), overwrite: bool = False, **kwargs

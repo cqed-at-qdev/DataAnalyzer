@@ -2,6 +2,7 @@ from typing import Tuple, Union
 import numpy as np
 import decimal
 
+
 def convert_array_with_unit(
     array: Union[float, list, tuple, np.ndarray]
 ) -> Tuple[np.ndarray, str, float]:
@@ -32,20 +33,21 @@ def convert_array_with_unit(
 
 
 def round_on_error(value, error, n_digits=0):
-    if np.isfinite(error):
-        if error == 0:
-            return value, error
+    from math import isnan
 
-        power = int(np.floor(np.log10(error) - np.log10(0.95)))
-
-        error_rounded = round(error, -power + n_digits)
-        value_rounded = round(value, -power + n_digits)
-        if power >= 0 and value >= 0:
-            error_rounded = int(error_rounded)
-            value_rounded = int(value_rounded)
-    else:
-        from math import isnan
-
-        value_rounded = np.nan if isnan(value) else int(value)
+    if isnan(error) or not np.isfinite(error):
+        value_rounded = np.nan if isnan(value) else value
         error_rounded = error
-    return value_rounded, error_rounded
+        return f"{value_rounded} ± {error_rounded}"
+
+    power = int(np.floor(np.log10(error) - np.log10(0.95)))
+    power_round = -power + n_digits - 1
+
+    error_rounded = round(error, power_round)
+    value_rounded = round(value, power_round)
+
+    return (
+        f"{value:.{power_round}f} ± {error:.{power_round}f}"
+        if power <= 0
+        else f"{value_rounded} ± {error_rounded}"
+    )

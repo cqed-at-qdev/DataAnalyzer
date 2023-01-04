@@ -44,7 +44,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
         y, ylabel = _set_data("y", kwargs)
         z = _set_data("z", kwargs) if "z" in kwargs else None
 
-        _check_and_update_fft(x, y)
+        x, y = _check_and_update_fft(x, y)
 
         title = kwargs.pop("title", f"{y.name} vs {x.name}")
 
@@ -76,6 +76,8 @@ def matplotlib_decorator(func: Callable[..., Any]):
             y = copy.deepcopy(y.fftfreq)
         elif x.fft_type == "fft_y" and y.fft_type != "fft_x":
             y = copy.deepcopy(y.fft)
+
+        return x, y
 
     def _plot_legends(self):
         """Adds legends to the plot if the user has specified them."""

@@ -9,6 +9,7 @@ import numpy as np
 from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
 from dataanalyzer.utilities import Valueclass
 from dataanalyzer.utilities.utilities import convert_array_with_unit
+from dataanalyzer.utilities.valueclass import from_float_to_valueclass
 
 
 class Plotter:
@@ -40,11 +41,11 @@ class Plotter:
         self.fig = self.kwargs.pop("fig", None)
         subplots_plus_col = (subplots[0], subplots[1] + 1)
 
-        if self.fig is not None:
+        if self.fig is None:
+            self.fig, axs = plt.subplots(*subplots_plus_col)
+        else:
             self.fig.clf()
             axs = self.fig.subplots(*subplots_plus_col)
-        else:
-            self.fig, axs = plt.subplots(*subplots_plus_col)
 
         self.axs = np.array(axs).reshape(subplots_plus_col)
         self.ax_anotate = self.axs[0:, -1]
@@ -90,6 +91,62 @@ class Plotter:
             raise ValueError(
                 "default_settings must be either a dict, a string or a boolean"
             )
+
+    def plot_fit(self, fit_obejct: object, ax: tuple = (), **kwargs):
+        """Plots a fit object. This function is a wrapper for matplotlib.pyplot.plot
+
+        Args:
+            fit_obejct (object): The fit object to plot.
+            ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
+        """
+        flip_axis = kwargs.pop("flip_axis", False)
+        ls_start = kwargs.pop("linspace_start", None)
+        ls_stop = kwargs.pop("linspace_stop", None)
+        ls_steps = kwargs.pop("linspace_steps", 1000)
+
+        if kwargs.pop("force_fit", False) or not fit_obejct._fitted:
+            fit_obejct.do_fit(**kwargs)
+
+        if kwargs.pop("plot_data", True):
+            x, y = fit_obejct.x, fit_obejct.y
+
+            if flip_axis:
+                x, y = y, x
+
+            self.scatter(x, y, ax=ax, label="Data")
+
+        if kwargs.pop("plot_guess", True):
+            x_guess, y_guess = fit_obejct.get_guess_array(ls_start, ls_stop, ls_steps)
+            x_guess = from_float_to_valueclass(x_guess, "X guess")
+            y_guess = from_float_to_valueclass(y_guess, "Y guess")
+
+            if flip_axis:
+                x_guess, y_guess = y_guess, x_guess
+
+            self.plot(x_guess, y_guess, ax=ax, ls="--", color="grey", label="Guess")
+
+        if kwargs.pop("plot_fit", True):
+            x_fit, y_fit = fit_obejct.get_fit_array(ls_start, ls_stop, ls_steps)
+            x_fit = from_float_to_valueclass(x_fit, "X fitted")
+            y_fit = from_float_to_valueclass(y_fit, "Y fitted")
+
+            if flip_axis:
+                x_fit, y_fit = y_fit, x_fit
+
+            self.plot(x_fit, y_fit, ax=ax, label="Fit")
+
+        if kwargs.pop("plot_residuals", False):
+            x_res = fit_obejct.x
+            y_res = fit_obejct.get_residuals()
+
+            if flip_axis:
+                x_res, y_res = y_res, x_res
+                self.add_yresiuals(x_res, y_res, ax=ax)
+            else:
+                self.add_xresiuals(x_res, y_res, ax=ax)
+
+        if kwargs.pop("plot_metadata", True):
+            self.add_metadata(fit_obejct._report_string, ax=ax)
 
     @matplotlib_decorator
     def plot(

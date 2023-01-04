@@ -9,7 +9,7 @@ def unit_wrapper(func):
         if type(f) != str:
             raise ValueError(f"f must be a string, not {type(f)}: {f}")
 
-        if not x or not y:
+        if x is None or y is None:
             raise ValueError("x and y must be defined")
 
         if type(x) != type(y):
@@ -20,7 +20,11 @@ def unit_wrapper(func):
             return f.replace("**", "^")
 
         elif isinstance(x, (int, float)):
-            evalue = eval(f)
+            try:
+                evalue = eval(f)
+            except Exception as e:
+                return 1
+
             if isinstance(evalue, (float, int)):
                 return evalue
             else:
@@ -52,5 +56,24 @@ def unit_wrapper(func):
             k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
         }  # type: ignore
         return make_units(self, **f_dict)
+
+    return wrapper
+
+
+def symbol_wrapper(func):
+    def wrapper(self, *args, **kwargs) -> dict[str, str]:
+        if not hasattr(self, "_root2symbol") or kwargs.pop("overwrite", False):
+            self._root2symbol = func(self, *args, **kwargs)
+
+        for key, value in kwargs.items():
+            if key in self._root2symbol:
+                self._root2symbol[key] = value
+
+        self._full2symbol = {
+            k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+        }
+
+        self.param_symbols = list(self._full2symbol.values())
+        return self._full2symbol
 
     return wrapper

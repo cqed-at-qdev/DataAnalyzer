@@ -35,7 +35,7 @@ def convert_array_with_unit(
 def round_on_error(value, error, n_digits=0):
     from math import isnan
 
-    if isnan(error) or not np.isfinite(error):
+    if isnan(error) or not np.isfinite(error) or error == 0:
         value_rounded = np.nan if isnan(value) else value
         error_rounded = error
         return f"{value_rounded} ± {error_rounded}"

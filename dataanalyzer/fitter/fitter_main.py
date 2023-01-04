@@ -93,6 +93,7 @@ class Fitter:
         self.set_cost_function(cost_function)
 
         self.use_latex = use_latex if bool(find_executable("latex")) else False
+        self._fitted = False
 
     def get_initial_values(self):
         """Returns the initial values of the fit parameters
@@ -105,6 +106,15 @@ class Fitter:
             self.intial_values[p].limits = self.minuit.limits[p]
             self.intial_values[p].fixed = self.minuit.fixed[p]
         return self.intial_values
+
+    @property
+    def initial_guess(self):
+        """Returns the initial guess of the fit parameters
+
+        Returns:
+            dict: Dictionary with the initial guess of the fit parameters
+        """
+        return {p: self.intial_values[p].values for p in self.param_names}
 
     def set_initial_values(
         self, initial_values: dict[str, Union[float, dict, Fitparam]] = {}
@@ -214,6 +224,7 @@ class Fitter:
         linspace_start=None,
         linspace_stop=None,
         linspace_steps=1000,
+        **kwargs,
     ) -> tuple[np.ndarray, np.ndarray, dict, str]:
         """Do the fit
 
@@ -226,25 +237,81 @@ class Fitter:
         Returns:
             Union[tuple[np.ndarray, np.ndarray, str], str]: If return_linspace is True a tuple with the linspace, the evaluated function and the latex string is returned. If return_linspace is False only the latex string is returned
         """
+        self._do_fit()
+
+        return_dict = {}
+
+        if kwargs.pop("return_fit_array", True):
+            return_dict["x_fit"], return_dict["y_fit"] = self.get_fit_array(
+                linspace_start, linspace_stop, linspace_steps
+            )
+
+        if kwargs.pop("return_params", True):
+            return_dict["params"] = self.get_params()
+
+        if kwargs.pop("return_report", True):
+            return_dict["report"] = self._report_string
+
+        if kwargs.pop("return_guess_array", False):
+            return_dict["guess_array"] = self.get_guess_array(
+                linspace_start, linspace_stop, linspace_steps
+            )
+
+        if kwargs.pop("return_guess_params", False):
+            return_dict["guess_params"] = self.get_guess_params()
+
+        if kwargs.pop("return_as_dict", True):
+            return return_dict.values()
+
+        return return_dict
+
+    def _do_fit(self):
         self.set_minuit()
         self.minuit.migrad()
-        self._calculate_prob()
+        self._calculate_prob_and_make_report()
         self.params = self.get_params()
+        self._fitted = True
 
+    def get_residuals(self):
+        residuals = self._y.value - self.func.func(
+            x=self._x.value, **self.minuit.values.to_dict()
+        )
+        return Valueclass(value=residuals, name=self._y.name, unit=self._y.unit)
+
+    def get_fit_array(
+        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
+    ):
+        x_fit = self._get_linspace_of_x(linspace_start, linspace_stop, linspace_steps)
+        y_fit = np.array(self.func.func(x=x_fit, **self.minuit.values.to_dict()))
+
+        x_fit, y_fit = self._convert_x_and_y_to_valueclass(x_fit, y_fit)
+        return x_fit, y_fit
+
+    def get_guess_array(
+        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
+    ):
+        x_guess = self._get_linspace_of_x(linspace_start, linspace_stop, linspace_steps)
+        y_guess = np.array(self.func.func(x=x_guess, **self.initial_guess))
+
+        x_guess, y_guess = self._convert_x_and_y_to_valueclass(x_guess, y_guess)
+        return x_guess, y_guess
+
+    def _get_linspace_of_x(
+        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
+    ):
         linspace_start = linspace_start or np.min(self._x.value)
         linspace_stop = linspace_stop or np.max(self._x.value)
 
-        x_fit = np.linspace(linspace_start, linspace_stop, linspace_steps)
-        y_fit = np.array(self.func.func(x=x_fit, **self.minuit.values.to_dict()))
+        return np.linspace(linspace_start, linspace_stop, linspace_steps)
 
+    def _convert_x_and_y_to_valueclass(self, x_array, y_array):
         if type(self.x) == Valueclass:
-            x_fit = Valueclass(value=x_fit, name=self.x.name, unit=self.x.unit)
+            x_array = Valueclass(value=x_array, name=self.x.name, unit=self.x.unit)
         if type(self.y) == Valueclass:
-            y_fit = Valueclass(value=y_fit, name=self.y.name, unit=self.y.unit)
+            y_array = Valueclass(value=y_array, name=self.y.name, unit=self.y.unit)
+        return x_array / self._x_cf, y_array / self._y_cf
 
-        return x_fit / self._x_cf, y_fit / self._y_cf, self.params, self._report_string
-
-    def _calculate_prob(self):
+    def _calculate_prob_and_make_report(self):
         """Calculate the probability of the fit"""
         self.nvar = len(self.minuit.parameters)  # Number of variables
         self.ndof = len(self._x.value) - self.nvar  # type: ignore # Ndof = n data points - n variables
@@ -277,16 +344,16 @@ class Fitter:
 
         for i, ((key, val), err) in enumerate(zip(values, errors), start=1):
             if key in self.param_names:
-                self._add_parameter_string(unit_names, key, val, err)
+                unit = f"${unit_names[key]}$" if unit_names else ""
+                name = f"${self.func._root2symbol[key]}$"
+                self._add_parameter_string(unit, name, val, err)
 
             if poly_degree is not None and i > poly_degree:
                 break
 
-    def _add_parameter_string(self, unit_names, key, val, err):
+    def _add_parameter_string(self, unit, key, val, err):
         value_string = round_on_error(val, err, n_digits=2)
-        unit = f"[{unit_names[key]}]" if unit_names else ""
         self._report_string += f"{key}: {value_string} {unit}\n"
-        # self._report_string += f"{key}: {val} ± {err:.2g} {unit}\n"
 
     def _get_func_units(self) -> dict:
         if not hasattr(self.func, "units"):
@@ -357,3 +424,6 @@ class Fitter:
             self.do_fit()
 
         return self.func.get_period(self.params)
+
+    def set_symbols(self, **symbols: dict[str, str]):
+        self.func.symbols(**symbols)

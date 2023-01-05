@@ -17,7 +17,7 @@ def unit_wrapper(func):
 
         if isinstance(x, str) and isinstance(y, str):
             f = f.replace("x", x).replace("y", y)
-            return f.replace("**", "^")
+            return f.replace("**", "^").replace("(", "{").replace(")", "}")
 
         elif isinstance(x, (int, float)):
             try:

@@ -743,7 +743,7 @@ class OscillationModel(ModelABC):
     def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0):
         x = np.array(x)
         if not self.angular:
-            f = f * 2 * np.pi
+            frequency = frequency * 2 * np.pi
         return amplitude * np.sin(frequency * x + phi) + offset
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:

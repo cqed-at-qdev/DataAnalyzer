@@ -29,7 +29,7 @@ def make_labber_dict(json_parameters, json_results):
                 unit=data_dict["unit"],
                 values=data_dict["value"],
                 vector=False,
-                complex=False,
+                complex=True,
             )
             logLog.append(lab_dict)
         return logLog
@@ -103,3 +103,4 @@ if __name__ == "__main__":
     # Test labber file
     # test_Labber_file(labber_path, json_path)
     print("Labber file saved to: ", labber_path)
+

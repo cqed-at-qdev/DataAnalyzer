@@ -473,8 +473,14 @@ class Valueclass:
         return asdict(self_copy)
 
     @staticmethod
-    def fromdict(dict):
-        return Valueclass(**dict)
+    def fromdict(newdict: dict):
+        if isinstance(newdict["value"], dict):
+            newdict["value"] = newdict["value"]["I"] + 1j * newdict["value"]["Q"]
+
+        if isinstance(newdict["error"], dict):
+            newdict["error"] = newdict["error"]["I"] + 1j * newdict["error"]["Q"]
+
+        return Valueclass(**newdict)
 
     @property
     def shape(self):

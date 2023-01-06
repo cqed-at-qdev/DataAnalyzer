@@ -73,14 +73,14 @@ def load_labber_file(labber_path: str, insepct: bool = False) -> Tuple[Valueclas
 
 def load_json_file(json_path: str, insepct: bool = False) -> Tuple[Valueclass, ...]:
     def _get_parameters_and_results(data_dict):
-        experiment_dict = data_dict["experiment_settings"]
+        # experiment_dict = data_dict["experiment_settings"]
         parameters = [
             Valueclass.fromdict(value)
-            for value in experiment_dict["experiment_settings"].values()
+            for value in data_dict["experiment_settings"].values()
         ]
         result = [
             Valueclass.fromdict(value)
-            for value in experiment_dict["experiment_results"].values()
+            for value in data_dict["experiment_results"].values()
         ]
         return parameters, result
 
@@ -103,3 +103,8 @@ def print_values_from_list(name: str, value_list: list[Valueclass]):
     print(f"File is containing {len(value_list)} {name}:")
     for value in value_list:
         print(f"\t{value.name}")
+
+
+if __name__ == "__main__":
+    fpath = r"C:\Users\T5_2\Desktop\quantum machines demo\data20230105\152337_state_after_protective_freq_vs_theta.json"
+    load_json_file(fpath, insepct=True)

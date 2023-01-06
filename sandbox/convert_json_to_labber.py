@@ -1,3 +1,4 @@
+import itertools
 import Labber
 import numpy as np
 import h5py
@@ -27,8 +28,8 @@ def make_labber_dict(json_parameters, json_results):
                 name=data_dict["name"],
                 unit=data_dict["unit"],
                 values=data_dict["value"],
-                vector=True,
-                complex=True,
+                vector=False,
+                complex=False,
             )
             logLog.append(lab_dict)
         return logLog
@@ -42,23 +43,42 @@ def make_inital_Labber_file(json_filename, logLog, logStep):
     # Create a labber file
     tail = json_filename.split("/")[-1].replace(".json", "")
     f = Labber.createLogFile_ForData(tail, logLog, logStep)
+
+    print([log["name"] for log in logStep])
+    for i in range(len(logStep[-1]["values"])):
+
+        data = {Log["name"]: np.array(Log["values"])[i].T for Log in logLog}
+        f.addEntry(data)
+
+    # for i in range(step_dimensions[0]):
+    #     print(i)
+    #     data = {Log["name"]: np.array(Log["values"][i]) for Log in logLog}
+    #     f.addEntry(data)
+
+    # for log in logLog:
+    #     f.addEntry({log["name"]: np.array(log["values"])})
+    #     # for value in log["values"]:
+    # f.addEntry({log["name"]: np.array(value)})
+
+    # # Add the data to the file for each step
+    # for index in itertools.product(*[range(i) for i in step_dimensions]):
+    #     # convert index to a slice
+    #     index = slice(*index)
+
+    #     data = {Log["name"]: np.array(Log["values"][index]) for Log in logLog}
+    #     f.addEntry(data)
+
     return f.getFilePath("")
-
-
-def add_data_to_Labber_file(filepath, logLog):
-    with h5py.File(filepath, "r+") as f:
-        # Add the data to the dictionary
-        traces = {"Traces": {log["name"]: np.array(log["values"]) for log in logLog}}
-
-        # Save the file
-        hdfdict.dump(traces, f, mode="w")
 
 
 def make_Labber_file(json_filename, json_parameters, json_results):
     logStep, logLog = make_labber_dict(json_parameters, json_results)
-    filepath = make_inital_Labber_file(json_filename, logLog, logStep)
-    add_data_to_Labber_file(filepath, logLog)
-    return filepath
+    return make_inital_Labber_file(json_filename, logLog, logStep)
+
+
+def json2Labber(json_filename):
+    json_parameters, json_results = load_json_file(json_filename)
+    return make_Labber_file(json_filename, json_parameters, json_results)
 
 
 def test_Labber_file(labber_path, json_path):
@@ -73,48 +93,13 @@ def test_Labber_file(labber_path, json_path):
     )
 
 
-def json2Labber(json_filename):
-    json_parameters, json_results = load_json_file(json_filename)
-    return make_Labber_file(json_filename, json_parameters, json_results)
-
-
 if __name__ == "__main__":
-    # Create dommy json file with experiment_settings and experiment_results
-    dummy_dict = {
-        "experiment_settings": {
-            "experiment_settings": {
-                "Time": {
-                    "name": "Time",
-                    "value": [0.0, 0.004, 0.004, 0.006, 0.008, 0.01],
-                    "unit": "s",
-                },
-                "Frequency": {
-                    "name": "Frequency",
-                    "value": [1.0, 222.0, 3.0, 4.0, 5.0, 6.0],
-                    "unit": "Hz",
-                },
-            },
-            "experiment_results": {
-                "Signal": {
-                    "name": "Signal",
-                    "value": [
-                        0.0,
-                        0.00020000000000000002,
-                        0.00040000000000000004,
-                        0.0006000000000000001,
-                        0.0008000000000000001,
-                        0.001,
-                    ],
-                    "unit": "V",
-                }
-            },
-        }
-    }
-
-    json_path = "sample_json/140412_state_after_test_save_data copy.json"
-    with open(json_path, "w") as f:
-        json.dump(dummy_dict, f, indent=4)
-
     # Load json file
+    json_path = r"C:\Users\T5_2\Desktop\quantum machines demo\data20230106\113525_state_after_2D_Rabi_chevron_freq_vs_amplitude.json"
+
+    # Convert json to labber
     labber_path = json2Labber(json_path)
-    test_Labber_file(labber_path, json_path)
+
+    # Test labber file
+    # test_Labber_file(labber_path, json_path)
+    print("Labber file saved to: ", labber_path)

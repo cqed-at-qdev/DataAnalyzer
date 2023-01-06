@@ -150,11 +150,7 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self,
-        x: Valueclass,
-        y: Valueclass,
-        ax: tuple = (),
-        **kwargs,
+        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -179,7 +175,7 @@ class Plotter:
             y (Valueclass): y data to plot. This data is converted to a Valueclass object if it is not already one.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        kwargs.setdefault("marker", "x")
+        # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
         try:
@@ -469,7 +465,7 @@ class Plotter:
             max (float): maximum y value to plot.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        kwargs.setdefault("marker", "x")
+        # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
         ax_shape = np.shape(self.axs)
@@ -506,7 +502,7 @@ class Plotter:
             max (float): maximum y value to plot.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        kwargs.setdefault("marker", "x")
+        # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 30)
 
         ax_shape = np.shape(self.axs)

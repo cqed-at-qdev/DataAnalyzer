@@ -11,4 +11,7 @@ from dataanalyzer.utilities.valueclass import (
     Valueclass,
     from_float_to_valueclass,
 )
-
+from dataanalyzer.utilities.utilities import (
+    convert_array_with_unit,
+    round_on_error,
+)

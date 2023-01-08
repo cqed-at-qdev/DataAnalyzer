@@ -13,6 +13,7 @@ pulse = pulse.real
 # Create plotter
 plot = Plotter(subplots=(2, 2))
 
+type(plot.axs)
 # Plot multiple traces with repetitions as labels (first 6 repetitions) [first subplot]
 for i, rep in enumerate(repetition[:6].value):
     plot.plot(duration, pulse[i], label=f"Rep {rep:.0f}", title="First 6 repetitions")

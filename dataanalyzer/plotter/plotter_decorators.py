@@ -1,5 +1,4 @@
 # Author: Malthe Asmus Marciniak Nielsen
-import contextlib
 from typing import Any, Callable, Optional, Union
 
 import numpy as np
@@ -26,14 +25,12 @@ def matplotlib_decorator(func: Callable[..., Any]):
 
         self.ax.set_title(title)
 
-        overwrite = kwargs.pop("overwrite", False)
-        if overwrite:
+        if kwargs.pop("overwrite", False):
             self.ax.clear()
             self.ax.set_prop_cycle(None)
 
-        with contextlib.suppress(TypeError):
-            self.ax.set_xlabel(xlabel)
-            self.ax.set_ylabel(ylabel)
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
 
         self.metadata += kwargs.pop("metadata", "")
 
@@ -42,7 +39,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
     def _set_all_data(kwargs: dict[str, Any]):
         x, xlabel = _set_data("x", kwargs)
         y, ylabel = _set_data("y", kwargs)
-        z = _set_data("z", kwargs) if "z" in kwargs else None
+        z = _set_zdata("z", kwargs)
 
         x, y = _check_and_update_fft(x, y)
 
@@ -50,21 +47,24 @@ def matplotlib_decorator(func: Callable[..., Any]):
 
         return x, y, z, xlabel, ylabel, title
 
-    def _set_data(data_name: str, kwargs: dict[str, Any]):
-        dn = data_name
-        data_float: Union[list, tuple, np.ndarray] = kwargs.pop(dn, None)
+    def _set_data(data_name: str, kwargs: dict[str, Any]) -> tuple[Valueclass, str]:
+        data_float: Union[list, tuple, np.ndarray] = kwargs.pop(data_name, None)
 
         if data_float is None:
-            return None
+            raise ValueError(f"{data_name} data must be specified.")
 
-        data = from_float_to_valueclass(data_float, f"{dn} data")
+        data = from_float_to_valueclass(data_float, f"{data_name} data")
+        default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
+        label = kwargs.pop(f"{data_name}label", default_label)
 
-        if dn != "z":
-            default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
-            label = kwargs.pop(f"{dn}label", default_label)
+        return data, label
 
-            return data, label
-        return data
+    def _set_zdata(data_name: str, kwargs: dict[str, Any]) -> Optional[Valueclass]:
+        data_float: Union[list, tuple, np.ndarray] = kwargs.pop(data_name, None)
+
+        if data_float is not None:
+            return from_float_to_valueclass(data_float, f"{data_name} data")
+        return None
 
     def _check_and_update_fft(x: Valueclass, y: Valueclass):
         """Checks if the x and y data is fft or not and sets the fft_type accordingly."""

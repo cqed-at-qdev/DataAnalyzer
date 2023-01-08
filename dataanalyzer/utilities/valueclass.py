@@ -27,8 +27,10 @@ class Valueclass:
         Returns:
             str : String representation of the Valueclass object.
         """
-        error = np.nan if np.isnan(self.e).all() else self.e
-        return f"{self.name}:\n(value={self.v}, error={error}, unit={self.unit})\n\n"
+        error = np.nan if np.isnan(self.error).all() else self.error
+        return (
+            f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
+        )
 
     def __getitem__(self, key) -> "Valueclass":
         """Returns a slice of the Valueclass object.
@@ -40,13 +42,16 @@ class Valueclass:
             item: Sliced Valueclass object.
         """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
-            return Valueclass(self.v[key], self.e[key], self.name, self.unit)
+            return Valueclass(self.value[key], self.error[key], self.name, self.unit)
         return self[key]
 
     @property
     def value(self) -> np.ndarray:
         """Returns the value of the Valueclass object."""
-        return self.v
+        if not hasattr(self, "_value"):
+            self.value = ()
+
+        return self._value
 
     @value.setter
     def value(self, value: Union[float, list, tuple, np.ndarray]) -> None:
@@ -56,14 +61,15 @@ class Valueclass:
             value (Union[float, list, tuple, np.ndarray]): Value to set.
         """
         if isinstance(value, (float, int, np.integer)):
-            self.v = np.array([value])
+            self._value = np.array([value])
+
         elif isinstance(value, (list, tuple, np.ndarray)):
-            self.v = np.array(value)
+            self._value = np.array(value)
 
     @property
     def error(self) -> np.ndarray:
         """Returns the error of the Valueclass object."""
-        return self.e
+        return self._error
 
     @error.setter
     def error(self, error: Union[float, list, tuple, np.ndarray]) -> None:
@@ -72,25 +78,36 @@ class Valueclass:
         Args:
             error (Union[float, list, tuple, np.ndarray]): Error to set.
         """
-        self.e: np.ndarray = np.full(np.shape(self.v), np.nan)
-
+        self._error = (
+            np.full(np.shape(self.value), np.nan) if self.value.size else np.empty(0)
+        )
         if isinstance(error, (float, np.integer)):
-            self.e.fill(error)
+            self._error.fill(error)
 
         elif isinstance(error, (list, tuple, np.ndarray)):
             error = np.array(error)
             ndim = np.ndim(error)
             if ndim == 0:
-                self.e.fill(error)
+                self._error.fill(error)
             elif ndim == 1:
-                self.e[: np.size(error)] = error
+                self._error[: np.size(error)] = error
             elif ndim == 2:
                 w, h = np.shape(error)[0], np.shape(error)[1]
 
                 if w == 1 or h == 1:
-                    self.e = error
+                    self._error = error
                 else:
-                    self.e[:w, :h] = error
+                    self._error[:w, :h] = error
+
+    @property
+    def v(self):
+        """Returns the value of the Valueclass object."""
+        return self.value
+
+    @property
+    def e(self):
+        """Returns the error of the Valueclass object."""
+        return self.error
 
     def __add__(self, other) -> "Valueclass":
         """Adds two Valueclass objects or a Valueclass object and a float.
@@ -103,12 +120,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v + other, self.e, self.name, self.unit, self.fft_type,
+                self.value + other, self.error, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
-                self.v + other.v,
-                np.sqrt(self.e ** 2 + other.e ** 2),
+                self.value + other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
                 self.name,
                 self.unit,
             )
@@ -124,12 +141,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v - other, self.e, self.name, self.unit, self.fft_type,
+                self.value - other, self.error, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
-                self.v - other.v,
-                np.sqrt(self.e ** 2 + other.e ** 2),
+                self.value - other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
                 self.name,
                 self.unit,
             )
@@ -137,12 +154,18 @@ class Valueclass:
     def __mul__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v * other, self.e * other, self.name, self.unit, self.fft_type,
+                self.value * other,
+                self.error * other,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
-                self.v * other.v,
-                np.sqrt((self.e * other.v) ** 2 + (self.v * other.e) ** 2),
+                self.value * other.value,
+                np.sqrt(
+                    (self.error * other.value) ** 2 + (self.value * other.error) ** 2
+                ),
                 self.name,
                 self.unit,
             )
@@ -150,13 +173,18 @@ class Valueclass:
     def __truediv__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v / other, self.e / other, self.name, self.unit, self.fft_type,
+                self.value / other,
+                self.error / other,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
-                self.v / other.v,
+                self.value / other.value,
                 np.sqrt(
-                    (self.e / other.v) ** 2 + (self.v * other.e / other.v ** 2) ** 2
+                    (self.error / other.value) ** 2
+                    + (self.value * other.error / other.value ** 2) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -165,17 +193,18 @@ class Valueclass:
     def __pow__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.v ** other,
-                self.e * other * self.v ** (other - 1),
+                self.value ** other,
+                self.error * other * self.value ** (other - 1),
                 self.name,
                 self.unit,
             )
         else:
             return Valueclass(
-                self.v ** other.v,
+                self.value ** other.value,
                 np.sqrt(
-                    (self.e * other.v * self.v ** (other.v - 1)) ** 2
-                    + (self.v ** other.v * other.e * np.log(self.v)) ** 2
+                    (self.error * other.value * self.value ** (other.value - 1)) ** 2
+                    + (self.value ** other.value * other.error * np.log(self.value))
+                    ** 2
                 ),
                 self.name,
                 self.unit,
@@ -192,8 +221,8 @@ class Valueclass:
 
     def __rtruediv__(self, other) -> "Valueclass":
         return Valueclass(
-            other / self.v,
-            other * self.e / self.v ** 2,
+            other / self.value,
+            other * self.error / self.value ** 2,
             self.name,
             self.unit,
             self.fft_type,
@@ -201,30 +230,33 @@ class Valueclass:
 
     def __rpow__(self, other) -> "Valueclass":
         return Valueclass(
-            other ** self.v,
-            other ** self.v * self.e * np.log(other),
+            other ** self.value,
+            other ** self.value * self.error * np.log(other),
             self.name,
             self.unit,
             self.fft_type,
         )
 
     def __len__(self):
-        return len(self.v)
+        return len(self.value)
 
     def __max__(self):
-        return max(self.v)
+        return max(self.value)
 
     @property
     def db(self):
         return Valueclass(
-            20 * np.log10(self.v), 20 * self.e / (np.log(10) * self.v), self.name, "dB",
+            20 * np.log10(self.value),
+            20 * self.error / (np.log(10) * self.value),
+            self.name,
+            "dB",
         )
 
     @property
     def norm(self):
         return Valueclass(
-            self.v / np.sqrt(np.sum(self.v ** 2)),
-            self.e / np.sqrt(np.sum(self.v ** 2)),
+            self.value / np.sqrt(np.sum(self.value ** 2)),
+            self.error / np.sqrt(np.sum(self.value ** 2)),
             self.name,
             self.unit,
             self.fft_type,
@@ -232,17 +264,17 @@ class Valueclass:
 
     @property
     def fft(self):
-        fft = np.fft.fft(self.v)
-        N = np.size(self.v)
+        fft = np.fft.fft(self.value)
+        N = np.size(self.value)
         v = 2.0 / N * np.abs(fft[: N // 2])
 
         return Valueclass(v, np.nan, self.name, self.unit, fft_type="fft_y")
 
     @property
     def fftfreq(self):
-        N = np.size(self.v)
+        N = np.size(self.value)
         return Valueclass(
-            np.fft.fftfreq(N, d=self.v[1] - self.v[0])[: N // 2],
+            np.fft.fftfreq(N, d=self.value[1] - self.value[0])[: N // 2],
             np.nan,
             self.name,
             self.unit,
@@ -251,23 +283,31 @@ class Valueclass:
 
     @property
     def substract_mean(self):
-        return Valueclass(self.v - np.mean(self.v), self.e, self.name, self.unit)
+        return Valueclass(
+            self.value - np.mean(self.value), self.error, self.name, self.unit
+        )
 
     def mean(self, axis=None):
         return Valueclass(
-            np.mean(self.v, axis=axis), np.mean(self.e, axis=axis), self.name, self.unit
+            np.mean(self.value, axis=axis),
+            np.mean(self.error, axis=axis),
+            self.name,
+            self.unit,
         )
 
     def std(self, axis=None):
         return Valueclass(
-            np.std(self.v, axis=axis), np.std(self.e, axis=axis), self.name, self.unit
+            np.std(self.value, axis=axis),
+            np.std(self.error, axis=axis),
+            self.name,
+            self.unit,
         )
 
     @property
     def ddx(self):
         return Valueclass(
-            np.gradient(self.v, self.e),
-            np.gradient(self.e, self.e),
+            np.gradient(self.value, self.error),
+            np.gradient(self.error, self.error),
             self.name,
             self.unit,
             self.fft_type,
@@ -276,8 +316,8 @@ class Valueclass:
     @property
     def ddxx(self):
         return Valueclass(
-            np.gradient(np.gradient(self.v, self.e), self.e),
-            np.gradient(np.gradient(self.e, self.e), self.e),
+            np.gradient(np.gradient(self.value, self.error), self.error),
+            np.gradient(np.gradient(self.error, self.error), self.error),
             self.name,
             self.unit,
             self.fft_type,
@@ -285,63 +325,72 @@ class Valueclass:
 
     def norm_zero_to_one(self, axis=None):
         return Valueclass(
-            (self.v - np.min(self.v, axis=axis))
-            / (np.max(self.v, axis=axis) - np.min(self.v, axis=axis)),
-            self.e / (np.max(self.v, axis=axis) - np.min(self.v, axis=axis)),
+            (self.value - np.min(self.value, axis=axis))
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.error
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
             self.name,
             self.unit,
             self.fft_type,
         )
 
     def min(self, axis=None):
-        return np.min(self.v, axis=axis)
+        return np.min(self.value, axis=axis)
 
     def max(self, axis=None):
-        return np.max(self.v, axis=axis)
+        return np.max(self.value, axis=axis)
 
     def argmin(self, axis=None):
-        return np.argmin(self.v, axis=axis)
+        return np.argmin(self.value, axis=axis)
 
     def argmax(self, axis=None):
-        return np.argmax(self.v, axis=axis)
+        return np.argmax(self.value, axis=axis)
 
     def min_error(self, axis=None):
-        return np.min(self.e, axis=axis)
+        return np.min(self.error, axis=axis)
 
     def max_error(self, axis=None):
-        return np.max(self.e, axis=axis)
+        return np.max(self.error, axis=axis)
 
     def argmin_error(self, axis=None):
-        return np.argmin(self.e, axis=axis)
+        return np.argmin(self.error, axis=axis)
 
     def argmax_error(self, axis=None):
-        return np.argmax(self.e, axis=axis)
+        return np.argmax(self.error, axis=axis)
 
     @property
     def real(self):
         return Valueclass(
-            np.real(self.v), np.real(self.e), self.name, self.unit, self.fft_type,
+            np.real(self.value),
+            np.real(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
         )
 
     @property
     def imag(self):
         return Valueclass(
-            np.imag(self.v), np.imag(self.e), self.name, self.unit, self.fft_type,
+            np.imag(self.value),
+            np.imag(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
         )
 
     @property
     def abs(self):
-        return Valueclass(np.abs(self.v), np.abs(self.e), self.name, self.unit)
+        return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)
 
     @property
     def phase(self):
-        error = np.unwrap(np.angle(self.e))
+        error = np.unwrap(np.angle(self.error))
         if not np.any(np.isnan(error)):
             print(error)
             signal.detrend(error)
 
         return Valueclass(
-            signal.detrend(np.unwrap(np.angle(self.v))),
+            signal.detrend(np.unwrap(np.angle(self.value))),
             error,
             self.name,
             self.unit,
@@ -351,8 +400,8 @@ class Valueclass:
     @property
     def angle(self):
         return Valueclass(
-            np.unwrap(np.angle(self.v)),
-            np.unwrap(np.angle(self.e)),
+            np.unwrap(np.angle(self.value)),
+            np.unwrap(np.angle(self.error)),
             self.name,
             "rad",
             self.fft_type,
@@ -365,17 +414,23 @@ class Valueclass:
             "individual",
             "Individual",
         ):
-            return Valueclass(self.v, self.e, self.name, self.unit, self.fft_type,)
+            return Valueclass(
+                self.value, self.error, self.name, self.unit, self.fft_type,
+            )
 
         elif operation in ("Substract first", "substract first", "first", "First"):
             return Valueclass(
-                self.v - self.v[0], self.e, self.name, self.unit, self.fft_type,
+                self.value - self.value[0],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
 
         elif operation in ("Substract mean", "substract mean", "mean", "Mean"):
             return Valueclass(
-                self.v - np.mean(self.v, axis=0),
-                self.e,
+                self.value - np.mean(self.value, axis=0),
+                self.error,
                 self.name,
                 self.unit,
                 self.fft_type,
@@ -383,13 +438,17 @@ class Valueclass:
 
         elif operation in ("Substract last", "substract last", "last", "Last"):
             return Valueclass(
-                self.v - self.v[-1], self.e, self.name, self.unit, self.fft_type,
+                self.value - self.value[-1],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
 
         elif operation in ("Substract min", "substract min", "min", "Min"):
             return Valueclass(
-                self.v - np.min(self.v, axis=0),
-                self.e,
+                self.value - np.min(self.value, axis=0),
+                self.error,
                 self.name,
                 self.unit,
                 self.fft_type,
@@ -397,8 +456,8 @@ class Valueclass:
 
         elif operation in ("Substract max", "substract max", "max", "Max"):
             return Valueclass(
-                self.v - np.max(self.v, axis=0),
-                self.e,
+                self.value - np.max(self.value, axis=0),
+                self.error,
                 self.name,
                 self.unit,
                 self.fft_type,
@@ -406,8 +465,8 @@ class Valueclass:
 
         elif operation in ("Substract median", "substract median", "median", "Median"):
             return Valueclass(
-                self.v - np.median(self.v, axis=0),
-                self.e,
+                self.value - np.median(self.value, axis=0),
+                self.error,
                 self.name,
                 self.unit,
                 self.fft_type,
@@ -419,23 +478,23 @@ class Valueclass:
             "previous",
             "Previous",
         ):
-            v = self.v - np.roll(self.v, 1, axis=0)  # type: ignore
-            v[0] = np.zeros(self.v.shape[1])
+            v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
+            v[0] = np.zeros(self.value.shape[1])
 
-            return Valueclass(v, self.e, self.name, self.unit, self.fft_type,)
+            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
 
         elif operation in ("Average", "average"):
             return Valueclass(
-                np.tile(np.mean(self.v, axis=0), (np.shape(self.v)[0], 1)),
-                np.tile(np.mean(self.e, axis=0), (np.shape(self.v)[0], 1)),
+                np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)),
                 self.name,
                 self.unit,
             )
 
         elif operation in ("Standard deviation", "standard deviation", "std", "Std"):
             return Valueclass(
-                np.tile(np.std(self.v, axis=0), (np.shape(self.v)[0], 1)),
-                np.tile(np.std(self.e, axis=0), (np.shape(self.v)[0], 1)),
+                np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1)),
                 self.name,
                 self.unit,
             )
@@ -450,14 +509,14 @@ class Valueclass:
             )
 
     def plot(self, *args, **kwargs):
-        x = kwargs.pop("x", np.arange(len(self.v)))
+        x = kwargs.pop("x", np.arange(len(self.value)))
         x_label = kwargs.pop("x_label", "index")
         y_label = kwargs.pop("y_label", self.name)
         title = kwargs.pop("title", None)
         fmt = kwargs.pop("fmt", ".")
 
-        plt.errorbar(x, self.v, yerr=self.e, fmt=fmt, *args, **kwargs)
-        plt.plot(x, self.v, *args, **kwargs)
+        plt.errorbar(x, self.value, yerr=self.error, fmt=fmt, *args, **kwargs)
+        plt.plot(x, self.value, *args, **kwargs)
         plt.xlabel(x_label)
         plt.ylabel(f"{y_label} [{self.unit}]")
 
@@ -468,8 +527,8 @@ class Valueclass:
 
     def asdict(self):
         self_copy = copy.copy(self)
-        self_copy.v = self_copy.v.tolist()
-        self_copy.e = self_copy.e.tolist()
+        self_copy.value = self_copy.value.tolist()
+        self_copy.error = self_copy.error.tolist()
         return asdict(self_copy)
 
     @staticmethod
@@ -484,39 +543,41 @@ class Valueclass:
 
     @property
     def shape(self):
-        return self.v.shape
+        return self.value.shape
 
     @property
     def size(self):
-        return self.v.size
+        return self.value.size
 
     @property
     def ndim(self):
-        return self.v.ndim
+        return self.value.ndim
 
     @property
     def dtype(self):
-        return self.v.dtype
+        return self.value.dtype
 
     @property
     def T(self):
-        return Valueclass(self.v.T, self.e.T, self.name, self.unit, self.fft_type)
-
-    def clip(self, a_min=None, a_max=None, out=None):
-        # TODO: Check if this is correct
         return Valueclass(
-            np.clip(self.v, a_min, a_max, out),
-            np.clip(self.e, a_min, a_max, out),
-            self.name,
-            self.unit,
-            self.fft_type,
+            self.value.T, self.error.T, self.name, self.unit, self.fft_type
         )
+
+    # def clip(self, a_min=None, a_max=None, out=None):
+    #     # TODO: Check if this is correct
+    #     return Valueclass(
+    #         np.clip(self.v, a_min, a_max, out),
+    #         np.clip(self.e, a_min, a_max, out),
+    #         self.name,
+    #         self.unit,
+    #         self.fft_type,
+    #     )
 
     @property
     def sprt(self):
         return Valueclass(
-            np.sqrt(self.v),
-            self.e / (2 * np.sqrt(self.v)),
+            np.sqrt(self.value),
+            self.error / (2 * np.sqrt(self.value)),
             self.name,
             self.unit,
             self.fft_type,
@@ -551,3 +612,8 @@ if __name__ == "__main__":
     # make Valueclass objects
     test = Valueclass(y, yerr, name="y", unit="V")
     test.plot()
+
+    #################    Example 2    #################
+    # make an empty Valueclass object
+    test = Valueclass(name="y", unit="V")
+

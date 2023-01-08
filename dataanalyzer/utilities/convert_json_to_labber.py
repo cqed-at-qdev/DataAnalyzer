@@ -2,7 +2,7 @@ import itertools
 import Labber
 import numpy as np
 import h5py
-from dataanalyzer import load_json_file
+from dataanalyzer.utilities import load_json_file
 import json
 import hdfdict
 

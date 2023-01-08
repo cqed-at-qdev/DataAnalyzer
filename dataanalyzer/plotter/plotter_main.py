@@ -1,15 +1,20 @@
 # Author: Malthe Asmus Marciniak Nielsen
 import os
-from typing import Union
+from typing import Any, Union
 from matplotlib import gridspec, ticker
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import numpy as np
 
+from dataanalyzer.fitter import Fitter
 from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
-from dataanalyzer.utilities import Valueclass
-from dataanalyzer.utilities.utilities import convert_array_with_unit
-from dataanalyzer.utilities.valueclass import from_float_to_valueclass
+from dataanalyzer.utilities import (
+    convert_array_with_unit,
+    from_float_to_valueclass,
+    Valueclass,
+)
 
 
 class Plotter:
@@ -27,35 +32,36 @@ class Plotter:
         """
 
         if interactive:
-            matplotlib.use("Qt5Agg")
+            mpl.use("Qt5Agg")
 
         self.kwargs = kwargs
 
         self.set_default_settings(default_settings)
         self._setup_fig_and_ax(subplots)
-        self._setup_ax_anotate()
 
         self.metadata = ""
 
     def _setup_fig_and_ax(self, subplots: tuple):
-        self.fig = self.kwargs.pop("fig", None)
+        self.fig: Figure = self.kwargs.pop("fig", None)
         subplots_plus_col = (subplots[0], subplots[1] + 1)
 
         if self.fig is None:
             self.fig, axs = plt.subplots(*subplots_plus_col)
         else:
+            plt.close(self.fig)
             self.fig.clf()
             axs = self.fig.subplots(*subplots_plus_col)
 
-        self.axs = np.array(axs).reshape(subplots_plus_col)
-        self.ax_anotate = self.axs[0:, -1]
-        self.axs = self.axs[0:, 0:-1]
+        axs = np.array(axs).reshape(subplots_plus_col)
+        self.axs: np.ndarray[Axes, Any] = axs[0:, -1]
         self.ax = self.axs[0, 0]
 
-    def _setup_ax_anotate(self):
-        gs = self.ax_anotate[0].get_gridspec()
+        self._setup_ax_anotate(ax_anotate=axs[0:, -1])
 
-        for ax in self.ax_anotate:
+    def _setup_ax_anotate(self, ax_anotate: np.ndarray[Axes, Any]):
+        gs = ax_anotate[0].get_gridspec()
+
+        for ax in ax_anotate:
             ax.remove()
 
         self.ax_anotate = self.fig.add_subplot(gs[0:, -1])
@@ -92,7 +98,7 @@ class Plotter:
                 "default_settings must be either a dict, a string or a boolean"
             )
 
-    def plot_fit(self, fit_obejct: object, ax: tuple = (), **kwargs):
+    def plot_fit(self, fit_obejct: Fitter, ax: tuple = (), **kwargs):
         """Plots a fit object. This function is a wrapper for matplotlib.pyplot.plot
 
         Args:
@@ -649,26 +655,22 @@ class Plotter:
         # self._even_spacing_in_columns(reverse)
         self._hide_axs_anotate(reverse)
 
-    def _resize_figure_to_one_less_column(self, reverse=False):
-        # n_cols = self.axs_anotate[0].get_subplotspec().get_geometry()[1]
-        n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1]
-        width, height = self.fig.get_size_inches()
+    # def _resize_figure_to_one_less_column(self, reverse=False):
+    #     n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1]
+    #     width, height = self.fig.get_size_inches()
 
-        if reverse:
-            self.fig.set_size_inches((width / (n_cols - 1)) * n_cols, height)
-        else:
-            self.fig.set_size_inches((width / n_cols) * (n_cols - 1), height)
+    #     if reverse:
+    #         self.fig.set_size_inches((width / (n_cols - 1)) * n_cols, height)
+    #     else:
+    #         self.fig.set_size_inches((width / n_cols) * (n_cols - 1), height)
 
-    def _even_spacing_in_columns(self, reverse=False):
-        scaling = 1 if reverse else 0
-        # n_cols = self.axs_anotate[0].get_subplotspec().get_geometry()[1] - 1
-        # gridspec = self.axs_anotate[0].get_subplotspec().get_gridspec()
+    # def _even_spacing_in_columns(self, reverse=False):
+    #     scaling = 1 if reverse else 0
+    #     n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1] - 1
+    #     gridspec = self.ax_anotate.get_subplotspec().get_gridspec()
 
-        n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1] - 1
-        gridspec = self.ax_anotate.get_subplotspec().get_gridspec()
-
-        if not reverse:
-            gridspec.set_width_ratios([1] * n_cols + [scaling])
+    #     if not reverse:
+    #         gridspec.set_width_ratios([1] * n_cols + [scaling])
 
     def _hide_axs_anotate(self, reverse=False):
         self.ax_anotate.remove()

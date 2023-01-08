@@ -45,6 +45,15 @@ class Valueclass:
             return Valueclass(self.value[key], self.error[key], self.name, self.unit)
         return self[key]
 
+    def __setitem__(self, key, value):
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
+            if not isinstance(value, Valueclass):
+                value = Valueclass(value, self.error[key], self.name, self.unit)
+            self.value[key] = value.value
+            self.error[key] = value.error
+        else:
+            setattr(self, key, value)
+
     @property
     def value(self) -> np.ndarray:
         """Returns the value of the Valueclass object."""
@@ -583,6 +592,13 @@ class Valueclass:
             self.fft_type,
         )
 
+    def append(self, other, axis=None):
+        if not isinstance(other, Valueclass):
+            other = from_float_to_valueclass(other, self.name)
+
+        self.value = np.append(self.value, other.value, axis=axis)
+        self.error = np.append(self.error, other.error, axis=axis)
+
 
 def from_float_to_valueclass(
     value: Union[Valueclass, list, tuple, np.ndarray], name: str
@@ -616,4 +632,16 @@ if __name__ == "__main__":
     #################    Example 2    #################
     # make an empty Valueclass object
     test = Valueclass(name="y", unit="V")
+
+    #################    Example 3    #################
+    x = np.linspace(0, 10, 50)
+    y = np.sin(x) + np.random.normal(0, 0.1, 50)
+
+    # make Valueclass objects
+    test1 = Valueclass(y, name="y", unit="V")
+    test2 = Valueclass(x, name="x", unit="V")
+
+    test1 += test2
+    test1[:10] = Valueclass(x, name="x", unit="V")[:10]
+    test1.plot()
 

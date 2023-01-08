@@ -53,7 +53,7 @@ class Plotter:
             axs = self.fig.subplots(*subplots_plus_col)
 
         axs = np.array(axs).reshape(subplots_plus_col)
-        self.axs: np.ndarray[Axes, Any] = axs[0:, -1]
+        self.axs: np.ndarray[Axes, Any] = axs[0:, :-1]
         self.ax = self.axs[0, 0]
 
         self._setup_ax_anotate(ax_anotate=axs[0:, -1])
@@ -265,7 +265,7 @@ class Plotter:
         Raises:
             ValueError: If plot_type is not a valid option.
         """
-        keep_colorbar = kwargs.get("keep_colorbar", False)
+        keep_colorbar = kwargs.pop("keep_colorbar", False)
         kwargs.setdefault("cmap", "RdBu")
         kwargs.setdefault("vmin", np.min(z.value))
         kwargs.setdefault("vmax", np.max(z.value))
@@ -293,10 +293,10 @@ class Plotter:
 
         self.ax.axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
 
-        # self._add_colorbar(c, z, keep_colorbar)
+        self._add_colorbar(c, z, keep_colorbar)
 
     def _add_colorbar(self, c, z, keep_colorbar):
-        if hasattr(self.ax, "colorbar") and keep_colorbar:
+        if hasattr(self.ax, "colorbar") and not keep_colorbar:
             self.ax.colorbar.remove()
 
         label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
@@ -304,7 +304,10 @@ class Plotter:
 
         for ax in self.axs.flatten():
             if ax == self.ax:
-                ax.colorbar = colorbar
+                if not hasattr(ax, "colorbar"):
+                    ax.colorbar = [colorbar]
+                else:
+                    ax.colorbar.append(colorbar)
 
     def pcolormesh(
         self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
@@ -593,8 +596,9 @@ class Plotter:
             self._get_set_ticks("y")(self, ax)
 
             if hasattr(ax, "colorbar"):
-                self._get_set_ticks("y")(self, ax.colorbar)
-                self._get_set_ticks("x")(self, ax.colorbar)
+                for colorbar in ax.colorbar:
+                    self._get_set_ticks("y")(self, colorbar)
+                    self._get_set_ticks("x")(self, colorbar)
 
         if hasattr(self, "yres"):
             self._get_set_ticks("x")(self, self.yres)
@@ -619,21 +623,29 @@ class Plotter:
 
         def _set_ticks(self, ax):
             if not hasattr(ax, get_ticks):
+                ax = ax.ax
+
+            original_label = _get_original_label(ax)
+
+            if any(x not in original_label for x in ["[", "]"]):
                 return
 
             ticks = getattr(ax, get_ticks)()
             unit_prefix = self._set_ticks(getattr(ax, f"{axis}axis"), ticks)
 
-            if not hasattr(ax, orig_label):
-                setattr(ax, orig_label, getattr(ax, get_label)())
-
-            original_label = getattr(ax, orig_label)
             updated_label = self._label_with_unit_prefix(original_label, unit_prefix)
 
             if axis == "x":
                 ax.set_xlabel(updated_label)
             else:
                 ax.set_ylabel(updated_label)
+
+        def _get_original_label(ax):
+            if not hasattr(ax, orig_label):
+                setattr(ax, orig_label, getattr(ax, get_label)())
+
+            original_label = getattr(ax, orig_label)
+            return original_label
 
         return _set_ticks
 
@@ -645,39 +657,6 @@ class Plotter:
             if ax.get_legend_handles_labels() != ([], [])
         ]
 
-    def _resize_figure(self, reverse=False):
-        """Resizes the figure to fit the plot."""
-        if self._remove_ax_anotate == reverse:
-            return
-
-        self._remove_ax_anotate = reverse
-        # self._resize_figure_to_one_less_column(reverse)
-        # self._even_spacing_in_columns(reverse)
-        self._hide_axs_anotate(reverse)
-
-    # def _resize_figure_to_one_less_column(self, reverse=False):
-    #     n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1]
-    #     width, height = self.fig.get_size_inches()
-
-    #     if reverse:
-    #         self.fig.set_size_inches((width / (n_cols - 1)) * n_cols, height)
-    #     else:
-    #         self.fig.set_size_inches((width / n_cols) * (n_cols - 1), height)
-
-    # def _even_spacing_in_columns(self, reverse=False):
-    #     scaling = 1 if reverse else 0
-    #     n_cols = self.ax_anotate.get_subplotspec().get_geometry()[1] - 1
-    #     gridspec = self.ax_anotate.get_subplotspec().get_gridspec()
-
-    #     if not reverse:
-    #         gridspec.set_width_ratios([1] * n_cols + [scaling])
-
-    def _hide_axs_anotate(self, reverse=False):
-        self.ax_anotate.remove()
-        # for ax in self.axs_anotate.flatten():
-        #     ax.visible = reverse
-        #     ax.remove()
-
     def show(self, return_fig: bool = False):
         """Shows the plot. This function is a wrapper for matplotlib.pyplot.show
 
@@ -687,7 +666,8 @@ class Plotter:
         plt.figure(self.fig)
 
         if self._remove_ax_anotate:
-            self._resize_figure()
+            self._remove_ax_anotate = False
+            self.ax_anotate.remove()
 
         self._rescale_axes()
         plt.tight_layout()

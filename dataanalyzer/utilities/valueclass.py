@@ -572,15 +572,31 @@ class Valueclass:
             self.value.T, self.error.T, self.name, self.unit, self.fft_type
         )
 
-    # def clip(self, a_min=None, a_max=None, out=None):
-    #     # TODO: Check if this is correct
-    #     return Valueclass(
-    #         np.clip(self.v, a_min, a_max, out),
-    #         np.clip(self.e, a_min, a_max, out),
-    #         self.name,
-    #         self.unit,
-    #         self.fft_type,
-    #     )
+    def clip(
+        self,
+        v_min=None,
+        v_max=None,
+        e_min=None,
+        e_max=None,
+        out_value=None,
+        out_error=None,
+        clip_value=True,
+        clip_error=True,
+    ):
+        if not v_max:
+            v_max = np.max(self.value)
+
+        if not e_max:
+            e_max = np.max(self.error)
+
+        value = (
+            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        )
+        error = (
+            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        )
+
+        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
 
     @property
     def sprt(self):
@@ -645,3 +661,8 @@ if __name__ == "__main__":
     test1[:10] = Valueclass(x, name="x", unit="V")[:10]
     test1.plot()
 
+    #################    Example 4    #################
+    x = np.linspace(0, 10, 50)
+    x_err = abs(np.random.normal(0.1, 1.1, 50))
+    test = Valueclass(x, x_err, name="x", unit="V")
+    test.clip(1, 9, e_max=1, out_value=test.value).plot()

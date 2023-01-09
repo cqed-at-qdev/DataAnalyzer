@@ -1,10 +1,6 @@
-import itertools
 import Labber
 import numpy as np
-import h5py
 from dataanalyzer.utilities import load_json_file
-import json
-import hdfdict
 
 
 def make_labber_dict(json_parameters, json_results):
@@ -81,18 +77,6 @@ def json2Labber(json_filename):
     return make_Labber_file(json_filename, json_parameters, json_results)
 
 
-def test_Labber_file(labber_path, json_path):
-    json_parameters, json_results = load_json_file(json_path)
-    logStep, logLog = make_labber_dict(json_parameters, json_results)
-    with h5py.File(labber_path) as f:
-        labber_dict = hdfdict.load(f)
-        print("Labber traces:\n", labber_dict["Traces"], "\n")  # type: ignore
-
-    print(
-        "Json traces:\n", {log["name"]: np.array(log["values"]) for log in logLog}, "\n"
-    )
-
-
 if __name__ == "__main__":
     # Load json file
     json_path = r"C:\Users\T5_2\Desktop\quantum machines demo\data20230106\113525_state_after_2D_Rabi_chevron_freq_vs_amplitude.json"
@@ -103,4 +87,3 @@ if __name__ == "__main__":
     # Test labber file
     # test_Labber_file(labber_path, json_path)
     print("Labber file saved to: ", labber_path)
-

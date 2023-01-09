@@ -1,5 +1,6 @@
 # Author: Malthe Asmus Marciniak Nielsen
 import os
+import time
 from typing import Any, Union
 from matplotlib import gridspec, ticker
 import matplotlib as mpl
@@ -48,7 +49,6 @@ class Plotter:
         if self.fig is None:
             self.fig, axs = plt.subplots(*subplots_plus_col)
         else:
-            plt.close(self.fig)
             self.fig.clf()
             axs = self.fig.subplots(*subplots_plus_col)
 
@@ -156,7 +156,11 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
+        self,
+        x: Valueclass,
+        y: Valueclass,
+        ax: tuple = (),
+        **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -182,7 +186,7 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
         # kwargs.setdefault("marker", "x")
-        kwargs.setdefault("s", 30)
+        kwargs.setdefault("s", 15)
 
         try:
             self.ax.scatter(x.value, y.value, **kwargs)
@@ -475,7 +479,7 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
         # kwargs.setdefault("marker", "x")
-        kwargs.setdefault("s", 30)
+        kwargs.setdefault("s", 15)
 
         ax_shape = np.shape(self.axs)
         axarg = np.where(self.axs.flatten() == self.ax)[0][0]
@@ -512,7 +516,7 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
         # kwargs.setdefault("marker", "x")
-        kwargs.setdefault("s", 30)
+        kwargs.setdefault("s", 15)
 
         ax_shape = np.shape(self.axs)
         axarg = np.where(self.axs.flatten() == self.ax)[0][0]
@@ -671,8 +675,16 @@ class Plotter:
 
         self._rescale_axes()
         plt.tight_layout()
-        plt.pause(0.001)
-        return self.fig if return_fig else plt.show()
+
+        if return_fig:
+            for fig_num in plt.get_fignums():
+                if self.fig.number != fig_num:
+                    plt.close(fig_num)
+
+            plt.pause(0.001)
+            return self.fig
+        else:
+            self.fig.show()
 
     def save(self, path: str):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig

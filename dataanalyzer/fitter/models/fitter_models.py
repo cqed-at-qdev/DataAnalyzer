@@ -44,10 +44,6 @@ class ModelABC(ABC):
         pass
 
     @abstractmethod
-    def funcname_latex(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
     def units(self, x_unit, y_unit) -> dict[str, str]:
         if x_unit == "":
             x_unit = self.x_unit
@@ -92,7 +88,13 @@ class ModelABC(ABC):
         self._make_param_root_names()
         self.param_names = [self._prefix + name for name in self._param_root_names]
         self._root2full = dict(zip(self._param_root_names, self.param_names))
-        self.symbols()
+        # self.symbols()
+
+    @property
+    def param_symbols(self) -> dict[str, str]:
+        if not hasattr(self, "_param_symbols"):
+            self.symbols()
+        return self._param_symbols
 
     def _make_parameters(self, **kwargs) -> dict[str, Fitparam]:
         if not self.param_names:
@@ -186,6 +188,7 @@ class SumModel(ModelABC):
 
         self._set_param_root_name_and_get_prefix()
         self._make_parameters()
+        self.symbols()
 
     def _set_param_root_name_and_get_prefix(self):
         root_names_temp = [model._param_root_names for model in self.models]
@@ -237,25 +240,14 @@ class SumModel(ModelABC):
     def funcname(self, *args, **kwargs):
         func_names, func_strs = "", ""
         for model in self.models:
-            func_name, func_str = model.funcname(*args, **kwargs).split(" = ")
-            func_names += f"{func_name}".replace("(x)", "_")
-            func_strs += f"{func_str} + "
+            func_name, func_str = (
+                model.funcname(*args, **kwargs).replace("$", "").split(" = ")
+            )
 
-        return self._get_function_str(func_names, func_strs)
+            func_names += f"{func_name} +"
+            func_strs += f"{func_str} +"
 
-    def funcname_latex(self, *params) -> str:
-        func_names, func_strs = "", ""
-        for model in self.models:
-            func_name, func_str = model.funcname_latex(*params).split(" = ")
-            func_names += f"{func_name}".replace("(x)", "_")
-            func_strs += f"{func_str} + "
-
-        return self._get_function_str(func_names, func_strs)
-
-    def _get_function_str(self, func_names, func_strs):
-        func_names = "(x)".join(func_names.rsplit("_", 1))
-        func_strs = "".join(func_strs.rsplit(" + ", 1))
-        return f"{func_names} = {func_strs}"
+        return f"${func_names[:-1]} = {func_strs[:-1]}$"
 
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         units = {}
@@ -265,8 +257,11 @@ class SumModel(ModelABC):
 
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
         symbols = {}
+        self._root2symbol = {}
+
         for model in self.models:
             symbols |= model.symbols(**symbols)
+            self._root2symbol.update(model._root2symbol)
         return symbols
 
     def get_extrema(self, params: dict) -> dict[str, dict[str, float]]:
@@ -302,12 +297,7 @@ class LinearModel(ModelABC):
         if not params:
             params = self.param_symbols
 
-        return f"linear(x) = {params[0]} x + {params[1]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{linear}}(x) = {params[0]} x + {params[1]}"
+        return rf"$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -342,12 +332,7 @@ class ProportionalModel(ModelABC):
         if not params:
             params = self.param_symbols
 
-        return f"proportional(x) = {params[0]}*x "
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{proportional}}(x) = {params[0]}* x"
+        return rf"$\mathrm{{proportional}}(x) = {params[0]} x"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -387,12 +372,7 @@ class GaussianModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return f"gaussian(x) = {params[0]} exp(-((x - {params[1]}) / {params[2]})^2)"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{gaussian}}(x) = {params[0]} \\exp(-((x - {params[1]}) / {params[2]})^2)"
+        return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -435,12 +415,7 @@ class GaussianConstantModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return f"gaussian(x) = {params[0]} exp(-((x - {params[1]}) / {params[2]})^2 + {params[3]})"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{gaussian}}(x) = {params[0]} \\exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}"
+        return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -481,12 +456,7 @@ class LorentzianModel(ModelABC):
         if not params:
             params = self.param_symbols
 
-        return f"lorentzian(x) = {params[0]} ({params[2]}/2)^2 / ((x - {params[1]})^2 + ({params[2]}/2)^2)"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{lorentzian}}(x) = {params[0]} ({params[2]}/2)^2 / ((x - {params[1]})^2 + ({params[2]}/2)^2)"
+        return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -533,12 +503,7 @@ class LorentzianConstantModel(ModelABC):
         if not params:
             params = self.param_symbols
 
-        return f"lorentzian(x) = {params[0]} (sigma/2)^2 / ((x - {params[1]})^2 + (sigma/2)^2) + {params[3]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"\\mathrm{{lorentzian}}(x) = {params[0]} (\\sigma/2)^2 / ((x - {params[1]})^2 + (\\sigma/2)^2) + {params[3]}"
+        return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -565,8 +530,8 @@ class LorentzianPolynomialModel(ModelABC):
         **kwargs,
     ):
         kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
-        super().__init__(**kwargs)
 
+        super().__init__(**kwargs)
         self.__model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
             negative_peak=negative_peak, **kwargs
         )
@@ -581,9 +546,6 @@ class LorentzianPolynomialModel(ModelABC):
 
     def funcname(self, *params) -> str:
         return self.__model.funcname(*params)
-
-    def funcname_latex(self, *params) -> str:
-        return self.__model.funcname_latex(*params)
 
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return self.__model.units(x, y)
@@ -626,18 +588,9 @@ class SplitLorentzianModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-
         return (
-            f"split_lorentzian(x) = {params[0]} (sigma/2)^2 / ((x - {params[1]} - {params[3]})^2 + (sigma/2)^2) + "
-            f"{params[0]} (sigma/2)^2 / ((x - {params[1]} + {params[3]})^2 + (sigma/2)^2)"
-        )
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return (
-            f"\\mathrm{{split_lorentzian}}(x) = {params[0]} (\\sigma/2)^2 / ((x - {params[1]} - {params[3]})^2 + (\\sigma/2)^2) + "
-            f"{params[0]} (\\sigma/2)^2 / ((x - {params[1]} + {params[3]})^2 + (\\sigma/2)^2)"
+            rf"$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}"
+            rf"{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
         )
 
     @unit_wrapper
@@ -679,12 +632,7 @@ class PolynomialModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return f"polynomial(x) = {params[0]} + {' + '.join(f'{params[i]} x^{i}' for i in range(1, self.poly_degree +1))}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f'\\mathrm{{polynomial}}(x) = {" + ".join(f"{params[i]} x^{i}" for i in range(self.poly_degree +1))}'
+        return rf"$\mathrm{{polynomial}}(x) = {params[0]} + {' + '.join(f'{params[i]} x^{i}' for i in range(1, self.poly_degree +1))}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -783,13 +731,7 @@ class OscillationModel(ModelABC):
         if not params:
             params = self.param_symbols
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return f"{params[0]} * sin({f} * x + {params[2]}) + {params[3]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return f"{params[0]} \\sin({f} x + {params[2]}) + {params[3]}"
+        return rf"$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -883,13 +825,7 @@ class DampedOscillationModel(ModelABC):
             params = self.param_symbols
 
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return f"{params[0]} * sin({f} * x + {params[2]}) * exp(-x / {params[3]}) + {params[4]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return f"{params[0]} \\sin({f} x + {params[2]}) \\exp(-x / {params[3]}) + {params[4]}"
+        return rf"$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -934,12 +870,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return f"{params[0]} * {params[1]} ^ x + {params[2]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"{params[0]} {params[1]} ^ x + {params[2]}"
+        return rf"$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
@@ -973,12 +904,7 @@ class ExponentialDecayModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return f"decay(x)={params[0]} * exp(-x / {params[1]}) + {params[2]}"
-
-    def funcname_latex(self, *params) -> str:
-        if not params:
-            params = self.param_symbols
-        return f"decay(x)={params[0]} \\exp(-x / {params[1]}) + {params[2]}"
+        return rf"$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):

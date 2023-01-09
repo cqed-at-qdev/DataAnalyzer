@@ -327,10 +327,8 @@ class Fitter:
 
     def _update_iminuit_report_with_function(self):
         """Update the iminuit report with the function"""
-        funcname = (
-            self.func.funcname_latex() if self.use_latex else self.func.funcname()
-        )
-        self._report_string = f"Function: \n${funcname}$:\n\n"
+        funcname = self.func.funcname()
+        self._report_string = f"Function: \n{funcname}\n\n"
 
     def _update_imuniut_report_with_parameters(self):
         """Update the iminuit report with the parameters"""
@@ -344,7 +342,8 @@ class Fitter:
 
         for i, ((key, val), err) in enumerate(zip(values, errors), start=1):
             if key in self.param_names:
-                unit = f"${unit_names[key]}$" if unit_names else ""
+
+                unit = f"$\mathrm{{{unit_names[key]}}}$" if unit_names else ""
                 name = f"${self.func._root2symbol[key]}$"
                 self._add_parameter_string(unit, name, val, err)
 

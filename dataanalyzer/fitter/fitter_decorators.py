@@ -73,7 +73,7 @@ def symbol_wrapper(func):
             k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
         }
 
-        self.param_symbols = list(self._full2symbol.values())
+        self._param_symbols = list(self._full2symbol.values())
         return self._full2symbol
 
     return wrapper

@@ -255,6 +255,7 @@ class Plotter:
         y: Valueclass,
         z: Valueclass,
         ax: tuple = (),
+        add_colorbar: bool = True,
         **kwargs,
     ):
         """general plotting function for 2d data. This function is a wrapper for matplotlib.pyplot
@@ -297,7 +298,8 @@ class Plotter:
 
         self.ax.axis([x.value.min(), x.value.max(), y.value.min(), y.value.max()])  # type: ignore
 
-        self._add_colorbar(c, z, keep_colorbar)
+        if add_colorbar:
+            self._add_colorbar(c, z, keep_colorbar)
 
     def _add_colorbar(self, c, z, keep_colorbar):
         if hasattr(self.ax, "colorbar") and not keep_colorbar:
@@ -684,7 +686,7 @@ class Plotter:
             plt.pause(0.001)
             return self.fig
         else:
-            self.fig.show()
+            return self.fig.show()
 
     def save(self, path: str):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig

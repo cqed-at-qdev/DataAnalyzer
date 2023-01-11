@@ -45,6 +45,13 @@ def unit_wrapper(func):
             if name in kwargs:
                 units[name] = kwargs[name]
 
+            # if (
+            #     self._frequency_in_hz
+            #     and "frequency" in name
+            #     and isinstance(units[name], str)
+            # ):
+            #     units[name] = units[name].replace("s^{-1}", "Hz")
+
         return units
 
     def wrapper(self, *args, **kwargs) -> dict[str, Union[float, str]]:

@@ -26,6 +26,7 @@ class ModelABC(ABC):
         self.params_hint: dict = kwargs.pop("params_hint", {})
         self.independent_vars: list[str] = kwargs.pop("independent_vars", ["x"])
         self._param_root_names: list[str] = kwargs.pop("param_names", [])
+        # self._frequency_in_hz = kwargs.pop("frequency_in_hz", False)
 
         self._make_param_names()
 
@@ -817,7 +818,8 @@ class DampedOscillationModel(ModelABC):
             if std < (initial_std - noise_level) * np.exp(-1):
                 T = x[i]
                 break
-        p = 0
+        p = np.arcsin((y[0] - c) / a)
+
         return [a, T, f, p, c]
 
     def funcname(self, *params) -> str:
@@ -896,9 +898,18 @@ class ExponentialDecayModel(ModelABC):
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
-        offset = np.min(y) - 1e-4  # Small error added
-        decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
-        amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+        # offset = np.min(y[len(y)]) - 1e-4  # Small error added  TODO: why is this small error added?
+        # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
+        # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+
+        offset = np.mean(
+            y[round(len(y) * 0.9) :]
+        )  # Use the last 10% of the data to determine the offset
+        amplitude = (
+            np.mean(y[:3]) - offset
+        )  # Use the first 3 points to determine the amplitude
+        decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+
         return self._make_parameters(amplitude=amplitude, decay=decay, offset=offset)
 
     def funcname(self, *params) -> str:
@@ -908,7 +919,7 @@ class ExponentialDecayModel(ModelABC):
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
-        return {"amplitude": "y", "decay": "x**(-1)", "offset": "y"}
+        return {"amplitude": "y", "decay": "x", "offset": "y"}
 
     @symbol_wrapper
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:

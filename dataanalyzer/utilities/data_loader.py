@@ -71,7 +71,9 @@ def load_labber_file(labber_path: str, insepct: bool = False) -> Tuple[Valueclas
     return *parameters, *data
 
 
-def load_json_file(json_path: str, insepct: bool = False) -> Tuple[list[Valueclass], list[Valueclass]]:
+def load_json_file(
+    json_path: str, insepct: bool = False
+) -> Tuple[list[Valueclass], list[Valueclass]]:
     def _get_parameters_and_results(data_dict):
         parameters = [
             Valueclass.fromdict(value)

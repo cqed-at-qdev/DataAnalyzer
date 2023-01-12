@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
+from dataanalyzer.utilities.utilities import round_on_error
+
 
 @dataclass
 class Valueclass:
@@ -87,19 +89,31 @@ class Valueclass:
         Args:
             error (Union[float, list, tuple, np.ndarray]): Error to set.
         """
-        self._error = (
-            np.full(np.shape(self.value), np.nan) if self.value.size else np.empty(0)
-        )
-        if isinstance(error, (float, np.integer)):
+        if not hasattr(self, "_error"):
+            self._error = (
+                np.full(np.shape(self.value), np.nan)
+                if self.value.size
+                else np.empty(0)
+            )
+
+        if np.iscomplexobj(error):
+            self._error.dtype = np.complex128
+
+        if isinstance(error, (float, np.integer, int)):
             self._error.fill(error)
 
         elif isinstance(error, (list, tuple, np.ndarray)):
             error = np.array(error)
             ndim = np.ndim(error)
+
             if ndim == 0:
                 self._error.fill(error)
+
             elif ndim == 1:
+                if np.iscomplexobj(error):
+                    self._error = error
                 self._error[: np.size(error)] = error
+
             elif ndim == 2:
                 w, h = np.shape(error)[0], np.shape(error)[1]
 
@@ -396,6 +410,14 @@ class Valueclass:
         )
 
     @property
+    def I(self):
+        return self.real
+
+    @property
+    def Q(self):
+        return self.imag
+
+    @property
     def abs(self):
         return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)
 
@@ -538,16 +560,71 @@ class Valueclass:
     def plot(self, *args, **kwargs):
         x = kwargs.pop("x", np.arange(len(self.value)))
         x_label = kwargs.pop("x_label", "index")
-        y_label = kwargs.pop("y_label", self.name)
         title = kwargs.pop("title", None)
         fmt = kwargs.pop("fmt", ".")
 
-        plt.errorbar(x, self.value, yerr=self.error, fmt=fmt, *args, **kwargs)
-        plt.plot(x, self.value, *args, **kwargs)
+        if np.iscomplexobj(self.value):
+            self._plot_complex(x, x_label, title, fmt, *args, **kwargs)
+        else:
+            self._plot_1d(x, x_label, title, fmt, *args, **kwargs)
+
+    def _plot_1d(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop("x", np.arange(len(self.value)))
+        x_label = kwargs.pop("x_label", "index")
+
+        y = kwargs.pop("y", self.value.real)
+        y_label = kwargs.pop("y_label", self.name)
+
+        title = kwargs.pop("title", None)
+        fmt = kwargs.pop("fmt", ".")
+
+        plt.errorbar(x, y, yerr=self.error, fmt=fmt, *args, **kwargs)
+        plt.plot(x, y, *args, **kwargs)
+
         plt.xlabel(x_label)
         plt.ylabel(f"{y_label} [{self.unit}]")
 
-        if title is not None:
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    def _plot_complex(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop("x", np.arange(len(self.value)))
+        x_label = kwargs.pop("x_label", "index")
+
+        y = kwargs.pop("y", self.value)
+        y_label = kwargs.pop("y_label", self.name)
+        y_real_label, y_imag_label = f"{y_label} real", f"{y_label} imag"
+
+        title = kwargs.pop("title", None)
+        fmt = kwargs.pop("fmt", ".")
+
+        plt.errorbar(
+            y.real,
+            y.imag,
+            yerr=self.error.real,
+            xerr=self.error.imag,
+            fmt=fmt,
+            zorder=0,
+            *args,
+            **kwargs,
+        )
+
+        scatter_plot = plt.scatter(
+            y.real,
+            y.imag,
+            c=x,
+            *args,
+            **kwargs,
+        )
+
+        plt.colorbar(scatter_plot, label=x_label)
+
+        plt.xlabel(f"{y_real_label} [{self.unit}]")
+        plt.ylabel(f"{y_imag_label} [{self.unit}]")
+
+        if title:
             plt.title(title)
 
         plt.show()
@@ -639,6 +716,16 @@ class Valueclass:
         self.value = np.append(self.value, other.value, axis=axis)
         self.error = np.append(self.error, other.error, axis=axis)
 
+    def asstr(self):
+        """Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values."""
+        if self.value.size == 1:
+            value, error = self.value[0], self.error[0]
+            if not np.isnan(self.error):
+                value_error_str = round_on_error(value, error)
+                return f"{self.name}: {value_error_str} {self.unit}"
+            return f"{self.name}: {value} {self.unit}"
+        return f"{self.name}: {self.value.size}; {np.min(self.value)} - {np.max(self.value)} {self.unit}"
+
 
 def from_float_to_valueclass(
     value: Union[Valueclass, list, tuple, np.ndarray], name: str
@@ -691,3 +778,19 @@ if __name__ == "__main__":
     test = Valueclass(x, x_err, name="x", unit="V")
     test.clip(1, 9, e_max=1, out_value=test.value).plot()
     test.asdict()
+
+    #################    Example 5    #################
+    # make complex data with complex error
+    n = 500
+    x = np.linspace(0, 10, n)
+    y = 5 * np.sin(x) + np.random.normal(0, 1, n) + 2j * np.linspace(0, 1, n)
+    yerr = np.random.normal(0.1, 0.01, n) + 5j * np.random.normal(0.1, 0.01, n)
+
+    # make Valueclass objects
+    test = Valueclass(y, yerr, name="Signal", unit="V")
+    test.plot()
+    test.asstr()
+    test.real.asstr()
+
+    #################    Example 6    #################
+    Valueclass(2, error=0.1, name="test", unit="V").asstr()

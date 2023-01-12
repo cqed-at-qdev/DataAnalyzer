@@ -48,5 +48,6 @@ plot.plot(
 #     duration_fit, pulse_fit, label="Fit", title="Average of all with fit", ax=(1, 1)
 # )
 
+plot.add_metadata(report, duration, (repetition, (((("test")))), ((pulse))), ax=(1, 1))
 
 plot.show()

@@ -7,21 +7,10 @@ import numpy as np
 from iminuit import Minuit
 from scipy import stats
 
-
-from dataanalyzer.fitter import (
-    ExternalFunctions,
-    Fitparam,
-)
-
-from dataanalyzer.utilities import (
-    Valueclass,
-    from_float_to_valueclass,
-)
+from dataanalyzer.fitter import ExternalFunctions, Fitparam
 from dataanalyzer.fitter.models.fitter_models import ModelABC
-from dataanalyzer.utilities.utilities import (
-    convert_array_with_unit,
-    round_on_error,
-)
+from dataanalyzer.utilities import Valueclass, from_float_to_valueclass
+from dataanalyzer.utilities.utilities import convert_array_with_unit, round_on_error
 
 
 class Fitter:

@@ -32,7 +32,7 @@ def convert_array_with_unit(
     return converted_array, unit_prefix, conversion_factor
 
 
-def round_on_error(value, error, n_digits=0):
+def round_on_error(value, error, n_digits=1):
     from math import isnan
 
     if isnan(error) or not np.isfinite(error) or error == 0:

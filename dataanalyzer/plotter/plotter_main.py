@@ -1,20 +1,20 @@
 # Author: Malthe Asmus Marciniak Nielsen
 import os
-import time
 from typing import Any, Union
-from matplotlib import gridspec, ticker
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import gridspec, ticker
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import numpy as np
 
 from dataanalyzer.fitter import Fitter
 from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
 from dataanalyzer.utilities import (
+    Valueclass,
     convert_array_with_unit,
     from_float_to_valueclass,
-    Valueclass,
 )
 
 
@@ -547,7 +547,13 @@ class Plotter:
             self.xres.set_ylabel(ylabel)
 
     def add_metadata(
-        self, metadata: str, ax: tuple = (), overwrite: bool = False, **kwargs
+        self,
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
+        ax: tuple = (),
+        overwrite: bool = False,
+        **kwargs,
     ):
         """Adds metadata to the plot. This is done by adding a text box to the plot.
 
@@ -558,6 +564,8 @@ class Plotter:
         """
         if ax:
             self.ax = self.axs[ax]
+
+        metadata = self._convert_metadata_to_str(*metadata)
 
         self.metadata = metadata if overwrite else f"{self.metadata}{metadata}"
         x = kwargs.pop("x", 0.05)
@@ -572,6 +580,35 @@ class Plotter:
         )
 
         self._remove_ax_anotate = False
+
+    def _convert_metadata_to_str(
+        self,
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
+    ):
+        metadata_str = ""
+        for param in metadata:
+            if isinstance(param, str):
+                metadata_str += f"{param}\n"
+
+            elif isinstance(param, Valueclass):
+                metadata_str += f"{param.asstr()}\n"
+
+            elif isinstance(param, (list, tuple)):
+                for par in param:
+                    metadata_str += self._convert_metadata_to_str(par)
+
+            elif isinstance(param, dict):
+                for par in param.values():
+                    metadata_str += self._convert_metadata_to_str(par)
+
+            else:
+                raise TypeError(
+                    f"metadata must be of type str, Valueclass, list[Value], tuple[Value], or dict[str, Value], not {type(param)}"
+                )
+
+        return metadata_str
 
     def clear_metadata(self):
         self.metadata = ""

@@ -1,3 +1,4 @@
+# Author: Malthe Asmus Marciniak Nielsen
 import json
 from typing import Optional, Tuple, Union
 
@@ -172,28 +173,6 @@ def valueclass2labber(parameters: list[Valueclass], results: list[Valueclass], o
 
 
 ####################################################################################################
-#                   From Json to Labber                                                            #
-####################################################################################################
-def json2labber(json_path: str, output_path: Optional[str] = None):
-    if output_path is None:
-        output_path = json_path.replace(".json", ".hdf5")
-        
-    parameters, result = json2valueclass(json_path)
-    return valueclass2labber(parameters, result, output_path)
-
-
-####################################################################################################
-#                   From Labber to Json                                                            #
-####################################################################################################
-def labber2json(labber_path: str, output_path: Optional[str] = None):
-    if output_path is None:
-        output_path = labber_path.replace(".hdf5", ".json")
-        
-    parameters, result = labber2valueclass(labber_path)
-    return valueclass2json(parameters, result, output_path)
-
-
-####################################################################################################
 #                   From Labber to Valueclass                                                      #
 ####################################################################################################
 def labber2valueclass(labber_path: str, insepct: bool = False) -> Tuple[Valueclass, ...]:
@@ -261,6 +240,28 @@ def labber2valueclass(labber_path: str, insepct: bool = False) -> Tuple[Valuecla
         print_values_from_list("results", data)
 
     return *parameters, *data
+
+
+####################################################################################################
+#                   From Json to Labber                                                            #
+####################################################################################################
+def json2labber(json_path: str, output_path: Optional[str] = None):
+    if output_path is None:
+        output_path = json_path.replace(".json", ".hdf5")
+        
+    parameters, result = json2valueclass(json_path)
+    return valueclass2labber(parameters, result, output_path)
+
+
+####################################################################################################
+#                   From Labber to Json                                                            #
+####################################################################################################
+def labber2json(labber_path: str, output_path: Optional[str] = None):
+    if output_path is None:
+        output_path = labber_path.replace(".hdf5", ".json")
+        
+    parameters, result = labber2valueclass(labber_path)
+    return valueclass2json(parameters, result, output_path)
 
 
 ####################################################################################################

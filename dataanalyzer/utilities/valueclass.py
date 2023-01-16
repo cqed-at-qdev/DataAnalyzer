@@ -338,7 +338,7 @@ class Valueclass:
         )
 
     @property
-    def ddx(self):
+    def ddx(self):  # TODO: fix this
         return Valueclass(
             np.gradient(self.value, self.error),
             np.gradient(self.error, self.error),
@@ -426,28 +426,17 @@ class Valueclass:
 
     @property
     def phase(self):
-        error = np.unwrap(np.angle(self.error))
-        if not np.any(np.isnan(error)):
-            print(error)
-            signal.detrend(error)
-
         return Valueclass(
-            signal.detrend(np.unwrap(np.angle(self.value))),
-            error,
+            np.unwrap(np.angle(self.value)),
+            np.angle(self.error),
             self.name,
-            self.unit,
+            "rad",
             self.fft_type,
         )
 
     @property
     def angle(self):
-        return Valueclass(
-            np.unwrap(np.angle(self.value)),
-            np.unwrap(np.angle(self.error)),
-            self.name,
-            "rad",
-            self.fft_type,
-        )
+        return self.phase()
 
     def traces(self, operation="Show individual"):
         if operation in (
@@ -777,3 +766,13 @@ if __name__ == "__main__":
     print(test)
 
     asdict(test)
+
+    #################    Example 2    #################
+    # make complex sin wave with noise valueclass
+    t = np.linspace(0, 10, 1000)
+    x = np.cos(t) + 1j * np.sin(t)
+
+    test = Valueclass(name="test", value=x)
+
+    test.plot()
+    test.phase.plot()

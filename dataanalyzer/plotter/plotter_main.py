@@ -14,7 +14,6 @@ from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
 from dataanalyzer.utilities import (
     Valueclass,
     convert_array_with_unit,
-    from_float_to_valueclass,
 )
 
 
@@ -123,8 +122,8 @@ class Plotter:
 
         if kwargs.pop("plot_guess", True):
             x_guess, y_guess = fit_obejct.get_guess_array(ls_start, ls_stop, ls_steps)
-            x_guess = from_float_to_valueclass(x_guess, "X guess")
-            y_guess = from_float_to_valueclass(y_guess, "Y guess")
+            x_guess = Valueclass.fromfloat(x_guess, "X guess")
+            y_guess = Valueclass.fromfloat(y_guess, "Y guess")
 
             if flip_axis:
                 x_guess, y_guess = y_guess, x_guess
@@ -133,8 +132,8 @@ class Plotter:
 
         if kwargs.pop("plot_fit", True):
             x_fit, y_fit = fit_obejct.get_fit_array(ls_start, ls_stop, ls_steps)
-            x_fit = from_float_to_valueclass(x_fit, "X fitted")
-            y_fit = from_float_to_valueclass(y_fit, "Y fitted")
+            x_fit = Valueclass.fromfloat(x_fit, "X fitted")
+            y_fit = Valueclass.fromfloat(y_fit, "Y fitted")
 
             if flip_axis:
                 x_fit, y_fit = y_fit, x_fit
@@ -156,11 +155,7 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self,
-        x: Valueclass,
-        y: Valueclass,
-        ax: tuple = (),
-        **kwargs,
+        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -594,7 +589,7 @@ class Plotter:
                 metadata_str += f"{param}\n"
 
             elif isinstance(param, Valueclass):
-                metadata_str += f"{param.asstr()}\n"
+                metadata_str += f"{param.tostr()}\n"
 
             elif isinstance(param, (list, tuple)):
                 for par in param:

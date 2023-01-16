@@ -9,7 +9,7 @@ from scipy import stats
 
 from dataanalyzer.fitter import ExternalFunctions, Fitparam
 from dataanalyzer.fitter.models.fitter_models import ModelABC
-from dataanalyzer.utilities import Valueclass, from_float_to_valueclass
+from dataanalyzer.utilities import Valueclass
 from dataanalyzer.utilities.utilities import convert_array_with_unit, round_on_error
 
 
@@ -42,8 +42,8 @@ class Fitter:
         self.y = y
         self.sy = sy
 
-        self._x: Valueclass = from_float_to_valueclass(copy.copy(x), "x data")
-        self._y: Valueclass = from_float_to_valueclass(copy.copy(y), "y data")
+        self._x: Valueclass = Valueclass.fromfloat(copy.copy(x), "x data")
+        self._y: Valueclass = Valueclass.fromfloat(copy.copy(y), "y data")
 
         if self._y.fft_type == "fft_y" and self._x.fft_type != "fft_x":
             self._x = copy.deepcopy(self._x.fftfreq)
@@ -209,11 +209,7 @@ class Fitter:
         self._update_minuit_with_values_limits_and_fixed()
 
     def do_fit(
-        self,
-        linspace_start=None,
-        linspace_stop=None,
-        linspace_steps=1000,
-        **kwargs,
+        self, linspace_start=None, linspace_stop=None, linspace_steps=1000, **kwargs,
     ) -> tuple[np.ndarray, np.ndarray, dict, str]:
         """Do the fit
 

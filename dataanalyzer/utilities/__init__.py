@@ -7,10 +7,7 @@ from dataanalyzer.utilities.convert_json_to_labber import (
     make_inital_Labber_file,
     json2Labber,
 )
-from dataanalyzer.utilities.valueclass import (
-    Valueclass,
-    from_float_to_valueclass,
-)
+from dataanalyzer.utilities.valueclass import Valueclass
 from dataanalyzer.utilities.utilities import (
     convert_array_with_unit,
     round_on_error,

@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional, Union
 import numpy as np
 import copy
 
-from dataanalyzer.utilities import Valueclass, from_float_to_valueclass
+from dataanalyzer.utilities import Valueclass
 
 
 def matplotlib_decorator(func: Callable[..., Any]):
@@ -53,7 +53,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
         if data_float is None:
             raise ValueError(f"{data_name} data must be specified.")
 
-        data = from_float_to_valueclass(data_float, f"{data_name} data")
+        data = Valueclass.fromfloat(data_float, f"{data_name} data")
         default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
         label = kwargs.pop(f"{data_name}label", default_label)
 
@@ -63,7 +63,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
         data_float: Union[list, tuple, np.ndarray] = kwargs.pop(data_name, None)
 
         if data_float is not None:
-            return from_float_to_valueclass(data_float, f"{data_name} data")
+            return Valueclass.fromfloat(data_float, f"{data_name} data")
         return None
 
     def _check_and_update_fft(x: Valueclass, y: Valueclass):

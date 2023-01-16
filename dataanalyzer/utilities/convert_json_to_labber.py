@@ -7,7 +7,7 @@ def make_labber_dict(json_parameters, json_results):
     def make_logStep(json_parameters):
         logStep = []
         for data in json_parameters:
-            data_dict = data.asdict()
+            data_dict = data.todict()
             lab_dict = dict(
                 name=data_dict["name"],
                 unit=data_dict["unit"],
@@ -19,7 +19,7 @@ def make_labber_dict(json_parameters, json_results):
     def make_logLog(json_results):
         logLog = []
         for data in json_results:
-            data_dict = data.asdict()
+            data_dict = data.todict()
             lab_dict = dict(
                 name=data_dict["name"],
                 unit=data_dict["unit"],

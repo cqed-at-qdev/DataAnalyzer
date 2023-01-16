@@ -22,6 +22,7 @@ class Valueclass:
     name: str = ""
     unit: str = ""
     fft_type: Union[str, bool] = False
+    sweep_idx: int = None
 
     def __repr__(self):
         """Returns a string representation of the Valueclass object.
@@ -57,7 +58,7 @@ class Valueclass:
             setattr(self, key, value)
 
     @property
-    def value(self) -> np.ndarray:
+    def value(self) -> np.ndarray:  # TODO: don't return array if input was not array
         """Returns the value of the Valueclass object."""
         if not hasattr(self, "_value"):
             self.value = ()
@@ -225,7 +226,9 @@ class Valueclass:
         if "Valueclass" not in str(type(other)):
             return Valueclass(
                 self.value**other,
-                self.error * other * self.value ** (other - 1),
+                self.error
+                * other
+                * self.value ** (other - 1),  # TODO: make correct error propagation
                 self.name,
                 self.unit,
             )
@@ -271,7 +274,7 @@ class Valueclass:
     def __len__(self):
         return len(self.value)
 
-    def __max__(self):
+    def __max__(self):  # TODO: fix this
         return max(self.value)
 
     @property
@@ -629,11 +632,30 @@ class Valueclass:
 
         plt.show()
 
-    def asdict(self):
+    def asdict(self, split_complex: bool = True):
         self_copy = copy.copy(self)
         self_copy._value = self_copy.value.tolist()
         self_copy._error = self_copy.error.tolist()
-        return asdict(self_copy)
+
+        valuedict = asdict(self_copy)
+
+        if not split_complex:
+            if np.iscomplexobj(self_copy.value):
+                valuedict["value"] = {
+                    "real": self_copy.value.real.tolist(),
+                    "imag": self_copy.value.imag.tolist(),
+                }
+
+            if np.iscomplexobj(self_copy.error):
+                valuedict["error"] = {
+                    "real": self_copy.error.real.tolist(),
+                    "imag": self_copy.error.imag.tolist(),
+                }
+
+        if np.isnan(self_copy.error).all():
+            valuedict.pop("error")
+
+        return valuedict
 
     @staticmethod
     def fromdict(newdict: dict):
@@ -747,50 +769,11 @@ def from_float_to_valueclass(
 
 if __name__ == "__main__":
     #################    Example 1    #################
-    # make fake data with error
-    x = np.linspace(0, 10, 50)
-    y = np.sin(x) + np.random.normal(0, 0.1, 50)
-    yerr = np.random.normal(0.1, 0.01, 50)
-
-    # make Valueclass objects
-    test = Valueclass(y, yerr, name="y", unit="V")
-    test.plot()
-
-    #################    Example 2    #################
-    # make an empty Valueclass object
-    test = Valueclass(name="y", unit="V")
-
-    #################    Example 3    #################
-    x = np.linspace(0, 10, 50)
-    y = np.sin(x) + np.random.normal(0, 0.1, 50)
-
-    # make Valueclass objects
-    test1 = Valueclass(y, name="y", unit="V")
-    test2 = Valueclass(x, name="x", unit="V")
-
-    test1 += test2
-    test1[:10] = Valueclass(x, name="x", unit="V")[:10]
-    test1.plot()
-
-    #################    Example 4    #################
-    x = np.linspace(0, 10, 50)
-    x_err = abs(np.random.normal(0.1, 1.1, 50))
-    test = Valueclass(x, x_err, name="x", unit="V")
-    test.clip(1, 9, e_max=1, out_value=test.value).plot()
+    test = Valueclass(name="test", unit="m")
+    print(test)
     test.asdict()
 
-    #################    Example 5    #################
-    # make complex data with complex error
-    n = 500
-    x = np.linspace(0, 10, n)
-    y = 5 * np.sin(x) + np.random.normal(0, 1, n) + 2j * np.linspace(0, 1, n)
-    yerr = np.random.normal(0.1, 0.01, n) + 5j * np.random.normal(0.1, 0.01, n)
+    test.value = [1, 2]
+    print(test)
 
-    # make Valueclass objects
-    test = Valueclass(y, yerr, name="Signal", unit="V")
-    test.plot()
-    test.asstr()
-    test.real.asstr()
-
-    #################    Example 6    #################
-    Valueclass(2, error=0.1, name="test", unit="V").asstr()
+    asdict(test)

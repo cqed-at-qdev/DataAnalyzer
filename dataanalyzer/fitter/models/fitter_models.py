@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Optional, Union
 
 import numpy as np
+from sklearn.mixture import GaussianMixture
 
 from dataanalyzer.fitter.fitter_classsetup import *
 from dataanalyzer.fitter.fitter_decorators import symbol_wrapper, unit_wrapper
@@ -89,7 +90,6 @@ class ModelABC(ABC):
         self._make_param_root_names()
         self.param_names = [self._prefix + name for name in self._param_root_names]
         self._root2full = dict(zip(self._param_root_names, self.param_names))
-        # self.symbols()
 
     @property
     def param_symbols(self) -> dict[str, str]:
@@ -313,7 +313,7 @@ class LinearModel(ModelABC):
 
 
 ####################################################################################################
-#                   Proportional Model                                                                   #
+#                   Proportional Model                                                             #
 ####################################################################################################
 class ProportionalModel(ModelABC):
     def __init__(self, independent_vars=None, prefix="", **kwargs):
@@ -681,7 +681,7 @@ class PolynomialModel(ModelABC):
 
 
 ####################################################################################################
-#                   Oscillation Model                                                       #
+#                   Oscillation Model                                                              #
 ####################################################################################################
 class OscillationModel(ModelABC):
     def __init__(self, independent_vars=None, prefix="", **kwargs):
@@ -924,3 +924,59 @@ class ExponentialDecayModel(ModelABC):
     @symbol_wrapper
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
         return {"amplitude": "A", "decay": "τ", "offset": "c"}
+
+
+####################################################################################################
+#                   Gaussian Mixture Model                                                         #
+####################################################################################################
+# Implementation of a Gaussian Mixture Model (GMM) from sklearn
+# Inheriting from ModelABC is not possible because the GMM is not a function
+class GaussianMixtureModel:
+    def __init__(
+        self, n_components=1, covariance_type="full", tol=1e-3, reg_covar=1e-6
+    ):
+        self.n_components = n_components
+        self.covariance_type = covariance_type
+        self.tol = tol
+        self.reg_covar = reg_covar
+
+        self.gmm = GaussianMixture(
+            n_components=n_components,
+            covariance_type=covariance_type,
+            tol=tol,
+            reg_covar=reg_covar,
+        )
+
+    def fit(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+        x, y = np.array(x), np.array(y)
+        self.gmm.fit(np.array([x, y]).T)
+
+    def predict(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+        x, y = np.array(x), np.array(y)
+        return self.gmm.predict(np.array([x, y]).T)
+
+    def predict_proba(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+        x, y = np.array(x), np.array(y)
+        return self.gmm.predict_proba(np.array([x, y]).T)
+
+    def score_samples(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+        x, y = np.array(x), np.array(y)
+        return self.gmm.score_samples(np.array([x, y]).T)
+
+    def score(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+        x, y = np.array(x), np.array(y)
+        return self.gmm.score(np.array([x, y]).T)
+
+    def sample(self, n_samples=100):
+        return self.gmm.sample(n_samples=n_samples)
+
+    def funcname(self, *params) -> str:
+        return rf"$\mathrm{{gaussian\ mixture\ model}}$"
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+        return {}

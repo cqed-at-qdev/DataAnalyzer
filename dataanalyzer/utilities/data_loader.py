@@ -1,6 +1,8 @@
 # Author: Malthe Asmus Marciniak Nielsen
 from typing import Tuple
+
 import numpy as np
+
 from dataanalyzer.utilities.valueclass import Valueclass
 
 

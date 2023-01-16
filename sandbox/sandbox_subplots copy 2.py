@@ -4,13 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load data
-path = r"/Users/malthenielsen/Desktop/QDev/Sample data for plotter/q0_punchout_VNA.hdf5"
+path = r"A:\Labber\20221114_Soprano_V2_CharacterizationCooldown\2022\11\Data_1117\q2_T2_inital_scan_3.hdf5"
 freq, power, pulse = load_labber_file(path, insepct=True)
 
-freq.unit = ""
-
 # Take real part of data
-pulse = pulse.real / 1e-9
+power = power[:6]
+pulse = pulse.real
 pulse.unit = "V"
 
 
@@ -19,4 +18,3 @@ plot = Plotter(subplots=(1, 1))
 plot.heatmap(freq, power, pulse)
 plot.heatmap(freq, power, pulse, keep_colorbar=True)
 plot.show()
-

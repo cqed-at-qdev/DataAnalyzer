@@ -303,7 +303,8 @@ class Plotter:
 
     def _add_colorbar(self, c, z, keep_colorbar):
         if hasattr(self.ax, "colorbar") and not keep_colorbar:
-            self.ax.colorbar.remove()
+            for colorbar in self.ax.colorbar:
+                colorbar.remove()
 
         label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
         colorbar = self.fig.colorbar(c, ax=self.ax, label=label)
@@ -715,6 +716,14 @@ class Plotter:
         self._rescale_axes()
         plt.tight_layout()
 
+        # if live_plot:
+        #     for fig_num in plt.get_fignums():
+        #         if self.fig.number != fig_num:
+        #             plt.close(fig_num)
+        #     plt.pause(0.001)
+
+        # return self.fig
+
         if return_fig:
             for fig_num in plt.get_fignums():
                 if self.fig.number != fig_num:
@@ -725,10 +734,10 @@ class Plotter:
         else:
             return self.fig.show()
 
-    def save(self, path: str):
+    def save(self, path: str, **kwargs):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig
 
         Args:
             path (str): The path to save the plot to.
         """
-        plt.savefig(path)
+        plt.savefig(path, **kwargs)

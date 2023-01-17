@@ -2,10 +2,14 @@
 import json
 from typing import Optional, Tuple, Union
 
-import Labber
 import numpy as np
 
 from dataanalyzer.utilities.valueclass import Valueclass
+
+try:
+    import Labber
+except ImportError:
+    import dataanalyzer.local_labber as Labber
 
 
 ####################################################################################################
@@ -69,8 +73,8 @@ def dict2valueclass(*value: dict) -> list[Valueclass]:
 #                   From Valueclass to Json                                                        #
 ####################################################################################################
 def valueclass2json(
-    exp_settings: Union[Valueclass, list, tuple, dict],
-    exp_results: Union[Valueclass, list, tuple, dict],
+    parameters: Union[Valueclass, list, tuple, dict],
+    results: Union[Valueclass, list, tuple, dict],
     path: str,
 ):
     """Converts a Valueclass object to a json string.
@@ -87,8 +91,8 @@ def valueclass2json(
             file.seek(0)
             json.dump(json_dict, file, indent=4)
 
-    settings_dict = valueclass2dict(exp_settings, split_complex=True)
-    result_dict = valueclass2dict(exp_results, split_complex=True)
+    settings_dict = valueclass2dict(parameters, split_complex=True)
+    result_dict = valueclass2dict(results, split_complex=True)
     jsondict = {"experiment_settings": settings_dict, "experiment_results": result_dict}
 
     update_json_dict(path, jsondict)
@@ -127,7 +131,9 @@ def json2valueclass(
 ####################################################################################################
 #                   From Valueclass to Labber                                                      #
 ####################################################################################################
-def valueclass2labber(parameters: list[Valueclass], results: list[Valueclass], output_path: str):
+def valueclass2labber(
+    parameters: list[Valueclass], results: list[Valueclass], output_path: str
+):
     def _make_labber_dict(parameters, results):
         def make_logStep(parameters):
             logStep = []
@@ -161,13 +167,13 @@ def valueclass2labber(parameters: list[Valueclass], results: list[Valueclass], o
 
     def _make_inital_Labber_file(path, logLog, logStep):
         f = Labber.createLogFile_ForData(path, logLog, logStep)
-        
+
         for i in range(len(logStep[-1]["values"])):
             data = {Log["name"]: np.array(Log["values"])[i].T for Log in logLog}
             f.addEntry(data)
-            
+
         return f.getFilePath("")
-    
+
     logStep, logLog = _make_labber_dict(parameters, results)
     return _make_inital_Labber_file(output_path, logLog, logStep)
 
@@ -175,7 +181,9 @@ def valueclass2labber(parameters: list[Valueclass], results: list[Valueclass], o
 ####################################################################################################
 #                   From Labber to Valueclass                                                      #
 ####################################################################################################
-def labber2valueclass(labber_path: str, insepct: bool = False) -> Tuple[Valueclass, ...]:
+def labber2valueclass(
+    labber_path: str, insepct: bool = False
+) -> Tuple[list[Valueclass], list[Valueclass]]:
     def _get_vna_data(step_channels) -> list[Valueclass]:
         start_freq = stop_freq = n_points = vna_param = None
         for param in step_channels:
@@ -214,32 +222,27 @@ def labber2valueclass(labber_path: str, insepct: bool = False) -> Tuple[Valuecla
         ]
         return parameters
 
-    def _get_data(f):
+    def _get_results(f):
         log_channel = f.getLogChannels()[0]
         d = f.getData()
-        data = Valueclass(
+        results = Valueclass(
             name=log_channel["name"],
             value=d[0] if len(d) < 2 else d,
             unit=log_channel["unit"],
         )
-        return [data]
-
-    try:
-        import Labber
-    except ImportError:
-        import dataanalyzer.local_labber as Labber
+        return [results]
 
     f = Labber.LogFile(labber_path)
 
     parameters = _get_parameters(f)
-    data = _get_data(f)
+    results = _get_results(f)
 
     if insepct:
         print("Insepcting Json File...")
         print_values_from_list("parameters", parameters)
-        print_values_from_list("results", data)
+        print_values_from_list("results", results)
 
-    return *parameters, *data
+    return parameters, results
 
 
 ####################################################################################################
@@ -248,7 +251,7 @@ def labber2valueclass(labber_path: str, insepct: bool = False) -> Tuple[Valuecla
 def json2labber(json_path: str, output_path: Optional[str] = None):
     if output_path is None:
         output_path = json_path.replace(".json", ".hdf5")
-        
+
     parameters, result = json2valueclass(json_path)
     return valueclass2labber(parameters, result, output_path)
 
@@ -259,7 +262,7 @@ def json2labber(json_path: str, output_path: Optional[str] = None):
 def labber2json(labber_path: str, output_path: Optional[str] = None):
     if output_path is None:
         output_path = labber_path.replace(".hdf5", ".json")
-        
+
     parameters, result = labber2valueclass(labber_path)
     return valueclass2json(parameters, result, output_path)
 
@@ -274,36 +277,45 @@ def print_values_from_list(name: str, value_list: list[Valueclass]):
 
 
 if __name__ == "__main__":
-    class test_conversion():
+
+    class test_conversion:
         def __init__(self) -> None:
             self.v1 = Valueclass(name="test1", value=1, unit="V")
             self.v2 = Valueclass(name="test2", value=[1, 2, 3], unit="V")
-            self.v3 = Valueclass(name="test3", value=[1+1j, 2+2j, 3+3j], unit="V")
-            
+            self.v3 = Valueclass(name="test3", value=[1 + 1j, 2 + 2j, 3 + 3j], unit="V")
+
             self.d1 = {"name": "test1", "value": 1, "unit": "V"}
-            
+
         def run_tests(self):
             self.test_valueclass2dict()
             self.test_dict2valueclass()
-            
+
         def test_valueclass2dict(self):
             assert valueclass2dict(self.v1) == {self.v1.name: self.v1.todict()}
             assert valueclass2dict(self.v2) == {self.v2.name: self.v2.todict()}
-            
-            assert valueclass2dict([self.v1, self.v2]) == {self.v1.name: self.v1.todict(), self.v2.name: self.v2.todict()}
-            assert valueclass2dict({"test":[self.v1, self.v2]}) == {"test": {self.v1.name: self.v1.todict(), self.v2.name: self.v2.todict()}}
-            assert valueclass2dict({"test":self.v1}, self.v2) == {"test": {self.v1.name: self.v1.todict()}, self.v2.name: self.v2.todict()}
-        
+
+            assert valueclass2dict([self.v1, self.v2]) == {
+                self.v1.name: self.v1.todict(),
+                self.v2.name: self.v2.todict(),
+            }
+            assert valueclass2dict({"test": [self.v1, self.v2]}) == {
+                "test": {self.v1.name: self.v1.todict(), self.v2.name: self.v2.todict()}
+            }
+            assert valueclass2dict({"test": self.v1}, self.v2) == {
+                "test": {self.v1.name: self.v1.todict()},
+                self.v2.name: self.v2.todict(),
+            }
+
         def test_dict2valueclass(self):
             d1_value = dict2valueclass(self.d1)[0]
             assert d1_value.name == self.d1["name"]
             assert d1_value.value == np.array(self.d1["value"])
             assert d1_value.unit == self.d1["unit"]
-            
+
         def test_valueclass2json(self):
             pass
-    
+
         def test_valueclass2labber(self):
             pass
-    
+
     test_conversion().run_tests()

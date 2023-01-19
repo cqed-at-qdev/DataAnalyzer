@@ -209,7 +209,11 @@ class Fitter:
         self._update_minuit_with_values_limits_and_fixed()
 
     def do_fit(
-        self, linspace_start=None, linspace_stop=None, linspace_steps=1000, **kwargs,
+        self,
+        linspace_start=None,
+        linspace_stop=None,
+        linspace_steps=1000,
+        **kwargs,
     ) -> tuple[np.ndarray, np.ndarray, dict, str]:
         """Do the fit
 
@@ -323,7 +327,7 @@ class Fitter:
 
         unit_names = self._get_func_units()
 
-        self._report_string += "Parameters:\n"
+        self._report_string += "Fit parameters:\n"
 
         for i, ((key, val), err) in enumerate(zip(values, errors), start=1):
             if key in self.param_names:

@@ -4,13 +4,13 @@ from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dataanalyzer.utilities.utilities import round_on_error
+from dataanalyzer.utilities.utilities import convert_array_with_unit, round_on_error
 
 
 @dataclass
 class Valueclass:
-    """Valueclass class for storing values and errors. 
-    The class is designed to be used in a similar way as the numpy.ndarray class. 
+    """Valueclass class for storing values and errors.
+    The class is designed to be used in a similar way as the numpy.ndarray class.
     It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
 
     Returns:
@@ -71,12 +71,16 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value + other, self.error, self.name, self.unit, self.fft_type,
+                self.value + other,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
                 self.value + other.value,
-                np.sqrt(self.error ** 2 + other.error ** 2),
+                np.sqrt(self.error**2 + other.error**2),
                 self.name,
                 self.unit,
             )
@@ -92,12 +96,16 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value - other, self.error, self.name, self.unit, self.fft_type,
+                self.value - other,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
                 self.value - other.value,
-                np.sqrt(self.error ** 2 + other.error ** 2),
+                np.sqrt(self.error**2 + other.error**2),
                 self.name,
                 self.unit,
             )
@@ -135,7 +143,7 @@ class Valueclass:
                 self.value / other.value,
                 np.sqrt(
                     (self.error / other.value) ** 2
-                    + (self.value * other.error / other.value ** 2) ** 2
+                    + (self.value * other.error / other.value**2) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -144,7 +152,7 @@ class Valueclass:
     def __pow__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value ** other,
+                self.value**other,
                 self.error
                 * other
                 * self.value ** (other - 1),  # TODO: make correct error propagation
@@ -153,10 +161,10 @@ class Valueclass:
             )
         else:
             return Valueclass(
-                self.value ** other.value,
+                self.value**other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value ** other.value * other.error * np.log(self.value))
+                    + (self.value**other.value * other.error * np.log(self.value))
                     ** 2
                 ),
                 self.name,
@@ -175,7 +183,7 @@ class Valueclass:
     def __rtruediv__(self, other) -> "Valueclass":
         return Valueclass(
             other / self.value,
-            other * self.error / self.value ** 2,
+            other * self.error / self.value**2,
             self.name,
             self.unit,
             self.fft_type,
@@ -183,8 +191,8 @@ class Valueclass:
 
     def __rpow__(self, other) -> "Valueclass":
         return Valueclass(
-            other ** self.value,
-            other ** self.value * self.error * np.log(other),
+            other**self.value,
+            other**self.value * self.error * np.log(other),
             self.name,
             self.unit,
             self.fft_type,
@@ -429,7 +437,13 @@ class Valueclass:
             np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
         )
 
-        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
+        return Valueclass(
+            value,
+            error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
 
     ####################################################################################################
     #                   Math (Advanced) Functions                                                      #
@@ -446,8 +460,8 @@ class Valueclass:
     @property
     def norm(self):
         return Valueclass(
-            self.value / np.sqrt(np.sum(self.value ** 2)),
-            self.error / np.sqrt(np.sum(self.value ** 2)),
+            self.value / np.sqrt(np.sum(self.value**2)),
+            self.error / np.sqrt(np.sum(self.value**2)),
             self.name,
             self.unit,
             self.fft_type,
@@ -517,7 +531,11 @@ class Valueclass:
             "Individual",
         ):
             return Valueclass(
-                self.value, self.error, self.name, self.unit, self.fft_type,
+                self.value,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
 
         elif operation in ("Substract first", "substract first", "first", "First"):
@@ -583,7 +601,13 @@ class Valueclass:
             v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
             v[0] = np.zeros(self.value.shape[1])
 
-            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
+            return Valueclass(
+                v,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
 
         elif operation in ("Average", "average"):
             return Valueclass(
@@ -667,7 +691,13 @@ class Valueclass:
             **kwargs,
         )
 
-        scatter_plot = plt.scatter(y.real, y.imag, c=x, *args, **kwargs,)
+        scatter_plot = plt.scatter(
+            y.real,
+            y.imag,
+            c=x,
+            *args,
+            **kwargs,
+        )
 
         plt.colorbar(scatter_plot, label=x_label)
 
@@ -706,15 +736,39 @@ class Valueclass:
 
         return valuedict
 
-    def tostr(self):
+    def tostr(
+        self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7
+    ):
         """Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values."""
-        if self.value.size == 1:
-            value, error = self.value[0], self.error[0]
-            if not np.isnan(self.error):
-                value_error_str = round_on_error(value, error)
-                return f"{self.name}: {value_error_str} {self.unit}"
-            return f"{self.name}: {value} {self.unit}"
-        return f"{self.name}: {self.value.size}; {np.min(self.value)} - {np.max(self.value)} {self.unit}"
+
+        def _getstr(self, scale_values: bool = True):
+            value, unit_prefix, conversion_factor = self.value, "", 1
+            if scale_values:
+                value, unit_prefix, conversion_factor = convert_array_with_unit(
+                    self.value
+                )
+
+            if self.value.size > 1:
+                return f"{self.name}: {self.value.size}; {np.min(value)} - {np.max(value)} {unit_prefix}{self.unit}"
+
+            value = (
+                value[0]
+                if np.isnan(self.error)
+                else round_on_error(value[0], self.error[0] * conversion_factor)
+            )
+            return f"{self.name}: {value} {unit_prefix}{self.unit}"
+
+        def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
+            if not algin:
+                return vstr
+
+            (name_str, vstr) = vstr.split(":") if ":" in vstr else ("", vstr)
+            (size_str, vstr) = vstr.split(";") if ";" in vstr else ("", vstr)
+
+            return f"{name_str : <{name_width}}{size_str : <{size_width}}{vstr}"
+
+        vstr = _getstr(self, scale_values=scale_values)
+        return _alginstr(vstr, algin, name_width, size_width)
 
     @staticmethod
     def fromdict(newdict: dict):
@@ -770,4 +824,3 @@ class Valueclass:
 
         self.value = np.append(self.value, other.value, axis=axis)
         self.error = np.append(self.error, other.error, axis=axis)
-

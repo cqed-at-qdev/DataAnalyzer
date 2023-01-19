@@ -155,7 +155,11 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
+        self,
+        x: Valueclass,
+        y: Valueclass,
+        ax: tuple = (),
+        **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -561,20 +565,29 @@ class Plotter:
         if ax:
             self.ax = self.axs[ax]
 
-        metadata = self._convert_metadata_to_str(*metadata)
+        default_kwargs = {
+            "x": 0.05,
+            "y": 0.95,
+            "va": "top",
+            "ha": "left",
+            "transform": self.ax_anotate.transAxes,
+            "fontdict": {"family": "monospace"},
+        }
+        kwargs = default_kwargs | kwargs
+        algin = kwargs.pop("algin", True)
 
+        kwargs_metadata = {
+            k.removeprefix("tostr_"): kwargs.pop(k)
+            for k in list(kwargs)
+            if k.startswith("tostr_")
+        }
+        metadata = self._convert_metadata_to_str(
+            *metadata, algin=algin, **kwargs_metadata
+        )
         self.metadata = metadata if overwrite else f"{self.metadata}{metadata}"
-        x = kwargs.pop("x", 0.05)
-        y = kwargs.pop("y", 0.95)
-        va = kwargs.pop("va", "top")
-        ha = kwargs.pop("ha", "left")
-        transfrom = kwargs.pop("transform", self.ax_anotate.transAxes)
 
         self.ax_anotate.texts.clear()
-        self.ax_anotate.text(
-            x, y, self.metadata, va=va, ha=ha, transform=transfrom, **kwargs
-        )
-
+        self.ax_anotate.text(s=self.metadata, **kwargs)
         self._remove_ax_anotate = False
 
     def _convert_metadata_to_str(
@@ -582,14 +595,23 @@ class Plotter:
         *metadata: Union[
             str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
         ],
+        algin: bool = True,
+        add_parameter_header: bool = True,
+        **kwargs,
     ):
+        name_width = kwargs.pop("tostr_name_width", 40)
+        size_width = kwargs.pop("tostr_size_width", 7)
+
+        # parameter_header = f"{Mesuerment parameters : <{name_width}}" TODO: add parameter header
+        # {"N points" : <{size_width}}Values"
+
         metadata_str = ""
         for param in metadata:
             if isinstance(param, str):
                 metadata_str += f"{param}\n"
 
             elif isinstance(param, Valueclass):
-                metadata_str += f"{param.tostr()}\n"
+                metadata_str += f"{param.tostr(algin=algin, name_width=name_width, size_width=size_width, **kwargs)}\n"
 
             elif isinstance(param, (list, tuple)):
                 for par in param:
@@ -727,7 +749,7 @@ class Plotter:
             plt.pause(0.001)
             return self.fig
         else:
-            return self.fig.show()
+            return plt.show()
 
     def save(self, path: str, **kwargs):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig

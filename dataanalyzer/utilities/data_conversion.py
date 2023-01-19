@@ -78,7 +78,7 @@ def valueclass2json(
     path: str,
 ):
     """Converts a Valueclass object to a json string.
-    
+
     Args:
         valuedict (dict[str, Valueclass]): The value to be converted.
         path (str): The path to the json file.
@@ -223,14 +223,18 @@ def labber2valueclass(
         return parameters
 
     def _get_results(f):
-        log_channel = f.getLogChannels()[0]
-        d = f.getData()
-        results = Valueclass(
-            name=log_channel["name"],
-            value=d[0] if len(d) < 2 else d,
-            unit=log_channel["unit"],
-        )
-        return [results]
+        results = []
+        log_channels = f.getLogChannels()
+        for i, log_channel in enumerate(log_channels):
+            data = f.getData(i)
+            results.append(
+                Valueclass(
+                    name=log_channel["name"],
+                    value=data[0] if len(data) < 2 else data,
+                    unit=log_channel["unit"],
+                )
+            )
+        return results
 
     f = Labber.LogFile(labber_path)
 

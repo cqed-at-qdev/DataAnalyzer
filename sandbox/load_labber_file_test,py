@@ -1,0 +1,6 @@
+from dataanalyzer import load_labber_file
+import Labber
+
+path = r"Z:\Malthe\VNA_NW5_gaterScan_16Hz.hdf5"
+
+parameters, results = load_labber_file(path, insepct=True)

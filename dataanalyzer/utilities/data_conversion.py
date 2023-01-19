@@ -184,37 +184,54 @@ def valueclass2labber(
 def labber2valueclass(
     labber_path: str, insepct: bool = False
 ) -> Tuple[list[Valueclass], list[Valueclass]]:
-    def _get_vna_data(step_channels) -> list[Valueclass]:
-        start_freq = stop_freq = n_points = vna_param = None
+    def _get_vna_data(step_channels, channels) -> list[Valueclass]:
+        start_freq = stop_freq = center_freq = span = n_points = None
+
         for param in step_channels:
             if "VNA" in param["name"]:
-                if "Start frequency" in param["name"]:
-                    start_freq = param["values"]
-                    vna_param = param
-                elif "Stop frequency" in param["name"]:
-                    stop_freq = param["values"]
-                elif "# of points" in param["name"]:
-                    n_points = param["values"]
-            if (
-                start_freq is not None
-                and stop_freq is not None
-                and n_points is not None
-                and vna_param is not None
-            ):
-                values = np.linspace(float(start_freq), float(stop_freq), int(n_points))
-                return [
-                    Valueclass(
-                        name=vna_param["name"].replace("Start f", "F"),
-                        value=values,
-                        unit=vna_param["unit"],
-                    )
-                ]
+                if "Start frequency" in param:
+                    start_freq = value
+                elif "Stop frequency" in param:
+                    stop_freq = value
+        
+        for param, value in channels.items():
+            if "VNA" in param:
+                if "# of points" in param:
+                    n_points = value
+
+                elif start_freq is None or stop_freq is None:
+                    if "Center frequency" in param:
+                        center_freq = value
+                    elif "Span" in param:
+                        span = value
+            
+        if center_freq is not None and span is not None:
+            start_freq = center_freq - span/2
+            stop_freq = center_freq + span/2
+
+        print("n_points:", n_points)
+        print("start freq:", start_freq)
+        
+        if (
+            start_freq is not None
+            and stop_freq is not None
+            and n_points is not None
+        ):
+            values = np.linspace(float(start_freq), float(stop_freq), int(n_points))
+            return [
+                Valueclass(
+                    name='VNA - Frequency',
+                    value=values,
+                    unit='Hz',
+                )
+            ]
         return []
 
     def _get_parameters(f):
         step_channels = f.getStepChannels()
+        channels = f.getChannelValuesAsDict()
 
-        parameters = _get_vna_data(step_channels)
+        parameters = _get_vna_data(step_channels, channels)
         parameters += [
             Valueclass(name=step["name"], value=step["values"], unit=step["unit"])
             for step in step_channels

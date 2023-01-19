@@ -225,8 +225,11 @@ class Valueclass:
         if isinstance(value, (float, int, np.integer)):
             self._value = np.array([value])
 
-        elif isinstance(value, (list, tuple, np.ndarray)):
+        elif isinstance(value, (list, tuple)):
             self._value = np.array(value)
+
+        elif isinstance(value, np.ndarray):
+            self._value = value
 
     @property
     def error(self) -> np.ndarray:

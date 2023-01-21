@@ -441,7 +441,7 @@ class LorentzianModel(ModelABC):
 
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
         x = np.array(x)
-        return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+        return amplitude * sigma ** 2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
 
     def guess(
         self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
@@ -483,7 +483,7 @@ class LorentzianConstantModel(ModelABC):
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
         x = np.array(x)
         return (
-            amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+            amplitude * sigma ** 2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
             + offset
         )
 
@@ -700,10 +700,7 @@ class OscillationModel(ModelABC):
         [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
 
         return self._make_parameters(
-            amplitude=amplitude,
-            frequency=frequency,
-            phi=phi,
-            offset=offset,
+            amplitude=amplitude, frequency=frequency, phi=phi, offset=offset,
         )
 
     def _oscillations_guess(self, x, y):
@@ -713,7 +710,7 @@ class OscillationModel(ModelABC):
         a = (y.max() - y.min()) / 2
         c = y.mean()
         yhat = fftpack.rfft(y - y.mean())
-        idx = (yhat**2).argmax()
+        idx = (yhat ** 2).argmax()
         freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
         w = freqs[idx]
         f = w if self.angular else w / (2 * np.pi)
@@ -804,7 +801,7 @@ class DampedOscillationModel(ModelABC):
         c = y.mean()
         T = x[round(len(x) / 2)]
         yhat = fftpack.rfft(y - y.mean())
-        idx = (yhat**2).argmax()
+        idx = (yhat ** 2).argmax()
         freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
         w = freqs[idx]
         f = w if self.angular else w / (2 * np.pi)
@@ -860,7 +857,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
 
     def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
         x = np.array(x)
-        return amplitude * phase**x + offset
+        return amplitude * phase ** x + offset
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)

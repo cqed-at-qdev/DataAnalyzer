@@ -1,3 +1,10 @@
+"""Valueclass class for storing values and errors.
+
+The class is designed to be used in a similar way as the numpy.ndarray class.
+It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
+It uses some of the same functionality as seen in the Labber GUI (See .traces() method).
+"""
+
 from dataclasses import asdict, dataclass
 from typing import Optional, Union
 
@@ -14,7 +21,7 @@ class Valueclass:
     It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
 
     Returns:
-        _type_: _description_
+        Valueclass: Valueclass object.
     """
 
     value: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
@@ -51,7 +58,7 @@ class Valueclass:
             return Valueclass(self.value[key], self.error[key], self.name, self.unit)
         return self[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
             if not isinstance(value, Valueclass):
                 value = Valueclass(value, self.error[key], self.name, self.unit)
@@ -71,16 +78,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value + other,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.value + other, self.error, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
                 self.value + other.value,
-                np.sqrt(self.error**2 + other.error**2),
+                np.sqrt(self.error ** 2 + other.error ** 2),
                 self.name,
                 self.unit,
             )
@@ -96,16 +99,12 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value - other,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.value - other, self.error, self.name, self.unit, self.fft_type,
             )
         else:
             return Valueclass(
                 self.value - other.value,
-                np.sqrt(self.error**2 + other.error**2),
+                np.sqrt(self.error ** 2 + other.error ** 2),
                 self.name,
                 self.unit,
             )
@@ -143,7 +142,7 @@ class Valueclass:
                 self.value / other.value,
                 np.sqrt(
                     (self.error / other.value) ** 2
-                    + (self.value * other.error / other.value**2) ** 2
+                    + (self.value * other.error / other.value ** 2) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -152,7 +151,7 @@ class Valueclass:
     def __pow__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value**other,
+                self.value ** other,
                 self.error
                 * other
                 * self.value ** (other - 1),  # TODO: make correct error propagation
@@ -161,10 +160,10 @@ class Valueclass:
             )
         else:
             return Valueclass(
-                self.value**other.value,
+                self.value ** other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value**other.value * other.error * np.log(self.value))
+                    + (self.value ** other.value * other.error * np.log(self.value))
                     ** 2
                 ),
                 self.name,
@@ -183,7 +182,7 @@ class Valueclass:
     def __rtruediv__(self, other) -> "Valueclass":
         return Valueclass(
             other / self.value,
-            other * self.error / self.value**2,
+            other * self.error / self.value ** 2,
             self.name,
             self.unit,
             self.fft_type,
@@ -191,8 +190,8 @@ class Valueclass:
 
     def __rpow__(self, other) -> "Valueclass":
         return Valueclass(
-            other**self.value,
-            other**self.value * self.error * np.log(other),
+            other ** self.value,
+            other ** self.value * self.error * np.log(other),
             self.name,
             self.unit,
             self.fft_type,
@@ -440,13 +439,7 @@ class Valueclass:
             np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
         )
 
-        return Valueclass(
-            value,
-            error,
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
 
     ####################################################################################################
     #                   Math (Advanced) Functions                                                      #
@@ -463,8 +456,8 @@ class Valueclass:
     @property
     def norm(self):
         return Valueclass(
-            self.value / np.sqrt(np.sum(self.value**2)),
-            self.error / np.sqrt(np.sum(self.value**2)),
+            self.value / np.sqrt(np.sum(self.value ** 2)),
+            self.error / np.sqrt(np.sum(self.value ** 2)),
             self.name,
             self.unit,
             self.fft_type,
@@ -534,11 +527,7 @@ class Valueclass:
             "Individual",
         ):
             return Valueclass(
-                self.value,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
+                self.value, self.error, self.name, self.unit, self.fft_type,
             )
 
         elif operation in ("Substract first", "substract first", "first", "First"):
@@ -604,13 +593,7 @@ class Valueclass:
             v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
             v[0] = np.zeros(self.value.shape[1])
 
-            return Valueclass(
-                v,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
 
         elif operation in ("Average", "average"):
             return Valueclass(
@@ -694,13 +677,7 @@ class Valueclass:
             **kwargs,
         )
 
-        scatter_plot = plt.scatter(
-            y.real,
-            y.imag,
-            c=x,
-            *args,
-            **kwargs,
-        )
+        scatter_plot = plt.scatter(y.real, y.imag, c=x, *args, **kwargs,)
 
         plt.colorbar(scatter_plot, label=x_label)
 
@@ -716,27 +693,43 @@ class Valueclass:
     #                   Conversion Functions                                                           #
     ####################################################################################################
     def todict(self, split_complex: bool = False):
+        """Converts the Parameter into a dictionary.
+
+        Args:
+            split_complex: Whether to split the value and error of a complex
+                parameter into real and imaginary parts.
+        """
+        # Convert Parameter to a dictionary
         valuedict = asdict(self)
 
+        # If the value of the Parameter is complex and split_complex is True
         if np.iscomplexobj(self.value) and split_complex:
+            # Convert the value to a dictionary with real and imaginary parts
             valuedict["value"] = {
                 "real": self.value.real.tolist(),
                 "imag": self.value.imag.tolist(),
             }
         else:
+            # Convert the value to a list
             valuedict["value"] = self.value.tolist()
 
+        # If the error of the Parameter is complex and split_complex is True
         if np.iscomplexobj(self.error) and split_complex:
+            # Convert the error to a dictionary with real and imaginary parts
             valuedict["error"] = {
                 "real": self.error.real.tolist(),
                 "imag": self.error.imag.tolist(),
             }
         else:
+            # Convert the error to a list
             valuedict["error"] = self.error.tolist()
 
+        # If the error is all NaNs
         if np.isnan(self.error).all():
+            # Remove the error from the dictionary
             valuedict.pop("error")
 
+        # Return the dictionary
         return valuedict
 
     def tostr(
@@ -776,19 +769,39 @@ class Valueclass:
     @staticmethod
     def fromdict(newdict: dict):
         def _get_numbers_from_dict(numbersdict):
+            """Converts a dictionary of numbers to a 1-D complex array.
+            The dictionary can contain either the keys "real" and "imag" or "I" and "Q"
+            
+            Args:
+                numbersdict (dict): Dictionary of numbers.
+            
+            Returns:
+                (np.ndarray): 1-D complex array of numbers.
+            """
+            # Check if the input is a dictionary.
+            # If not, return the input as is.
             if not isinstance(numbersdict, dict):
                 return numbersdict
 
+            # Check if the dictionary has "real" and "imag" keys.
+            # If so, extract the real and imaginary parts of the numbers.
             if "real" in numbersdict and "imag" in numbersdict:
                 real = numbersdict["real"]
                 imag = numbersdict["imag"]
 
+            # Check if the dictionary has "I" and "Q" keys.
+            # If so, extract the real and imaginary parts of the numbers.
             elif "I" in numbersdict and "Q" in numbersdict:
                 real = numbersdict["I"]
                 imag = numbersdict["Q"]
 
+            # If the dictionary doesn't have the "real" and "imag" or "I" and "Q" keys,
+            # return the input as is.
             else:
                 return numbersdict
+
+            # Convert the real and imaginary parts to numpy arrays and return them
+            # as a complex array.
             return np.array(real) + 1j * np.array(imag)
 
         if "value" in newdict:
@@ -821,9 +834,20 @@ class Valueclass:
     ####################################################################################################
     #                   Conversion Functions                                                           #
     ####################################################################################################
-    def append(self, other, axis=None):
+    def append(
+        self,
+        other: Union["Valueclass", list, tuple, np.ndarray],
+        axis: Optional[int] = None,
+    ) -> None:
+        """Appends a value to the value array.
+
+        Args:
+            other (Union[Valueclass, list, tuple, np.ndarray]): The value to be appended.
+            axis (Optional[int], optional): The axis to append the value to. Defaults to None.
+        """
         if not isinstance(other, Valueclass):
             other = self.fromfloat(other, self.name)
 
         self.value = np.append(self.value, other.value, axis=axis)
         self.error = np.append(self.error, other.error, axis=axis)
+

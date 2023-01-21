@@ -1,6 +1,6 @@
 # Author: Malthe Asmus Marciniak Nielsen
 import os
-from typing import Any, Union
+from typing import Any, Tuple, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -20,7 +20,7 @@ from dataanalyzer.utilities import (
 class Plotter:
     def __init__(
         self,
-        subplots=(1, 1),
+        subplots: Tuple[int, int] = (1, 1),
         default_settings: Union[dict, str, bool] = True,
         interactive: bool = False,
         **kwargs,
@@ -29,69 +29,114 @@ class Plotter:
 
         Args:
             subplots (tuple, optional): The shape of the subplots. Defaults to (1, 1).
+
+        Raises:
+            ValueError: If the default settings are not a valid type.
         """
 
+        # Enable interactive mode
         if interactive:
             mpl.use("Qt5Agg")
 
         self.kwargs = kwargs
 
+        # Set default settings
         self.set_default_settings(default_settings)
+
+        # Setup the figure and axes
         self._setup_fig_and_ax(subplots)
 
         self.metadata = ""
 
-    def _setup_fig_and_ax(self, subplots: tuple):
+    def _setup_fig_and_ax(self, subplots: tuple) -> None:
+        """Setup the figure and axes. If a figure is provided in the keyword arguments, 
+        it will be used. Otherwise, a new figure will be created.
+
+        Args:
+            subplots (tuple): The shape of the subplots.
+        """
+        # Get the figure from the keyword arguments if it exists
         self.fig: Figure = self.kwargs.pop("fig", None)
+        # Set the number of columns to be one more than the number of subplots
         subplots_plus_col = (subplots[0], subplots[1] + 1)
 
+        # If the figure doesn't exist, create it
         if self.fig is None:
             self.fig, axs = plt.subplots(*subplots_plus_col)
         else:
+            # If the figure exists, clear it
             self.fig.clf()
+            # Get the axes from the figure
             axs = self.fig.subplots(*subplots_plus_col)
 
+        # Reshape the axes into a grid
         axs = np.array(axs).reshape(subplots_plus_col)
+        # Set the axes
         self.axs: np.ndarray[Axes, Any] = axs[0:, :-1]
+        # Set the axis for the annotations
         self.ax = self.axs[0, 0]
 
+        # Set up the axis for the annotations
         self._setup_ax_anotate(ax_anotate=axs[0:, -1])
 
-    def _setup_ax_anotate(self, ax_anotate: np.ndarray[Axes, Any]):
+    def _setup_ax_anotate(self, ax_anotate: np.ndarray[Axes, Any]) -> None:
+        """Setup the axis for the annotations. This function removes all axes from the figure and adds a new axis to the figure.
+
+        Args:
+            ax_anotate (np.ndarray[Axes, Any]): The axis to use for the annotations.
+        """
+        # Get the grid spec of the first axis
         gs = ax_anotate[0].get_gridspec()
 
+        # Remove all axes from the figure
         for ax in ax_anotate:
             ax.remove()
 
+        # Add the new axis to the figure
         self.ax_anotate = self.fig.add_subplot(gs[0:, -1])
+
+        # Set the axis to invisible
         self.ax_anotate.axis("off")
+
+        # Set a flag to remove the axis on the next update
         self._remove_ax_anotate = True
 
-    def set_default_settings(self, default_settings: Union[dict, str, bool] = True):
+    def set_default_settings(
+        self, default_settings: Union[dict, str, bool] = True
+    ) -> None:
         """Sets the default settings for the plotter. This function is a wrapper for matplotlib.pyplot.style.use
 
         Args:
             default_settings (Union[dict, str, bool], optional): The default settings to use. Defaults to True.
         """
+        # If the user wants to use the default settings, load the default settings
+        # from the quantum_calibrator.mplstyle file
         if default_settings is True or default_settings == "quantum_calibrator":
             dirname = os.path.dirname(__file__)
             plt.style.use(
                 os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle")
             )
 
+        # If the user wants to use the presentation settings, load the presentation
+        # settings from the presentation.mplstyle file
         elif default_settings == "presentation":
             dirname = os.path.dirname(__file__)
             plt.style.use(os.path.join(dirname, r"plot_styles/presentation.mplstyle"))
 
+        # If the user wants to use no default settings, load the default matplotlib
+        # settings
         elif default_settings is False:
             plt.style.use("default")
 
+        # If the user passes a dictionary with settings, load these settings
         elif isinstance(default_settings, dict):
             plt.rcParams.update(default_settings)
 
+        # If the user passes a string with a style, load this style
         elif isinstance(default_settings, str):
             plt.style.use(default_settings)
 
+        # If the user passes anything else, raise an error
         else:
             raise ValueError(
                 "default_settings must be either a dict, a string or a boolean"
@@ -155,11 +200,7 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self,
-        x: Valueclass,
-        y: Valueclass,
-        ax: tuple = (),
-        **kwargs,
+        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -581,10 +622,10 @@ class Plotter:
             for k in list(kwargs)
             if k.startswith("tostr_")
         }
-        metadata = self._convert_metadata_to_str(
+        metadata_str = self._convert_metadata_to_str(
             *metadata, algin=algin, **kwargs_metadata
         )
-        self.metadata = metadata if overwrite else f"{self.metadata}{metadata}"
+        self.metadata = metadata_str if overwrite else f"{self.metadata}{metadata_str}"
 
         self.ax_anotate.texts.clear()
         self.ax_anotate.text(s=self.metadata, **kwargs)
@@ -598,7 +639,7 @@ class Plotter:
         algin: bool = True,
         add_parameter_header: bool = True,
         **kwargs,
-    ):
+    ) -> str:
         name_width = kwargs.pop("tostr_name_width", 40)
         size_width = kwargs.pop("tostr_size_width", 7)
 
@@ -733,23 +774,15 @@ class Plotter:
         self._rescale_axes()
         plt.tight_layout()
 
-        # if live_plot:
-        #     for fig_num in plt.get_fignums():
-        #         if self.fig.number != fig_num:
-        #             plt.close(fig_num)
-        #     plt.pause(0.001)
-
-        # return self.fig
-
-        if return_fig:
-            for fig_num in plt.get_fignums():
-                if self.fig.number != fig_num:
-                    plt.close(fig_num)
-
-            plt.pause(0.001)
-            return self.fig
-        else:
+        if not return_fig:
             return plt.show()
+
+        for fig_num in plt.get_fignums():
+            if self.fig.number != fig_num:  # type: ignore
+                plt.close(fig_num)
+
+        plt.pause(0.001)
+        return self.fig
 
     def save(self, path: str, **kwargs):
         """Saves the plot. This function is a wrapper for matplotlib.pyplot.savefig

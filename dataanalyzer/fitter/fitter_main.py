@@ -294,9 +294,9 @@ class Fitter:
         return np.linspace(linspace_start, linspace_stop, linspace_steps)
 
     def _convert_x_and_y_to_valueclass(self, x_array, y_array):
-        if type(self.x) == Valueclass:
+        if isinstance(self.x, Valueclass):
             x_array = Valueclass(value=x_array, name=self.x.name, unit=self.x.unit)
-        if type(self.y) == Valueclass:
+        if isinstance(self.y, Valueclass):
             y_array = Valueclass(value=y_array, name=self.y.name, unit=self.y.unit)
         return x_array / self._x_cf, y_array / self._y_cf
 

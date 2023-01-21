@@ -1,5 +1,6 @@
 import dataanalyzer.fitter.fitter_classsetup as fitter_classsetup
 import numpy as np
+import pytest
 
 
 def test_Fitparam():

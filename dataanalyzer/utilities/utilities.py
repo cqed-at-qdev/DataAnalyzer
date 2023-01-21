@@ -24,28 +24,36 @@ def convert_array_with_unit(
     Returns:
         Tuple[np.ndarray, str, float]: The converted array, the unit prefix and the conversion factor.
     """
+    # Define the unit prefixes
     prefix = "yzafpnµm kMGTPEZY"
     shift = decimal.Decimal("1E24")
 
+    # Check if the array is a list, tuple or numpy array
     if isinstance(array, (float, int)):
+        # If not so, raise an error
         raise TypeError("Array must be a list, tuple or numpy array.")
 
+    # Determine the maximum value of the array
+    # and convert it to a decimal
     max_value = np.max(np.abs(array))
-
     deci = (decimal.Decimal(str(max_value)) * shift).normalize()
+
+    # Split the decimal into its mantissa and exponent
     try:
         m, e = deci.to_eng_string().split("E")
     except Exception:
         m, e = deci, 0
 
+    # Calculate the conversion factor
     conversion_factor = float(m) / max_value
+
+    # Convert the array
     converted_array = np.array(array) * conversion_factor
 
-    unit_prefix = f"{prefix[int(e) // 3]}"
+    # Determine the unit prefix (if e is 8 the prefix is empty)
+    unit_prefix = f"{prefix[int(e) // 3]}" if int(e) != 8 else ""
 
-    if unit_prefix == " ":
-        unit_prefix = ""
-
+    # Return the converted array, the unit prefix and the conversion factor
     return converted_array, unit_prefix, conversion_factor
 
 
@@ -64,19 +72,24 @@ def round_on_error(
     """
     from math import isnan
 
+    # Check if the error is not a number, infinite, or zero
     if isnan(error) or not np.isfinite(error) or error == 0:
-        value_rounded = np.nan if isnan(value) else value
-        error_rounded = error
-        return f"{value_rounded} ± {error_rounded}"
+        # If so, return the value and error as-is
+        return f"{value} ± {error}"
 
+    # Calculate the power of the error
     power = int(np.floor(np.log10(error) - np.log10(0.95)))
+    # Calculate the power of the rounded error
     power_round = -power + n_digits - 1
 
+    # Round the error to the power of the rounded error
     error_rounded = round(error, power_round)
+    # Round the value to the power of the rounded error
     value_rounded = round(value, power_round)
 
+    # Return the rounded value and error as a string
     return (
         f"{value:.{power_round}f} ± {error:.{power_round}f}"
-        if power <= 0
+        if power < 0
         else f"{value_rounded} ± {error_rounded}"
     )

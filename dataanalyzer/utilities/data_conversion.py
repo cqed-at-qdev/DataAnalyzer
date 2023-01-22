@@ -406,7 +406,11 @@ def _get_results(logfile: Labber.LogFile) -> list[Valueclass]:
         list[Valueclass]: A list of Valueclass objects.
     """
     results = []
+
+    # Get the log channels
     log_channels = logfile.getLogChannels()
+
+    # Get the data for each log channel
     for i, log_channel in enumerate(log_channels):
         # Get the data from the Labber file
         data = logfile.getData(i)
@@ -489,6 +493,7 @@ def _print_parameters_and_results(
         file_type (str): The type of file, e.g. Labber or Json
     """
     if insepct:
+        # Print the parameters and results to the console
         print(f"Insepcting {file_type} File...")
         print_values_from_list("parameters", parameters)
         print_values_from_list("results", results)
@@ -501,8 +506,11 @@ def print_values_from_list(name: str, value_list: list[Valueclass]) -> None:
         name (str): The name of the list of Valueclass objects (e.g. parameters or results)
         value_list (list[Valueclass]): The list of Valueclass objects
     """
+    # Print the values from the list in a nice format to the console
     print(f"File is containing {len(value_list)} {name}:")
+    # Loop over all values in the list
     for value in value_list:
+        # Print the name of the value
         print(f"\t{value.name}")
 
 

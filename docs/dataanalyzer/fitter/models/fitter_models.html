@@ -1,0 +1,4002 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>dataanalyzer.fitter.models.fitter_models API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dataanalyzer.fitter.models.fitter_models</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Author: Malthe Asmus Marciniak Nielsen
+import copy
+import inspect
+from abc import ABC, abstractmethod
+from typing import Iterable, Optional, Union
+
+import numpy as np
+
+# from sklearn.mixture import GaussianMixture
+
+from dataanalyzer.fitter.fitter_classsetup import *
+from dataanalyzer.fitter.fitter_decorators import symbol_wrapper, unit_wrapper
+
+
+####################################################################################################
+#                   ABC Model Class                                                                #
+####################################################################################################
+class ModelABC(ABC):
+    def __init__(self, prefix: str = &#34;&#34;, **kwargs):
+        self.param_names: list[str] = []
+        self._prefix: str = prefix
+        self._root2full: dict[str, str] = {}
+        self._params_guess: dict[str, Fitparam] = {}
+
+        self.x_unit: str = kwargs.pop(&#34;x_unit&#34;, &#34;&#34;)
+        self.y_unit: str = kwargs.pop(&#34;y_unit&#34;, &#34;&#34;)
+
+        self.params_hint: dict = kwargs.pop(&#34;params_hint&#34;, {})
+        self.independent_vars: list[str] = kwargs.pop(&#34;independent_vars&#34;, [&#34;x&#34;])
+        self._param_root_names: list[str] = kwargs.pop(&#34;param_names&#34;, [])
+        # self._frequency_in_hz = kwargs.pop(&#34;frequency_in_hz&#34;, False)
+
+        self._make_param_names()
+
+    @abstractmethod
+    def func(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ) -&gt; dict[str, Fitparam]:
+        pass
+
+    @abstractmethod
+    def funcname(self, *params):
+        pass
+
+    @abstractmethod
+    def units(self, x_unit, y_unit) -&gt; dict[str, str]:
+        if x_unit == &#34;&#34;:
+            x_unit = self.x_unit
+
+        if y_unit == &#34;&#34;:
+            y_unit = self.y_unit
+
+        return x_unit, y_unit
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return dict(zip(self._param_root_names, self._param_root_names))
+
+    def _make_param_root_names(self):
+        pos_params: dict[str, Optional[float]] = {}
+        self._def_values: dict[str, Optional[float]] = {}
+
+        if hasattr(self.func, &#34;argnames&#34;) and hasattr(self.func, &#34;defaults&#34;):
+            pos_params[self.func.argnames] = self.func.defaults
+        else:
+            for arg_name, arg_value in inspect.signature(self.func).parameters.items():
+                if (
+                    arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
+                    and arg_value.default != arg_value.empty
+                ):
+                    pos_params[arg_name] = arg_value.default
+
+        for pos_key, pos_val in list(pos_params.items()):
+            if not (pos_key is None or isinstance(pos_val, (int, float))):
+                pos_params.pop(pos_key)
+
+            if pos_key in self.independent_vars:
+                pos_params.pop(pos_key)
+
+        for pos_param in list(pos_params.keys()):
+            if pos_param not in self._param_root_names:
+                self._param_root_names.append(pos_param)
+
+        self._def_values = pos_params
+
+    def _make_param_names(self):
+        self._make_param_root_names()
+        self.param_names = [self._prefix + name for name in self._param_root_names]
+        self._root2full = dict(zip(self._param_root_names, self.param_names))
+
+    @property
+    def param_symbols(self) -&gt; dict[str, str]:
+        if not hasattr(self, &#34;_param_symbols&#34;):
+            self.symbols()
+        return self._param_symbols
+
+    def _make_parameters(self, **kwargs) -&gt; dict[str, Fitparam]:
+        if not self.param_names:
+            self._make_param_names()
+
+        params = {}
+
+        for name in self.param_names:
+            # Making empty parameter dict
+            par = params.get(name, Fitparam())
+            basename = name[len(self._prefix) :]
+
+            # Updates parameter from guess
+            if basename in self._def_values:
+                par.values = self._def_values[basename]
+            if par.values in (None, np.inf, -np.inf, np.nan):
+                par.values = 0
+
+            # Updates parameter from hint
+            if basename in self.params_hint:
+                par.values = self.params_hint[basename]
+
+            # Updates parameter from kwargs (no prefix)
+            if basename in kwargs:
+                if isinstance(kwargs[basename], Fitparam):
+                    par.update(kwargs[basename])
+                elif isinstance(kwargs[basename], (int, float)):
+                    par.values = kwargs[basename]
+
+            # Updates parameter from kwargs (with prefix)
+            if name in kwargs:
+                if isinstance(kwargs[name], Fitparam):
+                    par.update(kwargs[name])
+                elif isinstance(kwargs[name], (int, float)):
+                    par.values = kwargs[name]
+
+            params[name] = par
+        return params
+
+    def _make_units(self, **kwargs) -&gt; dict[str, str]:
+        units = {}
+        for name in self.param_names:
+            basename = name[len(self._prefix) :]
+
+            # Updates unit from kwargs (no prefix)
+            if basename in kwargs:
+                units[name] = kwargs[basename]
+
+            # Updates unit from kwargs (with prefix)
+            if name in kwargs:
+                units[name] = kwargs[name]
+
+        return units
+
+    def get_extrema(self, params: dict) -&gt; dict:
+        raise NotImplementedError(&#34;get_extrema not implemented for this model&#34;)
+
+    def get_period(self, params: dict) -&gt; float:
+        raise NotImplementedError(&#34;get_period not implemented for this model&#34;)
+
+    def __add__(self, other):
+        return SumModel(self, other)
+
+
+####################################################################################################
+#                   ABC Model Class __add__ function                                               #
+####################################################################################################
+class SumModel(ModelABC):
+    def __init__(self, *models):
+        self.models = [copy.deepcopy(model) for model in models]
+        self.param_names: list[str] = []
+        self._prefix: list[str] = []
+        self._postfix: list[str] = [&#34;&#34; for _ in range(len(self.models))]
+
+        self._root2full: dict[str, str] = {}
+        self._params_guess: dict[str, Fitparam] = {}
+        self._def_values: dict[str, Optional[float]] = {}
+        self.params_hint: dict = {}
+        self._param_root_names: list[str] = []
+
+        for model in self.models:
+            if isinstance(model._prefix, list):
+                self._prefix += model._prefix
+            else:
+                self._prefix.append(model._prefix)
+
+            self._root2full.update(model._root2full)
+            self._params_guess.update(model._params_guess)
+
+            self.params_hint.update(model.params_hint)
+
+        self._set_param_root_name_and_get_prefix()
+        self._make_parameters()
+        self.symbols()
+
+    def _set_param_root_name_and_get_prefix(self):
+        root_names_temp = [model._param_root_names for model in self.models]
+
+        for i, param_list in enumerate(root_names_temp):
+            if common_member(*root_names_temp):
+                self._postfix[i] = f&#34;_{i}&#34;
+                param_list = [f&#34;{name}_{i}&#34; for name in param_list]
+            self._param_root_names += param_list
+
+            limit = len(param_list)
+            if hasattr(self.models[i], &#34;poly_degree&#34;):
+                limit = self.models[i].poly_degree + 1
+
+            self.models[i].param_names = param_list[:limit]
+            self.param_names += [f&#34;{self._prefix[i]}{name}&#34; for name in param_list][
+                :limit
+            ]
+
+    def func(self, x, *args, **kwargs):
+        if args:
+            kwargs = dict(zip(self.param_names, args))
+
+        x = np.array(x)
+        func_sum = np.zeros(x.shape)
+        for i, model in enumerate(self.models):
+            p = self._postfix[i]
+            model_kwargs = {
+                k.replace(p, &#34;&#34;): v for k, v in kwargs.items() if k in model.param_names
+            }
+            func_sum += model.func(x, **model_kwargs)
+        return func_sum
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ):
+        x, y = np.array(x), np.array(y)
+        guess = {}
+        for model in self.models:
+            model_guess = model.guess(x=x, y=y, *args, **kwargs)
+            guess |= model_guess
+
+            guess_values = {k: v.values for k, v in model_guess.items()}
+            y_guess = model.func(x, **guess_values)
+            y = y - y_guess
+
+        return guess
+
+    def funcname(self, *args, **kwargs):
+        func_names, func_strs = &#34;&#34;, &#34;&#34;
+        for model in self.models:
+            func_name, func_str = (
+                model.funcname(*args, **kwargs).replace(&#34;$&#34;, &#34;&#34;).split(&#34; = &#34;)
+            )
+
+            func_names += f&#34;{func_name} +&#34;
+            func_strs += f&#34;{func_str} +&#34;
+
+        return f&#34;${func_names[:-1]} = {func_strs[:-1]}$&#34;
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        units = {}
+        for model in self.models:
+            units |= model.units(x=x, y=y)
+        return units
+
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        symbols = {}
+        self._root2symbol = {}
+
+        for model in self.models:
+            symbols |= model.symbols(**symbols)
+            self._root2symbol.update(model._root2symbol)
+        return symbols
+
+    def get_extrema(self, params: dict) -&gt; dict[str, dict[str, float]]:
+        extrema = {}
+        for i, model in enumerate(self.models):
+            p = self._postfix[i]
+            model_params = {
+                k.replace(p, &#34;&#34;): v for k, v in params.items() if k in model.param_names
+            }
+            model_name = f&#34;{model.__class__.__name__}{p}&#34;
+            extrema |= {model_name: model.get_extrema(model_params)}
+        return extrema
+
+
+####################################################################################################
+#                   Linear Model                                                                   #
+####################################################################################################
+class LinearModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, slope=1.0, intercept=0.0):
+        x = np.array(x)
+        return slope * x + intercept
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        slope, intercept = np.polyfit(x, y, 1)
+        return self._make_parameters(slope=slope, intercept=intercept)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;slope&#34;: &#34;y/x&#34;, &#34;intercept&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;slope&#34;: &#34;a&#34;, &#34;intercept&#34;: &#34;b&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        raise ValueError(&#34;Linear model has no extrema&#34;)
+
+
+####################################################################################################
+#                   Proportional Model                                                             #
+####################################################################################################
+class ProportionalModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, slope=1.0):
+        x = np.array(x)
+        return slope * x
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        slope = (y[-1] - y[0]) / (x[-1] - x[0])
+        return self._make_parameters(slope=slope)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{proportional}}(x) = {params[0]} x&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;slope&#34;: &#34;y/x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;slope&#34;: &#34;a&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        raise ValueError(&#34;Proportional model has no extrema&#34;)
+
+
+####################################################################################################
+#                   Gaussian Model                                                                 #
+####################################################################################################
+class GaussianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+        x = np.array(x)
+        return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2))
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
+        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]
+
+
+####################################################################################################
+#                   Gaussian + Constant Model                                                      #
+####################################################################################################
+class GaussianConstantModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+        x = np.array(x)
+        return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2)) + offset
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        offset = np.mean(y)
+        amplitude, center, sigma = guess_from_peak(y - offset, x, negative_peak)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]
+
+
+####################################################################################################
+#                   Lorentzian Model                                                               #
+####################################################################################################
+class LorentzianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+        x = np.array(x)
+        return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]
+
+
+####################################################################################################
+#                   Lorentzian + Constant Model                                                    #
+####################################################################################################
+class LorentzianConstantModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+        x = np.array(x)
+        return (
+            amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+            + offset
+        )
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        offset = np.mean(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]
+
+
+####################################################################################################
+#                   Lorentzian + Polynomial Model                                                  #
+####################################################################################################
+class LorentzianPolynomialModel(ModelABC):
+    def __init__(
+        self,
+        independent_vars=None,
+        prefix=&#34;&#34;,
+        degree: int = 3,
+        negative_peak: bool = False,
+        **kwargs,
+    ):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+
+        super().__init__(**kwargs)
+        self.__model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
+            negative_peak=negative_peak, **kwargs
+        )
+
+        self.__dict__.update(self.__model.__dict__)
+
+    def func(self, x, *args, **kwargs):
+        return self.__model.func(x, *args, **kwargs)
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        return self.__model.guess(x, y)
+
+    def funcname(self, *params) -&gt; str:
+        return self.__model.funcname(*params)
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return self.__model.units(x, y)
+
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return self.__model.symbols(**symbols)
+
+
+####################################################################################################
+#                   Split Lorentzian Model                                                         #
+####################################################################################################
+class SplitLorentzianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, sigma_r=0.0):
+        x = np.array(x)
+        s = max(tiny, sigma)
+        r = max(tiny, sigma_r)
+        ss = s * s
+        rr = r * r
+        xc2 = (x - center) ** 2
+        amp = 2 * amplitude / (np.pi * (s + r))
+        return amp * (ss * (x &lt; center) / (ss + xc2) + rr * (x &gt;= center) / (rr + xc2))
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return (
+            rf&#34;$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}&#34;
+            rf&#34;{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$&#34;
+        )
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;split&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, *params) -&gt; list[str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;split&#34;: &#34;σ_r&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]
+
+
+####################################################################################################
+#                   Polynomial Model                                                               #
+####################################################################################################
+class PolynomialModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, degree: int = 3, **kwargs):
+        self.poly_degree = degree
+        kwargs[&#34;param_names&#34;] = [f&#34;c{i}&#34; for i in range(degree + 1)]
+
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0):
+        return np.polyval([c7, c6, c5, c4, c3, c2, c1, c0], x)
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        coeffs = np.polyfit(x, y, self.poly_degree)
+        coeffs_dict = dict(zip(self.param_names, coeffs[::-1]))
+
+        for i in range(self.poly_degree + 1, 8):
+            coeffs_dict[f&#34;c{i}&#34;] = Fitparam(0.0, fixed=True)
+
+        return self._make_parameters(**coeffs_dict)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{polynomial}}(x) = {params[0]} + {&#39; + &#39;.join(f&#39;{params[i]} x^{i}&#39; for i in range(1, self.poly_degree +1))}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        coeffs_units = {&#34;c0&#34;: &#34;y&#34;}
+        for i in range(1, self.poly_degree + 1):
+            coeffs_units[f&#34;c{i}&#34;] = f&#34;y / x**{i}&#34;
+
+        return coeffs_units
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {f&#34;c{i}&#34;: f&#34;c_{i}&#34; for i in range(self.poly_degree + 1)}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        if self.poly_degree == 1:
+            raise ValueError(&#34;Cannot find extrema for a linear function&#34;)
+        elif self.poly_degree == 2:
+            from uncertainties import ufloat
+
+            c1 = ufloat(params[&#34;c1&#34;][&#34;value&#34;], params[&#34;c1&#34;][&#34;error&#34;])
+            c2 = ufloat(params[&#34;c2&#34;][&#34;value&#34;], params[&#34;c2&#34;][&#34;error&#34;])
+
+            extrema = -c1 / (2 * c2)  # type: ignore
+            return {&#34;value&#34;: extrema.n, &#34;error&#34;: extrema.s}
+        else:
+            return self._find_mulitpolinomial_minima(params)
+
+    def _find_mulitpolinomial_minima(self, params: dict):
+        param_values = [p[&#34;value&#34;] for p in params.values()][: self.poly_degree + 1][
+            ::-1
+        ]
+
+        np_poly = np.poly1d(param_values)  # Note: polynomials are opposite order
+
+        roots = np.real(np.roots(np_poly.deriv()))
+        maxima = roots[np.argmax(np_poly(roots))]
+
+        print(
+            &#34;Warning: extrema for polynomial model is not implemented yet&#34;,
+            &#34;Returning the maximum of the first derivative&#34;,
+            &#34;Unsertainties are not calculated, but sqrt(maxima) is returned&#34;,
+        )
+
+        return {&#34;value&#34;: maxima, &#34;error&#34;: np.sqrt(maxima)}
+
+
+####################################################################################################
+#                   Oscillation Model                                                              #
+####################################################################################################
+class OscillationModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        self.angular = kwargs.pop(&#34;angular&#34;, False)
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x + phi) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
+
+        return self._make_parameters(
+            amplitude=amplitude,
+            frequency=frequency,
+            phi=phi,
+            offset=offset,
+        )
+
+    def _oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+
+        dx = x[1] - x[0]
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+
+        phi = np.angle(
+            sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2)))
+        )
+
+        return [a, f, phi, c]
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+        return rf&#34;$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {
+            &#34;amplitude&#34;: &#34;y&#34;,
+            &#34;frequency&#34;: &#34;x**(-1)&#34;,
+            &#34;phi&#34;: &#34;rad&#34;,
+            &#34;offset&#34;: &#34;y&#34;,
+        }
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {
+            &#34;amplitude&#34;: &#34;A&#34;,
+            &#34;frequency&#34;: &#34;f&#34;,
+            &#34;phi&#34;: &#34;φ&#34;,
+            &#34;offset&#34;: &#34;c&#34;,
+        }
+
+    def get_period(self, params: dict) -&gt; dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params[&#34;frequency&#34;][&#34;value&#34;])
+            error = (
+                params[&#34;frequency&#34;][&#34;error&#34;]
+                / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+                / (2 * np.pi)
+            )
+        else:
+            period = 1 / params[&#34;frequency&#34;][&#34;value&#34;]
+            error = params[&#34;frequency&#34;][&#34;error&#34;] / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+
+        return {&#34;value&#34;: period, &#34;error&#34;: error}
+
+
+####################################################################################################
+#                   Damped Oscillation Model                                                       #
+####################################################################################################
+class DampedOscillationModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        self.angular = kwargs.pop(&#34;angular&#34;, False)
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x + phi) * np.exp(-x / decay) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(
+            x, y
+        )
+
+        return self._make_parameters(
+            amplitude=amplitude,
+            frequency=frequency,
+            phi=phi,
+            decay=decay,
+            offset=offset,
+        )
+
+    def _damped_oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        T = x[round(len(x) / 2)]
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+        dx = x[1] - x[0]
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+        initial_std = np.std(y[:std_window])
+        noise_level = np.std(y[-2 * std_window :])
+        for i in range(1, len(x) - std_window):
+            std = np.std(y[i : i + std_window])
+            if std &lt; (initial_std - noise_level) * np.exp(-1):
+                T = x[i]
+                break
+        p = np.arcsin((y[0] - c) / a)
+
+        return [a, T, f, p, c]
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+        return rf&#34;$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {
+            &#34;amplitude&#34;: &#34;y&#34;,
+            &#34;frequency&#34;: &#34;x**(-1)&#34;,
+            &#34;phi&#34;: &#34;rad&#34;,
+            &#34;decay&#34;: &#34;x**(-1)&#34;,
+            &#34;offset&#34;: &#34;y&#34;,
+        }
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {
+            &#34;amplitude&#34;: &#34;A&#34;,
+            &#34;frequency&#34;: &#34;f&#34;,
+            &#34;phi&#34;: &#34;φ&#34;,
+            &#34;decay&#34;: &#34;τ&#34;,
+            &#34;offset&#34;: &#34;c&#34;,
+        }
+
+
+####################################################################################################
+#                   Randomized Clifford Benchmark Model                                            #
+####################################################################################################
+class RandomizedCliffordBenchmarkModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
+        x = np.array(x)
+        return amplitude * phase**x + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        amplitude = -y.min()
+        phase = 0.99
+        offset = y.min()
+        return self._make_parameters(amplitude=amplitude, phase=phase, offset=offset)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;phase&#34;: &#34;&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;phase&#34;: &#34;φ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+
+####################################################################################################
+#                   Exponential Decay Model                                                        #
+####################################################################################################
+class ExponentialDecayModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, decay=1.0, offset=0.0):
+        x = np.array(x)
+        decay = not_zero(decay)
+        return amplitude * np.exp(-x / decay) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        # offset = np.min(y[len(y)]) - 1e-4  # Small error added  TODO: why is this small error added?
+        # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
+        # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+
+        offset = np.mean(
+            y[round(len(y) * 0.9) :]
+        )  # Use the last 10% of the data to determine the offset
+        amplitude = (
+            np.mean(y[:3]) - offset
+        )  # Use the first 3 points to determine the amplitude
+        decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+
+        return self._make_parameters(amplitude=amplitude, decay=decay, offset=offset)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;decay&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;decay&#34;: &#34;τ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+
+####################################################################################################
+#                   Gaussian Mixture Model                                                         #
+####################################################################################################
+# Implementation of a Gaussian Mixture Model (GMM) from sklearn
+# Inheriting from ModelABC is not possible because the GMM is not a function
+# class GaussianMixtureModel:
+#     def __init__(
+#         self, n_components=1, covariance_type=&#34;full&#34;, tol=1e-3, reg_covar=1e-6
+#     ):
+#         self.n_components = n_components
+#         self.covariance_type = covariance_type
+#         self.tol = tol
+#         self.reg_covar = reg_covar
+
+#         self.gmm = GaussianMixture(
+#             n_components=n_components,
+#             covariance_type=covariance_type,
+#             tol=tol,
+#             reg_covar=reg_covar,
+#         )
+
+#     def fit(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+#         x, y = np.array(x), np.array(y)
+#         self.gmm.fit(np.array([x, y]).T)
+
+#     def predict(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+#         x, y = np.array(x), np.array(y)
+#         return self.gmm.predict(np.array([x, y]).T)
+
+#     def predict_proba(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+#         x, y = np.array(x), np.array(y)
+#         return self.gmm.predict_proba(np.array([x, y]).T)
+
+#     def score_samples(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+#         x, y = np.array(x), np.array(y)
+#         return self.gmm.score_samples(np.array([x, y]).T)
+
+#     def score(self, x: Union[float, Iterable], y: Union[float, Iterable]):
+#         x, y = np.array(x), np.array(y)
+#         return self.gmm.score(np.array([x, y]).T)
+
+#     def sample(self, n_samples=100):
+#         return self.gmm.sample(n_samples=n_samples)
+
+#     def funcname(self, *params) -&gt; str:
+#         return rf&#34;$\mathrm{{gaussian\ mixture\ model}}$&#34;
+
+#     @unit_wrapper
+#     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+#         return {}
+
+#     @symbol_wrapper
+#     def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+#         return {}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel"><code class="flex name class">
+<span>class <span class="ident">DampedOscillationModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DampedOscillationModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        self.angular = kwargs.pop(&#34;angular&#34;, False)
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x + phi) * np.exp(-x / decay) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(
+            x, y
+        )
+
+        return self._make_parameters(
+            amplitude=amplitude,
+            frequency=frequency,
+            phi=phi,
+            decay=decay,
+            offset=offset,
+        )
+
+    def _damped_oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        T = x[round(len(x) / 2)]
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+        dx = x[1] - x[0]
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+        initial_std = np.std(y[:std_window])
+        noise_level = np.std(y[-2 * std_window :])
+        for i in range(1, len(x) - std_window):
+            std = np.std(y[i : i + std_window])
+            if std &lt; (initial_std - noise_level) * np.exp(-1):
+                T = x[i]
+                break
+        p = np.arcsin((y[0] - c) / a)
+
+        return [a, T, f, p, c]
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+        return rf&#34;$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {
+            &#34;amplitude&#34;: &#34;y&#34;,
+            &#34;frequency&#34;: &#34;x**(-1)&#34;,
+            &#34;phi&#34;: &#34;rad&#34;,
+            &#34;decay&#34;: &#34;x**(-1)&#34;,
+            &#34;offset&#34;: &#34;y&#34;,
+        }
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {
+            &#34;amplitude&#34;: &#34;A&#34;,
+            &#34;frequency&#34;: &#34;f&#34;,
+            &#34;phi&#34;: &#34;φ&#34;,
+            &#34;decay&#34;: &#34;τ&#34;,
+            &#34;offset&#34;: &#34;c&#34;,
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
+    x = np.array(x)
+    if not self.angular:
+        frequency = frequency * 2 * np.pi
+    return amplitude * np.sin(frequency * x + phi) * np.exp(-x / decay) + offset</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+
+    f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+    return rf&#34;$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(
+        x, y
+    )
+
+    return self._make_parameters(
+        amplitude=amplitude,
+        frequency=frequency,
+        phi=phi,
+        decay=decay,
+        offset=offset,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel"><code class="flex name class">
+<span>class <span class="ident">ExponentialDecayModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ExponentialDecayModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, decay=1.0, offset=0.0):
+        x = np.array(x)
+        decay = not_zero(decay)
+        return amplitude * np.exp(-x / decay) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        # offset = np.min(y[len(y)]) - 1e-4  # Small error added  TODO: why is this small error added?
+        # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
+        # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+
+        offset = np.mean(
+            y[round(len(y) * 0.9) :]
+        )  # Use the last 10% of the data to determine the offset
+        amplitude = (
+            np.mean(y[:3]) - offset
+        )  # Use the first 3 points to determine the amplitude
+        decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+
+        return self._make_parameters(amplitude=amplitude, decay=decay, offset=offset)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;decay&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;decay&#34;: &#34;τ&#34;, &#34;offset&#34;: &#34;c&#34;}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, decay=1.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, decay=1.0, offset=0.0):
+    x = np.array(x)
+    decay = not_zero(decay)
+    return amplitude * np.exp(-x / decay) + offset</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return rf&#34;$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    # offset = np.min(y[len(y)]) - 1e-4  # Small error added  TODO: why is this small error added?
+    # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
+    # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+
+    offset = np.mean(
+        y[round(len(y) * 0.9) :]
+    )  # Use the last 10% of the data to determine the offset
+    amplitude = (
+        np.mean(y[:3]) - offset
+    )  # Use the first 3 points to determine the amplitude
+    decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+
+    return self._make_parameters(amplitude=amplitude, decay=decay, offset=offset)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel"><code class="flex name class">
+<span>class <span class="ident">GaussianConstantModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', negative_peak=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GaussianConstantModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+        x = np.array(x)
+        return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2)) + offset
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        offset = np.mean(y)
+        amplitude, center, sigma = guess_from_peak(y - offset, x, negative_peak)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+    x = np.array(x)
+    return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2)) + offset</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    return params[&#34;center&#34;]</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+) -&gt; dict:
+    if negative_peak is None:
+        negative_peak = self.negative_peak
+
+    x, y = np.array(x), np.array(y)
+    offset = np.mean(y)
+    amplitude, center, sigma = guess_from_peak(y - offset, x, negative_peak)
+    return self._make_parameters(
+        amplitude=amplitude, center=center, sigma=sigma, offset=offset
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel"><code class="flex name class">
+<span>class <span class="ident">GaussianModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', negative_peak=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GaussianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+        x = np.array(x)
+        return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2))
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
+        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, center=0.0, sigma=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+    x = np.array(x)
+    return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2))</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return rf&#34;$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    return params[&#34;center&#34;]</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+) -&gt; dict:
+    if negative_peak is None:
+        negative_peak = self.negative_peak
+
+    x, y = np.array(x), np.array(y)
+    amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
+    return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.GaussianModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel"><code class="flex name class">
+<span>class <span class="ident">LinearModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LinearModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, slope=1.0, intercept=0.0):
+        x = np.array(x)
+        return slope * x + intercept
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        slope, intercept = np.polyfit(x, y, 1)
+        return self._make_parameters(slope=slope, intercept=intercept)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;slope&#34;: &#34;y/x&#34;, &#34;intercept&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;slope&#34;: &#34;a&#34;, &#34;intercept&#34;: &#34;b&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        raise ValueError(&#34;Linear model has no extrema&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, slope=1.0, intercept=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, slope=1.0, intercept=0.0):
+    x = np.array(x)
+    return slope * x + intercept</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+
+    return rf&#34;$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    raise ValueError(&#34;Linear model has no extrema&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    slope, intercept = np.polyfit(x, y, 1)
+    return self._make_parameters(slope=slope, intercept=intercept)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LinearModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel"><code class="flex name class">
+<span>class <span class="ident">LorentzianConstantModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', negative_peak=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LorentzianConstantModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+        x = np.array(x)
+        return (
+            amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+            + offset
+        )
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        offset = np.mean(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;offset&#34;: &#34;c&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
+    x = np.array(x)
+    return (
+        amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+        + offset
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+
+    return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    return params[&#34;center&#34;]</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+) -&gt; dict:
+    if negative_peak is None:
+        negative_peak = self.negative_peak
+
+    x, y = np.array(x), np.array(y)
+    offset = np.mean(y)
+    amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+    return self._make_parameters(
+        amplitude=amplitude, center=center, sigma=sigma, offset=offset
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel"><code class="flex name class">
+<span>class <span class="ident">LorentzianModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', negative_peak=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LorentzianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+        x = np.array(x)
+        return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, center=0.0, sigma=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
+    x = np.array(x)
+    return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+
+    return rf&#34;$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    return params[&#34;center&#34;]</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+) -&gt; dict:
+    if negative_peak is None:
+        negative_peak = self.negative_peak
+
+    x, y = np.array(x), np.array(y)
+    amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+    return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel"><code class="flex name class">
+<span>class <span class="ident">LorentzianPolynomialModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', degree: int = 3, negative_peak: bool = False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LorentzianPolynomialModel(ModelABC):
+    def __init__(
+        self,
+        independent_vars=None,
+        prefix=&#34;&#34;,
+        degree: int = 3,
+        negative_peak: bool = False,
+        **kwargs,
+    ):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+
+        super().__init__(**kwargs)
+        self.__model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
+            negative_peak=negative_peak, **kwargs
+        )
+
+        self.__dict__.update(self.__model.__dict__)
+
+    def func(self, x, *args, **kwargs):
+        return self.__model.func(x, *args, **kwargs)
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        return self.__model.guess(x, y)
+
+    def funcname(self, *params) -&gt; str:
+        return self.__model.funcname(*params)
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return self.__model.units(x, y)
+
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return self.__model.symbols(**symbols)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, *args, **kwargs):
+    return self.__model.func(x, *args, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    return self.__model.funcname(*params)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    return self.__model.guess(x, y)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, **symbols: dict[str, str]) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+    return self.__model.symbols(**symbols)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, x: Union[float, str, NoneType], y: Union[float, str, NoneType])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    return self.__model.units(x, y)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC"><code class="flex name class">
+<span>class <span class="ident">ModelABC</span></span>
+<span>(</span><span>prefix: str = '', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ModelABC(ABC):
+    def __init__(self, prefix: str = &#34;&#34;, **kwargs):
+        self.param_names: list[str] = []
+        self._prefix: str = prefix
+        self._root2full: dict[str, str] = {}
+        self._params_guess: dict[str, Fitparam] = {}
+
+        self.x_unit: str = kwargs.pop(&#34;x_unit&#34;, &#34;&#34;)
+        self.y_unit: str = kwargs.pop(&#34;y_unit&#34;, &#34;&#34;)
+
+        self.params_hint: dict = kwargs.pop(&#34;params_hint&#34;, {})
+        self.independent_vars: list[str] = kwargs.pop(&#34;independent_vars&#34;, [&#34;x&#34;])
+        self._param_root_names: list[str] = kwargs.pop(&#34;param_names&#34;, [])
+        # self._frequency_in_hz = kwargs.pop(&#34;frequency_in_hz&#34;, False)
+
+        self._make_param_names()
+
+    @abstractmethod
+    def func(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ) -&gt; dict[str, Fitparam]:
+        pass
+
+    @abstractmethod
+    def funcname(self, *params):
+        pass
+
+    @abstractmethod
+    def units(self, x_unit, y_unit) -&gt; dict[str, str]:
+        if x_unit == &#34;&#34;:
+            x_unit = self.x_unit
+
+        if y_unit == &#34;&#34;:
+            y_unit = self.y_unit
+
+        return x_unit, y_unit
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return dict(zip(self._param_root_names, self._param_root_names))
+
+    def _make_param_root_names(self):
+        pos_params: dict[str, Optional[float]] = {}
+        self._def_values: dict[str, Optional[float]] = {}
+
+        if hasattr(self.func, &#34;argnames&#34;) and hasattr(self.func, &#34;defaults&#34;):
+            pos_params[self.func.argnames] = self.func.defaults
+        else:
+            for arg_name, arg_value in inspect.signature(self.func).parameters.items():
+                if (
+                    arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
+                    and arg_value.default != arg_value.empty
+                ):
+                    pos_params[arg_name] = arg_value.default
+
+        for pos_key, pos_val in list(pos_params.items()):
+            if not (pos_key is None or isinstance(pos_val, (int, float))):
+                pos_params.pop(pos_key)
+
+            if pos_key in self.independent_vars:
+                pos_params.pop(pos_key)
+
+        for pos_param in list(pos_params.keys()):
+            if pos_param not in self._param_root_names:
+                self._param_root_names.append(pos_param)
+
+        self._def_values = pos_params
+
+    def _make_param_names(self):
+        self._make_param_root_names()
+        self.param_names = [self._prefix + name for name in self._param_root_names]
+        self._root2full = dict(zip(self._param_root_names, self.param_names))
+
+    @property
+    def param_symbols(self) -&gt; dict[str, str]:
+        if not hasattr(self, &#34;_param_symbols&#34;):
+            self.symbols()
+        return self._param_symbols
+
+    def _make_parameters(self, **kwargs) -&gt; dict[str, Fitparam]:
+        if not self.param_names:
+            self._make_param_names()
+
+        params = {}
+
+        for name in self.param_names:
+            # Making empty parameter dict
+            par = params.get(name, Fitparam())
+            basename = name[len(self._prefix) :]
+
+            # Updates parameter from guess
+            if basename in self._def_values:
+                par.values = self._def_values[basename]
+            if par.values in (None, np.inf, -np.inf, np.nan):
+                par.values = 0
+
+            # Updates parameter from hint
+            if basename in self.params_hint:
+                par.values = self.params_hint[basename]
+
+            # Updates parameter from kwargs (no prefix)
+            if basename in kwargs:
+                if isinstance(kwargs[basename], Fitparam):
+                    par.update(kwargs[basename])
+                elif isinstance(kwargs[basename], (int, float)):
+                    par.values = kwargs[basename]
+
+            # Updates parameter from kwargs (with prefix)
+            if name in kwargs:
+                if isinstance(kwargs[name], Fitparam):
+                    par.update(kwargs[name])
+                elif isinstance(kwargs[name], (int, float)):
+                    par.values = kwargs[name]
+
+            params[name] = par
+        return params
+
+    def _make_units(self, **kwargs) -&gt; dict[str, str]:
+        units = {}
+        for name in self.param_names:
+            basename = name[len(self._prefix) :]
+
+            # Updates unit from kwargs (no prefix)
+            if basename in kwargs:
+                units[name] = kwargs[basename]
+
+            # Updates unit from kwargs (with prefix)
+            if name in kwargs:
+                units[name] = kwargs[name]
+
+        return units
+
+    def get_extrema(self, params: dict) -&gt; dict:
+        raise NotImplementedError(&#34;get_extrema not implemented for this model&#34;)
+
+    def get_period(self, params: dict) -&gt; float:
+        raise NotImplementedError(&#34;get_period not implemented for this model&#34;)
+
+    def __add__(self, other):
+        return SumModel(self, other)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel">DampedOscillationModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel">ExponentialDecayModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel">GaussianConstantModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel">GaussianModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.LinearModel" href="#dataanalyzer.fitter.models.fitter_models.LinearModel">LinearModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel">LorentzianConstantModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel">LorentzianModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel">LorentzianPolynomialModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel">OscillationModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel">PolynomialModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel">ProportionalModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel">RandomizedCliffordBenchmarkModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel">SplitLorentzianModel</a></li>
+<li><a title="dataanalyzer.fitter.models.fitter_models.SumModel" href="#dataanalyzer.fitter.models.fitter_models.SumModel">SumModel</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.param_symbols"><code class="name">var <span class="ident">param_symbols</span> : dict[str, str]</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def param_symbols(self) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_param_symbols&#34;):
+        self.symbols()
+    return self._param_symbols</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def func(self, *args, **kwargs):
+    pass</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def funcname(self, *params):
+    pass</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict:
+    raise NotImplementedError(&#34;get_extrema not implemented for this model&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.get_period"><code class="name flex">
+<span>def <span class="ident">get_period</span></span>(<span>self, params: dict) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_period(self, params: dict) -&gt; float:
+    raise NotImplementedError(&#34;get_period not implemented for this model&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs) ‑> dict[str, <a title="dataanalyzer.fitter.fitter_classsetup.Fitparam" href="../fitter_classsetup.html#dataanalyzer.fitter.fitter_classsetup.Fitparam">Fitparam</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+) -&gt; dict[str, Fitparam]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ModelABC.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, x_unit, y_unit) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def units(self, x_unit, y_unit) -&gt; dict[str, str]:
+    if x_unit == &#34;&#34;:
+        x_unit = self.x_unit
+
+    if y_unit == &#34;&#34;:
+        y_unit = self.y_unit
+
+    return x_unit, y_unit</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel"><code class="flex name class">
+<span>class <span class="ident">OscillationModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OscillationModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        self.angular = kwargs.pop(&#34;angular&#34;, False)
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x + phi) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
+
+        return self._make_parameters(
+            amplitude=amplitude,
+            frequency=frequency,
+            phi=phi,
+            offset=offset,
+        )
+
+    def _oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+
+        dx = x[1] - x[0]
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+
+        phi = np.angle(
+            sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2)))
+        )
+
+        return [a, f, phi, c]
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+        return rf&#34;$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {
+            &#34;amplitude&#34;: &#34;y&#34;,
+            &#34;frequency&#34;: &#34;x**(-1)&#34;,
+            &#34;phi&#34;: &#34;rad&#34;,
+            &#34;offset&#34;: &#34;y&#34;,
+        }
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {
+            &#34;amplitude&#34;: &#34;A&#34;,
+            &#34;frequency&#34;: &#34;f&#34;,
+            &#34;phi&#34;: &#34;φ&#34;,
+            &#34;offset&#34;: &#34;c&#34;,
+        }
+
+    def get_period(self, params: dict) -&gt; dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params[&#34;frequency&#34;][&#34;value&#34;])
+            error = (
+                params[&#34;frequency&#34;][&#34;error&#34;]
+                / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+                / (2 * np.pi)
+            )
+        else:
+            period = 1 / params[&#34;frequency&#34;][&#34;value&#34;]
+            error = params[&#34;frequency&#34;][&#34;error&#34;] / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+
+        return {&#34;value&#34;: period, &#34;error&#34;: error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0):
+    x = np.array(x)
+    if not self.angular:
+        frequency = frequency * 2 * np.pi
+    return amplitude * np.sin(frequency * x + phi) + offset</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    f = f&#34;{params[1]}&#34; if self.angular else f&#34;2π{params[1]}&#34;
+    return rf&#34;$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.get_period"><code class="name flex">
+<span>def <span class="ident">get_period</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_period(self, params: dict) -&gt; dict[str, float]:
+    if self.angular:
+        period = 1 / (2 * np.pi * params[&#34;frequency&#34;][&#34;value&#34;])
+        error = (
+            params[&#34;frequency&#34;][&#34;error&#34;]
+            / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+            / (2 * np.pi)
+        )
+    else:
+        period = 1 / params[&#34;frequency&#34;][&#34;value&#34;]
+        error = params[&#34;frequency&#34;][&#34;error&#34;] / params[&#34;frequency&#34;][&#34;value&#34;] ** 2
+
+    return {&#34;value&#34;: period, &#34;error&#34;: error}</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
+
+    return self._make_parameters(
+        amplitude=amplitude,
+        frequency=frequency,
+        phi=phi,
+        offset=offset,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.OscillationModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel"><code class="flex name class">
+<span>class <span class="ident">PolynomialModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', degree: int = 3, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PolynomialModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, degree: int = 3, **kwargs):
+        self.poly_degree = degree
+        kwargs[&#34;param_names&#34;] = [f&#34;c{i}&#34; for i in range(degree + 1)]
+
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0):
+        return np.polyval([c7, c6, c5, c4, c3, c2, c1, c0], x)
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        coeffs = np.polyfit(x, y, self.poly_degree)
+        coeffs_dict = dict(zip(self.param_names, coeffs[::-1]))
+
+        for i in range(self.poly_degree + 1, 8):
+            coeffs_dict[f&#34;c{i}&#34;] = Fitparam(0.0, fixed=True)
+
+        return self._make_parameters(**coeffs_dict)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{polynomial}}(x) = {params[0]} + {&#39; + &#39;.join(f&#39;{params[i]} x^{i}&#39; for i in range(1, self.poly_degree +1))}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        coeffs_units = {&#34;c0&#34;: &#34;y&#34;}
+        for i in range(1, self.poly_degree + 1):
+            coeffs_units[f&#34;c{i}&#34;] = f&#34;y / x**{i}&#34;
+
+        return coeffs_units
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {f&#34;c{i}&#34;: f&#34;c_{i}&#34; for i in range(self.poly_degree + 1)}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        if self.poly_degree == 1:
+            raise ValueError(&#34;Cannot find extrema for a linear function&#34;)
+        elif self.poly_degree == 2:
+            from uncertainties import ufloat
+
+            c1 = ufloat(params[&#34;c1&#34;][&#34;value&#34;], params[&#34;c1&#34;][&#34;error&#34;])
+            c2 = ufloat(params[&#34;c2&#34;][&#34;value&#34;], params[&#34;c2&#34;][&#34;error&#34;])
+
+            extrema = -c1 / (2 * c2)  # type: ignore
+            return {&#34;value&#34;: extrema.n, &#34;error&#34;: extrema.s}
+        else:
+            return self._find_mulitpolinomial_minima(params)
+
+    def _find_mulitpolinomial_minima(self, params: dict):
+        param_values = [p[&#34;value&#34;] for p in params.values()][: self.poly_degree + 1][
+            ::-1
+        ]
+
+        np_poly = np.poly1d(param_values)  # Note: polynomials are opposite order
+
+        roots = np.real(np.roots(np_poly.deriv()))
+        maxima = roots[np.argmax(np_poly(roots))]
+
+        print(
+            &#34;Warning: extrema for polynomial model is not implemented yet&#34;,
+            &#34;Returning the maximum of the first derivative&#34;,
+            &#34;Unsertainties are not calculated, but sqrt(maxima) is returned&#34;,
+        )
+
+        return {&#34;value&#34;: maxima, &#34;error&#34;: np.sqrt(maxima)}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0):
+    return np.polyval([c7, c6, c5, c4, c3, c2, c1, c0], x)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return rf&#34;$\mathrm{{polynomial}}(x) = {params[0]} + {&#39; + &#39;.join(f&#39;{params[i]} x^{i}&#39; for i in range(1, self.poly_degree +1))}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    if self.poly_degree == 1:
+        raise ValueError(&#34;Cannot find extrema for a linear function&#34;)
+    elif self.poly_degree == 2:
+        from uncertainties import ufloat
+
+        c1 = ufloat(params[&#34;c1&#34;][&#34;value&#34;], params[&#34;c1&#34;][&#34;error&#34;])
+        c2 = ufloat(params[&#34;c2&#34;][&#34;value&#34;], params[&#34;c2&#34;][&#34;error&#34;])
+
+        extrema = -c1 / (2 * c2)  # type: ignore
+        return {&#34;value&#34;: extrema.n, &#34;error&#34;: extrema.s}
+    else:
+        return self._find_mulitpolinomial_minima(params)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    coeffs = np.polyfit(x, y, self.poly_degree)
+    coeffs_dict = dict(zip(self.param_names, coeffs[::-1]))
+
+    for i in range(self.poly_degree + 1, 8):
+        coeffs_dict[f&#34;c{i}&#34;] = Fitparam(0.0, fixed=True)
+
+    return self._make_parameters(**coeffs_dict)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.PolynomialModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel"><code class="flex name class">
+<span>class <span class="ident">ProportionalModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ProportionalModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, slope=1.0):
+        x = np.array(x)
+        return slope * x
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        slope = (y[-1] - y[0]) / (x[-1] - x[0])
+        return self._make_parameters(slope=slope)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+
+        return rf&#34;$\mathrm{{proportional}}(x) = {params[0]} x&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;slope&#34;: &#34;y/x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;slope&#34;: &#34;a&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        raise ValueError(&#34;Proportional model has no extrema&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, slope=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, slope=1.0):
+    x = np.array(x)
+    return slope * x</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+
+    return rf&#34;$\mathrm{{proportional}}(x) = {params[0]} x&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    raise ValueError(&#34;Proportional model has no extrema&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    slope = (y[-1] - y[0]) / (x[-1] - x[0])
+    return self._make_parameters(slope=slope)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.ProportionalModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel"><code class="flex name class">
+<span>class <span class="ident">RandomizedCliffordBenchmarkModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RandomizedCliffordBenchmarkModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
+        x = np.array(x)
+        return amplitude * phase**x + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+        x, y = np.array(x), np.array(y)
+        amplitude = -y.min()
+        phase = 0.99
+        offset = y.min()
+        return self._make_parameters(amplitude=amplitude, phase=phase, offset=offset)
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return rf&#34;$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$&#34;
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;phase&#34;: &#34;&#34;, &#34;offset&#34;: &#34;y&#34;}
+
+    @symbol_wrapper
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;phase&#34;: &#34;φ&#34;, &#34;offset&#34;: &#34;c&#34;}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, phase=0.0, offset=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
+    x = np.array(x)
+    return amplitude * phase**x + offset</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return rf&#34;$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable]) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -&gt; dict:
+    x, y = np.array(x), np.array(y)
+    amplitude = -y.min()
+    phase = 0.99
+    offset = y.min()
+    return self._make_parameters(amplitude=amplitude, phase=phase, offset=offset)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel"><code class="flex name class">
+<span>class <span class="ident">SplitLorentzianModel</span></span>
+<span>(</span><span>independent_vars=None, prefix='', negative_peak=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SplitLorentzianModel(ModelABC):
+    def __init__(self, independent_vars=None, prefix=&#34;&#34;, negative_peak=False, **kwargs):
+        kwargs |= {&#34;prefix&#34;: prefix, &#34;independent_vars&#34;: independent_vars or [&#34;x&#34;]}
+        self.negative_peak = negative_peak
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, sigma_r=0.0):
+        x = np.array(x)
+        s = max(tiny, sigma)
+        r = max(tiny, sigma_r)
+        ss = s * s
+        rr = r * r
+        xc2 = (x - center) ** 2
+        amp = 2 * amplitude / (np.pi * (s + r))
+        return amp * (ss * (x &lt; center) / (ss + xc2) + rr * (x &gt;= center) / (rr + xc2))
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -&gt; dict:
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+        amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+        return self._make_parameters(
+            amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma
+        )
+
+    def funcname(self, *params) -&gt; str:
+        if not params:
+            params = self.param_symbols
+        return (
+            rf&#34;$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}&#34;
+            rf&#34;{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$&#34;
+        )
+
+    @unit_wrapper
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return {&#34;amplitude&#34;: &#34;y&#34;, &#34;center&#34;: &#34;x&#34;, &#34;sigma&#34;: &#34;x&#34;, &#34;split&#34;: &#34;x&#34;}
+
+    @symbol_wrapper
+    def symbols(self, *params) -&gt; list[str]:
+        return {&#34;amplitude&#34;: &#34;A&#34;, &#34;center&#34;: &#34;μ&#34;, &#34;sigma&#34;: &#34;σ&#34;, &#34;split&#34;: &#34;σ_r&#34;}
+
+    def get_extrema(self, params: dict) -&gt; dict[str, float]:
+        return params[&#34;center&#34;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, amplitude=1.0, center=0.0, sigma=1.0, sigma_r=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, sigma_r=0.0):
+    x = np.array(x)
+    s = max(tiny, sigma)
+    r = max(tiny, sigma_r)
+    ss = s * s
+    rr = r * r
+    xc2 = (x - center) ** 2
+    amp = 2 * amplitude / (np.pi * (s + r))
+    return amp * (ss * (x &lt; center) / (ss + xc2) + rr * (x &gt;= center) / (rr + xc2))</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *params) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *params) -&gt; str:
+    if not params:
+        params = self.param_symbols
+    return (
+        rf&#34;$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}&#34;
+        rf&#34;{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, float]:
+    return params[&#34;center&#34;]</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+) -&gt; dict:
+    if negative_peak is None:
+        negative_peak = self.negative_peak
+
+    x, y = np.array(x), np.array(y)
+    amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
+    return self._make_parameters(
+        amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, *args, **kwargs) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, str]:
+    if not hasattr(self, &#34;_root2symbol&#34;) or kwargs.pop(&#34;overwrite&#34;, False):
+        self._root2symbol = func(self, *args, **kwargs)
+
+    for key, value in kwargs.items():
+        if key in self._root2symbol:
+            self._root2symbol[key] = value
+
+    self._full2symbol = {
+        k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
+    }
+
+    self._param_symbols = list(self._full2symbol.values())
+    return self._full2symbol</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, *args, **kwargs) ‑> dict[str, typing.Union[float, str]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs) -&gt; dict[str, Union[float, str]]:
+    fs = func(self, *args, **kwargs)
+    x = args[0] if args else kwargs.get(&#34;x&#34;, None)
+    y = args[1] if len(args) &gt; 1 else kwargs.get(&#34;y&#34;, None)
+
+    f_dict: dict[str, Union[float, str]] = {
+        k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+    }  # type: ignore
+    return make_units(self, **f_dict)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel"><code class="flex name class">
+<span>class <span class="ident">SumModel</span></span>
+<span>(</span><span>*models)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SumModel(ModelABC):
+    def __init__(self, *models):
+        self.models = [copy.deepcopy(model) for model in models]
+        self.param_names: list[str] = []
+        self._prefix: list[str] = []
+        self._postfix: list[str] = [&#34;&#34; for _ in range(len(self.models))]
+
+        self._root2full: dict[str, str] = {}
+        self._params_guess: dict[str, Fitparam] = {}
+        self._def_values: dict[str, Optional[float]] = {}
+        self.params_hint: dict = {}
+        self._param_root_names: list[str] = []
+
+        for model in self.models:
+            if isinstance(model._prefix, list):
+                self._prefix += model._prefix
+            else:
+                self._prefix.append(model._prefix)
+
+            self._root2full.update(model._root2full)
+            self._params_guess.update(model._params_guess)
+
+            self.params_hint.update(model.params_hint)
+
+        self._set_param_root_name_and_get_prefix()
+        self._make_parameters()
+        self.symbols()
+
+    def _set_param_root_name_and_get_prefix(self):
+        root_names_temp = [model._param_root_names for model in self.models]
+
+        for i, param_list in enumerate(root_names_temp):
+            if common_member(*root_names_temp):
+                self._postfix[i] = f&#34;_{i}&#34;
+                param_list = [f&#34;{name}_{i}&#34; for name in param_list]
+            self._param_root_names += param_list
+
+            limit = len(param_list)
+            if hasattr(self.models[i], &#34;poly_degree&#34;):
+                limit = self.models[i].poly_degree + 1
+
+            self.models[i].param_names = param_list[:limit]
+            self.param_names += [f&#34;{self._prefix[i]}{name}&#34; for name in param_list][
+                :limit
+            ]
+
+    def func(self, x, *args, **kwargs):
+        if args:
+            kwargs = dict(zip(self.param_names, args))
+
+        x = np.array(x)
+        func_sum = np.zeros(x.shape)
+        for i, model in enumerate(self.models):
+            p = self._postfix[i]
+            model_kwargs = {
+                k.replace(p, &#34;&#34;): v for k, v in kwargs.items() if k in model.param_names
+            }
+            func_sum += model.func(x, **model_kwargs)
+        return func_sum
+
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ):
+        x, y = np.array(x), np.array(y)
+        guess = {}
+        for model in self.models:
+            model_guess = model.guess(x=x, y=y, *args, **kwargs)
+            guess |= model_guess
+
+            guess_values = {k: v.values for k, v in model_guess.items()}
+            y_guess = model.func(x, **guess_values)
+            y = y - y_guess
+
+        return guess
+
+    def funcname(self, *args, **kwargs):
+        func_names, func_strs = &#34;&#34;, &#34;&#34;
+        for model in self.models:
+            func_name, func_str = (
+                model.funcname(*args, **kwargs).replace(&#34;$&#34;, &#34;&#34;).split(&#34; = &#34;)
+            )
+
+            func_names += f&#34;{func_name} +&#34;
+            func_strs += f&#34;{func_str} +&#34;
+
+        return f&#34;${func_names[:-1]} = {func_strs[:-1]}$&#34;
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        units = {}
+        for model in self.models:
+            units |= model.units(x=x, y=y)
+        return units
+
+    def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+        symbols = {}
+        self._root2symbol = {}
+
+        for model in self.models:
+            symbols |= model.symbols(**symbols)
+            self._root2symbol.update(model._root2symbol)
+        return symbols
+
+    def get_extrema(self, params: dict) -&gt; dict[str, dict[str, float]]:
+        extrema = {}
+        for i, model in enumerate(self.models):
+            p = self._postfix[i]
+            model_params = {
+                k.replace(p, &#34;&#34;): v for k, v in params.items() if k in model.param_names
+            }
+            model_name = f&#34;{model.__class__.__name__}{p}&#34;
+            extrema |= {model_name: model.get_extrema(model_params)}
+        return extrema</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.func"><code class="name flex">
+<span>def <span class="ident">func</span></span>(<span>self, x, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(self, x, *args, **kwargs):
+    if args:
+        kwargs = dict(zip(self.param_names, args))
+
+    x = np.array(x)
+    func_sum = np.zeros(x.shape)
+    for i, model in enumerate(self.models):
+        p = self._postfix[i]
+        model_kwargs = {
+            k.replace(p, &#34;&#34;): v for k, v in kwargs.items() if k in model.param_names
+        }
+        func_sum += model.func(x, **model_kwargs)
+    return func_sum</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.funcname"><code class="name flex">
+<span>def <span class="ident">funcname</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def funcname(self, *args, **kwargs):
+    func_names, func_strs = &#34;&#34;, &#34;&#34;
+    for model in self.models:
+        func_name, func_str = (
+            model.funcname(*args, **kwargs).replace(&#34;$&#34;, &#34;&#34;).split(&#34; = &#34;)
+        )
+
+        func_names += f&#34;{func_name} +&#34;
+        func_strs += f&#34;{func_str} +&#34;
+
+    return f&#34;${func_names[:-1]} = {func_strs[:-1]}$&#34;</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.get_extrema"><code class="name flex">
+<span>def <span class="ident">get_extrema</span></span>(<span>self, params: dict) ‑> dict[str, dict[str, float]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_extrema(self, params: dict) -&gt; dict[str, dict[str, float]]:
+    extrema = {}
+    for i, model in enumerate(self.models):
+        p = self._postfix[i]
+        model_params = {
+            k.replace(p, &#34;&#34;): v for k, v in params.items() if k in model.param_names
+        }
+        model_name = f&#34;{model.__class__.__name__}{p}&#34;
+        extrema |= {model_name: model.get_extrema(model_params)}
+    return extrema</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.guess"><code class="name flex">
+<span>def <span class="ident">guess</span></span>(<span>self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def guess(
+    self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+):
+    x, y = np.array(x), np.array(y)
+    guess = {}
+    for model in self.models:
+        model_guess = model.guess(x=x, y=y, *args, **kwargs)
+        guess |= model_guess
+
+        guess_values = {k: v.values for k, v in model_guess.items()}
+        y_guess = model.func(x, **guess_values)
+        y = y - y_guess
+
+    return guess</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.symbols"><code class="name flex">
+<span>def <span class="ident">symbols</span></span>(<span>self, **symbols: dict[str, str]) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def symbols(self, **symbols: dict[str, str]) -&gt; dict[str, str]:
+    symbols = {}
+    self._root2symbol = {}
+
+    for model in self.models:
+        symbols |= model.symbols(**symbols)
+        self._root2symbol.update(model._root2symbol)
+    return symbols</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.fitter.models.fitter_models.SumModel.units"><code class="name flex">
+<span>def <span class="ident">units</span></span>(<span>self, x: Union[float, str, NoneType], y: Union[float, str, NoneType])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    units = {}
+    for model in self.models:
+        units |= model.units(x=x, y=y)
+    return units</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dataanalyzer.fitter.models" href="index.html">dataanalyzer.fitter.models</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel">DampedOscillationModel</a></code></h4>
+<ul class="">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.func" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.guess" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.units" href="#dataanalyzer.fitter.models.fitter_models.DampedOscillationModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel">ExponentialDecayModel</a></code></h4>
+<ul class="">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.func" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.guess" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.units" href="#dataanalyzer.fitter.models.fitter_models.ExponentialDecayModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel">GaussianConstantModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.func" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.guess" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.units" href="#dataanalyzer.fitter.models.fitter_models.GaussianConstantModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel">GaussianModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.func" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.guess" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.GaussianModel.units" href="#dataanalyzer.fitter.models.fitter_models.GaussianModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel" href="#dataanalyzer.fitter.models.fitter_models.LinearModel">LinearModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.func" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.guess" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LinearModel.units" href="#dataanalyzer.fitter.models.fitter_models.LinearModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel">LorentzianConstantModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.func" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.guess" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.units" href="#dataanalyzer.fitter.models.fitter_models.LorentzianConstantModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel">LorentzianModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.func" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.guess" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianModel.units" href="#dataanalyzer.fitter.models.fitter_models.LorentzianModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel">LorentzianPolynomialModel</a></code></h4>
+<ul class="">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.func" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.guess" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.units" href="#dataanalyzer.fitter.models.fitter_models.LorentzianPolynomialModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC" href="#dataanalyzer.fitter.models.fitter_models.ModelABC">ModelABC</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.func" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.funcname" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.get_period" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.get_period">get_period</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.guess" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.param_symbols" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.param_symbols">param_symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.symbols" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ModelABC.units" href="#dataanalyzer.fitter.models.fitter_models.ModelABC.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel">OscillationModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.func" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.get_period" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.get_period">get_period</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.guess" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.OscillationModel.units" href="#dataanalyzer.fitter.models.fitter_models.OscillationModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel">PolynomialModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.func" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.guess" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.PolynomialModel.units" href="#dataanalyzer.fitter.models.fitter_models.PolynomialModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel">ProportionalModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.func" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.guess" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.ProportionalModel.units" href="#dataanalyzer.fitter.models.fitter_models.ProportionalModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel">RandomizedCliffordBenchmarkModel</a></code></h4>
+<ul class="">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.func" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.guess" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.units" href="#dataanalyzer.fitter.models.fitter_models.RandomizedCliffordBenchmarkModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel">SplitLorentzianModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.func" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.guess" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.units" href="#dataanalyzer.fitter.models.fitter_models.SplitLorentzianModel.units">units</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel" href="#dataanalyzer.fitter.models.fitter_models.SumModel">SumModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.func" href="#dataanalyzer.fitter.models.fitter_models.SumModel.func">func</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.funcname" href="#dataanalyzer.fitter.models.fitter_models.SumModel.funcname">funcname</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.get_extrema" href="#dataanalyzer.fitter.models.fitter_models.SumModel.get_extrema">get_extrema</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.guess" href="#dataanalyzer.fitter.models.fitter_models.SumModel.guess">guess</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.symbols" href="#dataanalyzer.fitter.models.fitter_models.SumModel.symbols">symbols</a></code></li>
+<li><code><a title="dataanalyzer.fitter.models.fitter_models.SumModel.units" href="#dataanalyzer.fitter.models.fitter_models.SumModel.units">units</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

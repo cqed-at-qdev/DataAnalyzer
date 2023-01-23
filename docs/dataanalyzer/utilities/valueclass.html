@@ -1,0 +1,2801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>dataanalyzer.utilities.valueclass API documentation</title>
+<meta name="description" content="Valueclass class for storing values and errors …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dataanalyzer.utilities.valueclass</code></h1>
+</header>
+<section id="section-intro">
+<p>Valueclass class for storing values and errors.</p>
+<p>The class is designed to be used in a similar way as the numpy.ndarray class.
+It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
+It uses some of the same functionality as seen in the Labber GUI (See .traces() method).</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Valueclass class for storing values and errors.
+
+The class is designed to be used in a similar way as the numpy.ndarray class.
+It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
+It uses some of the same functionality as seen in the Labber GUI (See .traces() method).
+&#34;&#34;&#34;
+
+from dataclasses import asdict, dataclass
+from typing import Optional, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from dataanalyzer.utilities.utilities import convert_array_with_unit, round_on_error
+
+
+@dataclass
+class Valueclass:
+    &#34;&#34;&#34;Valueclass class for storing values and errors.
+    The class is designed to be used in a similar way as the numpy.ndarray class.
+    It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
+
+    Returns:
+        Valueclass: Valueclass object.
+    &#34;&#34;&#34;
+
+    value: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
+    error: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
+    name: str = &#34;&#34;
+    unit: str = &#34;&#34;
+    fft_type: Union[str, bool] = False
+    sweep_idx: Optional[int] = None
+
+    ####################################################################################################
+    #                   Dunder Functions                                                               #
+    ####################################################################################################
+    def __repr__(self):
+        &#34;&#34;&#34;Returns a string representation of the Valueclass object.
+
+        Returns:
+            str : String representation of the Valueclass object.
+        &#34;&#34;&#34;
+        error = np.nan if np.isnan(self.error).all() else self.error
+        return (
+            f&#34;{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n&#34;
+        )
+
+    def __getitem__(self, key) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Returns a slice of the Valueclass object.
+
+        Args:
+            key (str, slice, int): Key to slice the Valueclass object.
+
+        Returns:
+            item: Sliced Valueclass object.
+        &#34;&#34;&#34;
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
+            return Valueclass(self.value[key], self.error[key], self.name, self.unit)
+        return self[key]
+
+    def __setitem__(self, key, value) -&gt; None:
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
+            if not isinstance(value, Valueclass):
+                value = Valueclass(value, self.error[key], self.name, self.unit)
+            self.value[key] = value.value
+            self.error[key] = value.error
+        else:
+            setattr(self, key, value)
+
+    def __add__(self, other) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Adds two Valueclass objects or a Valueclass object and a float.
+
+        Args:
+            other (object, float, int): Object to add.
+
+        Returns:
+            Valueclass: Sum of the two objects.
+        &#34;&#34;&#34;
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value + other, self.error, self.name, self.unit, self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value + other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
+                self.name,
+                self.unit,
+            )
+
+    def __sub__(self, other) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Subtracts two Valueclass objects or a Valueclass object and a float.
+
+        Args:
+            other (object, float, int): Object to subtract.
+
+        Returns:
+            Valueclass: Difference of the two objects.
+        &#34;&#34;&#34;
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value - other, self.error, self.name, self.unit, self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value - other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
+                self.name,
+                self.unit,
+            )
+
+    def __mul__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value * other,
+                self.error * other,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value * other.value,
+                np.sqrt(
+                    (self.error * other.value) ** 2 + (self.value * other.error) ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __truediv__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value / other,
+                self.error / other,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value / other.value,
+                np.sqrt(
+                    (self.error / other.value) ** 2
+                    + (self.value * other.error / other.value ** 2) ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __pow__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value ** other,
+                self.error
+                * other
+                * self.value ** (other - 1),  # TODO: make correct error propagation
+                self.name,
+                self.unit,
+            )
+        else:
+            return Valueclass(
+                self.value ** other.value,
+                np.sqrt(
+                    (self.error * other.value * self.value ** (other.value - 1)) ** 2
+                    + (self.value ** other.value * other.error * np.log(self.value))
+                    ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __radd__(self, other) -&gt; &#34;Valueclass&#34;:
+        return self + other
+
+    def __rsub__(self, other) -&gt; &#34;Valueclass&#34;:
+        return other - self
+
+    def __rmul__(self, other) -&gt; &#34;Valueclass&#34;:
+        return self * other
+
+    def __rtruediv__(self, other) -&gt; &#34;Valueclass&#34;:
+        return Valueclass(
+            other / self.value,
+            other * self.error / self.value ** 2,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def __rpow__(self, other) -&gt; &#34;Valueclass&#34;:
+        return Valueclass(
+            other ** self.value,
+            other ** self.value * self.error * np.log(other),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def __len__(self):
+        return len(self.value)
+
+    def __max__(self):  # TODO: fix this
+        return max(self.value)
+
+    ####################################################################################################
+    #                   Main Functions                                                                 #
+    ####################################################################################################
+    @property
+    def value(self) -&gt; np.ndarray:  # TODO: don&#39;t return array if input was not array
+        &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+        if not hasattr(self, &#34;_value&#34;):
+            self.value = ()
+
+        return self._value
+
+    @value.setter
+    def value(self, value: Union[float, list, tuple, np.ndarray]) -&gt; None:
+        &#34;&#34;&#34;Sets the value of the Valueclass object.
+
+        Args:
+            value (Union[float, list, tuple, np.ndarray]): Value to set.
+        &#34;&#34;&#34;
+        if isinstance(value, (float, int, np.integer)):
+            self._value = np.array([value])
+
+        elif isinstance(value, (list, tuple)):
+            self._value = np.array(value)
+
+        elif isinstance(value, np.ndarray):
+            self._value = value
+
+    @property
+    def error(self) -&gt; np.ndarray:
+        &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+        return self._error
+
+    @error.setter
+    def error(self, error: Union[float, list, tuple, np.ndarray]) -&gt; None:
+        &#34;&#34;&#34;Sets the error of the Valueclass object.
+
+        Args:
+            error (Union[float, list, tuple, np.ndarray]): Error to set.
+        &#34;&#34;&#34;
+        if not hasattr(self, &#34;_error&#34;):
+            self._error = (
+                np.full(np.shape(self.value), np.nan)
+                if self.value.size
+                else np.empty(0)
+            )
+
+        if np.iscomplexobj(error):
+            self._error.__setattr__(&#34;dtype&#34;, np.complex128)
+
+        if isinstance(error, (float, np.integer, int)):
+            self._error.fill(error)
+
+        elif isinstance(error, (list, tuple, np.ndarray)):
+            error = np.array(error)
+            ndim = np.ndim(error)
+
+            if ndim == 0:
+                self._error.fill(error)
+
+            elif ndim == 1:
+                if np.iscomplexobj(error):
+                    self._error = error
+                self._error[: np.size(error)] = error
+
+            elif ndim == 2:
+                w, h = np.shape(error)[0], np.shape(error)[1]
+
+                if w == 1 or h == 1:
+                    self._error = error
+                else:
+                    self._error[:w, :h] = error
+
+    @property
+    def v(self):
+        &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+        return self.value
+
+    @property
+    def e(self):
+        &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+        return self.error
+
+    @property
+    def real(self):
+        return Valueclass(
+            np.real(self.value),
+            np.real(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def imag(self):
+        return Valueclass(
+            np.imag(self.value),
+            np.imag(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def I(self):
+        return self.real
+
+    @property
+    def Q(self):
+        return self.imag
+
+    @property
+    def abs(self):
+        return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)
+
+    @property
+    def phase(self):
+        return Valueclass(
+            np.unwrap(np.angle(self.value)),
+            np.array(np.angle(self.error)),
+            self.name,
+            &#34;rad&#34;,
+            self.fft_type,
+        )
+
+    @property
+    def angle(self):
+        return self.phase
+
+    ####################################################################################################
+    #                   Property Functions                                                             #
+    ####################################################################################################
+    @property
+    def shape(self):
+        return self.value.shape
+
+    @property
+    def size(self):
+        return self.value.size
+
+    @property
+    def ndim(self):
+        return self.value.ndim
+
+    @property
+    def dtype(self):
+        return self.value.dtype
+
+    @property
+    def T(self):
+        return Valueclass(
+            self.value.T, self.error.T, self.name, self.unit, self.fft_type
+        )
+
+    @property
+    def sprt(self):
+        return Valueclass(
+            np.sqrt(self.value),
+            self.error / (2 * np.sqrt(self.value)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    ####################################################################################################
+    #                   Math (Simple) Functions                                                        #
+    ####################################################################################################
+    def mean(self, axis=None):
+        return Valueclass(
+            np.mean(self.value, axis=axis),
+            np.mean(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
+
+    def std(self, axis=None):
+        return Valueclass(
+            np.std(self.value, axis=axis),
+            np.std(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
+
+    def min(self, axis=None):
+        return np.min(self.value, axis=axis)
+
+    def max(self, axis=None):
+        return np.max(self.value, axis=axis)
+
+    def argmin(self, axis=None):
+        return np.argmin(self.value, axis=axis)
+
+    def argmax(self, axis=None):
+        return np.argmax(self.value, axis=axis)
+
+    def min_error(self, axis=None):
+        return np.min(self.error, axis=axis)
+
+    def max_error(self, axis=None):
+        return np.max(self.error, axis=axis)
+
+    def argmin_error(self, axis=None):
+        return np.argmin(self.error, axis=axis)
+
+    def argmax_error(self, axis=None):
+        return np.argmax(self.error, axis=axis)
+
+    def sum(self, axis=None):
+        return np.sum(self.value, axis=axis)  # type: ignore
+
+    def prod(self, axis=None):
+        return np.prod(self.value, axis=axis)
+
+    def clip(
+        self,
+        v_min=None,
+        v_max=None,
+        e_min=None,
+        e_max=None,
+        out_value=None,
+        out_error=None,
+        clip_value=True,
+        clip_error=True,
+    ):
+        if not v_max:
+            v_max = np.max(self.value)
+
+        if not e_max:
+            e_max = np.max(self.error)
+
+        value = (
+            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        )
+        error = (
+            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        )
+
+        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
+
+    ####################################################################################################
+    #                   Math (Advanced) Functions                                                      #
+    ####################################################################################################
+    @property
+    def db(self):
+        return Valueclass(
+            20 * np.log10(self.value),
+            20 * self.error / (np.log(10) * self.value),
+            self.name,
+            &#34;dB&#34;,
+        )
+
+    @property
+    def norm(self):
+        return Valueclass(
+            self.value / np.sqrt(np.sum(self.value ** 2)),
+            self.error / np.sqrt(np.sum(self.value ** 2)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def fft(self):
+        fft = np.fft.fft(self.value)
+        N = np.size(self.value)
+        v = 2.0 / N * np.abs(fft[: N // 2])
+
+        return Valueclass(v, np.nan, self.name, self.unit, fft_type=&#34;fft_y&#34;)
+
+    @property
+    def fftfreq(self):
+        N = np.size(self.value)
+        return Valueclass(
+            np.fft.fftfreq(N, d=self.value[1] - self.value[0])[: N // 2],
+            np.nan,
+            self.name,
+            self.unit,
+            fft_type=&#34;fft_x&#34;,
+        )
+
+    @property
+    def substract_mean(self):
+        return Valueclass(
+            self.value - np.mean(self.value), self.error, self.name, self.unit
+        )
+
+    @property
+    def ddx(self):  # TODO: fix this
+        return Valueclass(
+            np.gradient(self.value, self.error),
+            np.gradient(self.error, self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def ddxx(self):
+        return Valueclass(
+            np.gradient(np.gradient(self.value, self.error), self.error),
+            np.gradient(np.gradient(self.error, self.error), self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def norm_zero_to_one(self, axis=None):
+        return Valueclass(
+            (self.value - np.min(self.value, axis=axis))
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.error
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def traces(self, operation=&#34;Show individual&#34;):
+        if operation in (
+            &#34;Show individual&#34;,
+            &#34;show individual&#34;,
+            &#34;individual&#34;,
+            &#34;Individual&#34;,
+        ):
+            return Valueclass(
+                self.value, self.error, self.name, self.unit, self.fft_type,
+            )
+
+        elif operation in (&#34;Substract first&#34;, &#34;substract first&#34;, &#34;first&#34;, &#34;First&#34;):
+            return Valueclass(
+                self.value - self.value[0],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract mean&#34;, &#34;substract mean&#34;, &#34;mean&#34;, &#34;Mean&#34;):
+            return Valueclass(
+                self.value - np.mean(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract last&#34;, &#34;substract last&#34;, &#34;last&#34;, &#34;Last&#34;):
+            return Valueclass(
+                self.value - self.value[-1],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract min&#34;, &#34;substract min&#34;, &#34;min&#34;, &#34;Min&#34;):
+            return Valueclass(
+                self.value - np.min(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract max&#34;, &#34;substract max&#34;, &#34;max&#34;, &#34;Max&#34;):
+            return Valueclass(
+                self.value - np.max(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract median&#34;, &#34;substract median&#34;, &#34;median&#34;, &#34;Median&#34;):
+            return Valueclass(
+                self.value - np.median(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (
+            &#34;Substract previous&#34;,
+            &#34;substract previous&#34;,
+            &#34;previous&#34;,
+            &#34;Previous&#34;,
+        ):
+            v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
+            v[0] = np.zeros(self.value.shape[1])
+
+            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
+
+        elif operation in (&#34;Average&#34;, &#34;average&#34;):
+            return Valueclass(
+                np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)),
+                self.name,
+                self.unit,
+            )
+
+        elif operation in (&#34;Standard deviation&#34;, &#34;standard deviation&#34;, &#34;std&#34;, &#34;Std&#34;):
+            return Valueclass(
+                np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1)),
+                self.name,
+                self.unit,
+            )
+
+        else:
+            raise ValueError(
+                f&#34;Operation &#39;{operation}&#39; not recognized\n&#34;
+                &#34;self.traces() takes one of the following arguments:&#34;
+                &#34;&#39;Show individual&#39;, &#39;Substract first&#39;, &#39;Substract mean&#39;,&#34;
+                &#34;&#39;Substract last&#39;, &#39;Substract min&#39;, &#39;Substract max&#39;, &#39;Substract median&#39;,&#34;
+                &#34;&#39;Substract previous&#39;, &#39;Average&#39;, &#39;Standard deviation&#39;&#34;
+            )
+
+    ####################################################################################################
+    #                   Plot Functions                                                                 #
+    ####################################################################################################
+    def plot(self, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        if np.iscomplexobj(self.value):
+            self._plot_complex(x, x_label, title, fmt, *args, **kwargs)
+        else:
+            self._plot_1d(x, x_label, title, fmt, *args, **kwargs)
+
+    def _plot_1d(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+
+        y = kwargs.pop(&#34;y&#34;, self.value.real)
+        y_label = kwargs.pop(&#34;y_label&#34;, self.name)
+
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        plt.errorbar(x, y, yerr=self.error, fmt=fmt, *args, **kwargs)
+        plt.plot(x, y, *args, **kwargs)
+
+        plt.xlabel(x_label)
+        plt.ylabel(f&#34;{y_label} [{self.unit}]&#34;)
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    def _plot_complex(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+
+        y = kwargs.pop(&#34;y&#34;, self.value)
+        y_label = kwargs.pop(&#34;y_label&#34;, self.name)
+        y_real_label, y_imag_label = f&#34;{y_label} real&#34;, f&#34;{y_label} imag&#34;
+
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        plt.errorbar(
+            y.real,
+            y.imag,
+            yerr=self.error.real,
+            xerr=self.error.imag,
+            fmt=fmt,
+            zorder=0,
+            *args,
+            **kwargs,
+        )
+
+        scatter_plot = plt.scatter(y.real, y.imag, c=x, *args, **kwargs,)
+
+        plt.colorbar(scatter_plot, label=x_label)
+
+        plt.xlabel(f&#34;{y_real_label} [{self.unit}]&#34;)
+        plt.ylabel(f&#34;{y_imag_label} [{self.unit}]&#34;)
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    ####################################################################################################
+    #                   Conversion Functions                                                           #
+    ####################################################################################################
+    def todict(self, split_complex: bool = False):
+        &#34;&#34;&#34;Converts the Parameter into a dictionary.
+
+        Args:
+            split_complex: Whether to split the value and error of a complex
+                parameter into real and imaginary parts.
+        &#34;&#34;&#34;
+        # Convert Parameter to a dictionary
+        valuedict = asdict(self)
+
+        # If the value of the Parameter is complex and split_complex is True
+        if np.iscomplexobj(self.value) and split_complex:
+            # Convert the value to a dictionary with real and imaginary parts
+            valuedict[&#34;value&#34;] = {
+                &#34;real&#34;: self.value.real.tolist(),
+                &#34;imag&#34;: self.value.imag.tolist(),
+            }
+        else:
+            # Convert the value to a list
+            valuedict[&#34;value&#34;] = self.value.tolist()
+
+        # If the error of the Parameter is complex and split_complex is True
+        if np.iscomplexobj(self.error) and split_complex:
+            # Convert the error to a dictionary with real and imaginary parts
+            valuedict[&#34;error&#34;] = {
+                &#34;real&#34;: self.error.real.tolist(),
+                &#34;imag&#34;: self.error.imag.tolist(),
+            }
+        else:
+            # Convert the error to a list
+            valuedict[&#34;error&#34;] = self.error.tolist()
+
+        # If the error is all NaNs
+        if np.isnan(self.error).all():
+            # Remove the error from the dictionary
+            valuedict.pop(&#34;error&#34;)
+
+        # Return the dictionary
+        return valuedict
+
+    def tostr(
+        self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7
+    ):
+        &#34;&#34;&#34;Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values.&#34;&#34;&#34;
+
+        def _getstr(self, scale_values: bool = True):
+            value, unit_prefix, conversion_factor = self.value, &#34;&#34;, 1
+            if scale_values:
+                value, unit_prefix, conversion_factor = convert_array_with_unit(
+                    self.value
+                )
+
+            if self.value.size &gt; 1:
+                return f&#34;{self.name}: {self.value.size}; {np.min(value)} - {np.max(value)} {unit_prefix}{self.unit}&#34;
+
+            value = (
+                value[0]
+                if np.isnan(self.error)
+                else round_on_error(value[0], self.error[0] * conversion_factor)
+            )
+            return f&#34;{self.name}: {value} {unit_prefix}{self.unit}&#34;
+
+        def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
+            if not algin:
+                return vstr
+
+            (name_str, vstr) = vstr.split(&#34;:&#34;) if &#34;:&#34; in vstr else (&#34;&#34;, vstr)
+            (size_str, vstr) = vstr.split(&#34;;&#34;) if &#34;;&#34; in vstr else (&#34;&#34;, vstr)
+
+            return f&#34;{name_str : &lt;{name_width}}{size_str : &lt;{size_width}}{vstr}&#34;
+
+        vstr = _getstr(self, scale_values=scale_values)
+        return _alginstr(vstr, algin, name_width, size_width)
+
+    @staticmethod
+    def fromdict(newdict: dict):
+        def _get_numbers_from_dict(numbersdict):
+            &#34;&#34;&#34;Converts a dictionary of numbers to a 1-D complex array.
+            The dictionary can contain either the keys &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34;
+            
+            Args:
+                numbersdict (dict): Dictionary of numbers.
+            
+            Returns:
+                (np.ndarray): 1-D complex array of numbers.
+            &#34;&#34;&#34;
+            # Check if the input is a dictionary.
+            # If not, return the input as is.
+            if not isinstance(numbersdict, dict):
+                return numbersdict
+
+            # Check if the dictionary has &#34;real&#34; and &#34;imag&#34; keys.
+            # If so, extract the real and imaginary parts of the numbers.
+            if &#34;real&#34; in numbersdict and &#34;imag&#34; in numbersdict:
+                real = numbersdict[&#34;real&#34;]
+                imag = numbersdict[&#34;imag&#34;]
+
+            # Check if the dictionary has &#34;I&#34; and &#34;Q&#34; keys.
+            # If so, extract the real and imaginary parts of the numbers.
+            elif &#34;I&#34; in numbersdict and &#34;Q&#34; in numbersdict:
+                real = numbersdict[&#34;I&#34;]
+                imag = numbersdict[&#34;Q&#34;]
+
+            # If the dictionary doesn&#39;t have the &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34; keys,
+            # return the input as is.
+            else:
+                return numbersdict
+
+            # Convert the real and imaginary parts to numpy arrays and return them
+            # as a complex array.
+            return np.array(real) + 1j * np.array(imag)
+
+        if &#34;value&#34; in newdict:
+            newdict[&#34;value&#34;] = _get_numbers_from_dict(newdict[&#34;value&#34;])
+
+        if &#34;error&#34; in newdict:
+            newdict[&#34;error&#34;] = _get_numbers_from_dict(newdict[&#34;error&#34;])
+
+        return Valueclass(**newdict)
+
+    @staticmethod
+    def fromfloat(
+        value: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+        name: str = &#34;&#34;,
+        unit: str = &#34;&#34;,
+    ) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Converts a float to a Valueclass object.
+
+        Args:
+            value (float): The value to be converted.
+            name (str): The name of the value.
+
+        Returns:
+            Valueclass: The converted value.
+        &#34;&#34;&#34;
+        if isinstance(value, Valueclass):
+            return value
+        return Valueclass(name=name, unit=unit, value=value)
+
+    ####################################################################################################
+    #                   Conversion Functions                                                           #
+    ####################################################################################################
+    def append(
+        self,
+        other: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+        axis: Optional[int] = None,
+    ) -&gt; None:
+        &#34;&#34;&#34;Appends a value to the value array.
+
+        Args:
+            other (Union[Valueclass, list, tuple, np.ndarray]): The value to be appended.
+            axis (Optional[int], optional): The axis to append the value to. Defaults to None.
+        &#34;&#34;&#34;
+        if not isinstance(other, Valueclass):
+            other = self.fromfloat(other, self.name)
+
+        self.value = np.append(self.value, other.value, axis=axis)
+        self.error = np.append(self.error, other.error, axis=axis)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass"><code class="flex name class">
+<span>class <span class="ident">Valueclass</span></span>
+<span>(</span><span>value: Union[float, list, tuple, numpy.ndarray] = &lt;property object&gt;, error: Union[float, list, tuple, numpy.ndarray] = &lt;property object&gt;, name: str = '', unit: str = '', fft_type: Union[str, bool] = False, sweep_idx: Optional[int] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Valueclass class for storing values and errors.
+The class is designed to be used in a similar way as the numpy.ndarray class.
+It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a></code></dt>
+<dd>Valueclass object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class Valueclass:
+    &#34;&#34;&#34;Valueclass class for storing values and errors.
+    The class is designed to be used in a similar way as the numpy.ndarray class.
+    It can be sliced, added, subtracted, multiplied and divided with other Valueclass objects or with floats.
+
+    Returns:
+        Valueclass: Valueclass object.
+    &#34;&#34;&#34;
+
+    value: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
+    error: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
+    name: str = &#34;&#34;
+    unit: str = &#34;&#34;
+    fft_type: Union[str, bool] = False
+    sweep_idx: Optional[int] = None
+
+    ####################################################################################################
+    #                   Dunder Functions                                                               #
+    ####################################################################################################
+    def __repr__(self):
+        &#34;&#34;&#34;Returns a string representation of the Valueclass object.
+
+        Returns:
+            str : String representation of the Valueclass object.
+        &#34;&#34;&#34;
+        error = np.nan if np.isnan(self.error).all() else self.error
+        return (
+            f&#34;{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n&#34;
+        )
+
+    def __getitem__(self, key) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Returns a slice of the Valueclass object.
+
+        Args:
+            key (str, slice, int): Key to slice the Valueclass object.
+
+        Returns:
+            item: Sliced Valueclass object.
+        &#34;&#34;&#34;
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
+            return Valueclass(self.value[key], self.error[key], self.name, self.unit)
+        return self[key]
+
+    def __setitem__(self, key, value) -&gt; None:
+        if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
+            if not isinstance(value, Valueclass):
+                value = Valueclass(value, self.error[key], self.name, self.unit)
+            self.value[key] = value.value
+            self.error[key] = value.error
+        else:
+            setattr(self, key, value)
+
+    def __add__(self, other) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Adds two Valueclass objects or a Valueclass object and a float.
+
+        Args:
+            other (object, float, int): Object to add.
+
+        Returns:
+            Valueclass: Sum of the two objects.
+        &#34;&#34;&#34;
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value + other, self.error, self.name, self.unit, self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value + other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
+                self.name,
+                self.unit,
+            )
+
+    def __sub__(self, other) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Subtracts two Valueclass objects or a Valueclass object and a float.
+
+        Args:
+            other (object, float, int): Object to subtract.
+
+        Returns:
+            Valueclass: Difference of the two objects.
+        &#34;&#34;&#34;
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value - other, self.error, self.name, self.unit, self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value - other.value,
+                np.sqrt(self.error ** 2 + other.error ** 2),
+                self.name,
+                self.unit,
+            )
+
+    def __mul__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value * other,
+                self.error * other,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value * other.value,
+                np.sqrt(
+                    (self.error * other.value) ** 2 + (self.value * other.error) ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __truediv__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value / other,
+                self.error / other,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+        else:
+            return Valueclass(
+                self.value / other.value,
+                np.sqrt(
+                    (self.error / other.value) ** 2
+                    + (self.value * other.error / other.value ** 2) ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __pow__(self, other) -&gt; &#34;Valueclass&#34;:
+        if &#34;Valueclass&#34; not in str(type(other)):
+            return Valueclass(
+                self.value ** other,
+                self.error
+                * other
+                * self.value ** (other - 1),  # TODO: make correct error propagation
+                self.name,
+                self.unit,
+            )
+        else:
+            return Valueclass(
+                self.value ** other.value,
+                np.sqrt(
+                    (self.error * other.value * self.value ** (other.value - 1)) ** 2
+                    + (self.value ** other.value * other.error * np.log(self.value))
+                    ** 2
+                ),
+                self.name,
+                self.unit,
+            )
+
+    def __radd__(self, other) -&gt; &#34;Valueclass&#34;:
+        return self + other
+
+    def __rsub__(self, other) -&gt; &#34;Valueclass&#34;:
+        return other - self
+
+    def __rmul__(self, other) -&gt; &#34;Valueclass&#34;:
+        return self * other
+
+    def __rtruediv__(self, other) -&gt; &#34;Valueclass&#34;:
+        return Valueclass(
+            other / self.value,
+            other * self.error / self.value ** 2,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def __rpow__(self, other) -&gt; &#34;Valueclass&#34;:
+        return Valueclass(
+            other ** self.value,
+            other ** self.value * self.error * np.log(other),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def __len__(self):
+        return len(self.value)
+
+    def __max__(self):  # TODO: fix this
+        return max(self.value)
+
+    ####################################################################################################
+    #                   Main Functions                                                                 #
+    ####################################################################################################
+    @property
+    def value(self) -&gt; np.ndarray:  # TODO: don&#39;t return array if input was not array
+        &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+        if not hasattr(self, &#34;_value&#34;):
+            self.value = ()
+
+        return self._value
+
+    @value.setter
+    def value(self, value: Union[float, list, tuple, np.ndarray]) -&gt; None:
+        &#34;&#34;&#34;Sets the value of the Valueclass object.
+
+        Args:
+            value (Union[float, list, tuple, np.ndarray]): Value to set.
+        &#34;&#34;&#34;
+        if isinstance(value, (float, int, np.integer)):
+            self._value = np.array([value])
+
+        elif isinstance(value, (list, tuple)):
+            self._value = np.array(value)
+
+        elif isinstance(value, np.ndarray):
+            self._value = value
+
+    @property
+    def error(self) -&gt; np.ndarray:
+        &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+        return self._error
+
+    @error.setter
+    def error(self, error: Union[float, list, tuple, np.ndarray]) -&gt; None:
+        &#34;&#34;&#34;Sets the error of the Valueclass object.
+
+        Args:
+            error (Union[float, list, tuple, np.ndarray]): Error to set.
+        &#34;&#34;&#34;
+        if not hasattr(self, &#34;_error&#34;):
+            self._error = (
+                np.full(np.shape(self.value), np.nan)
+                if self.value.size
+                else np.empty(0)
+            )
+
+        if np.iscomplexobj(error):
+            self._error.__setattr__(&#34;dtype&#34;, np.complex128)
+
+        if isinstance(error, (float, np.integer, int)):
+            self._error.fill(error)
+
+        elif isinstance(error, (list, tuple, np.ndarray)):
+            error = np.array(error)
+            ndim = np.ndim(error)
+
+            if ndim == 0:
+                self._error.fill(error)
+
+            elif ndim == 1:
+                if np.iscomplexobj(error):
+                    self._error = error
+                self._error[: np.size(error)] = error
+
+            elif ndim == 2:
+                w, h = np.shape(error)[0], np.shape(error)[1]
+
+                if w == 1 or h == 1:
+                    self._error = error
+                else:
+                    self._error[:w, :h] = error
+
+    @property
+    def v(self):
+        &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+        return self.value
+
+    @property
+    def e(self):
+        &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+        return self.error
+
+    @property
+    def real(self):
+        return Valueclass(
+            np.real(self.value),
+            np.real(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def imag(self):
+        return Valueclass(
+            np.imag(self.value),
+            np.imag(self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def I(self):
+        return self.real
+
+    @property
+    def Q(self):
+        return self.imag
+
+    @property
+    def abs(self):
+        return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)
+
+    @property
+    def phase(self):
+        return Valueclass(
+            np.unwrap(np.angle(self.value)),
+            np.array(np.angle(self.error)),
+            self.name,
+            &#34;rad&#34;,
+            self.fft_type,
+        )
+
+    @property
+    def angle(self):
+        return self.phase
+
+    ####################################################################################################
+    #                   Property Functions                                                             #
+    ####################################################################################################
+    @property
+    def shape(self):
+        return self.value.shape
+
+    @property
+    def size(self):
+        return self.value.size
+
+    @property
+    def ndim(self):
+        return self.value.ndim
+
+    @property
+    def dtype(self):
+        return self.value.dtype
+
+    @property
+    def T(self):
+        return Valueclass(
+            self.value.T, self.error.T, self.name, self.unit, self.fft_type
+        )
+
+    @property
+    def sprt(self):
+        return Valueclass(
+            np.sqrt(self.value),
+            self.error / (2 * np.sqrt(self.value)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    ####################################################################################################
+    #                   Math (Simple) Functions                                                        #
+    ####################################################################################################
+    def mean(self, axis=None):
+        return Valueclass(
+            np.mean(self.value, axis=axis),
+            np.mean(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
+
+    def std(self, axis=None):
+        return Valueclass(
+            np.std(self.value, axis=axis),
+            np.std(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
+
+    def min(self, axis=None):
+        return np.min(self.value, axis=axis)
+
+    def max(self, axis=None):
+        return np.max(self.value, axis=axis)
+
+    def argmin(self, axis=None):
+        return np.argmin(self.value, axis=axis)
+
+    def argmax(self, axis=None):
+        return np.argmax(self.value, axis=axis)
+
+    def min_error(self, axis=None):
+        return np.min(self.error, axis=axis)
+
+    def max_error(self, axis=None):
+        return np.max(self.error, axis=axis)
+
+    def argmin_error(self, axis=None):
+        return np.argmin(self.error, axis=axis)
+
+    def argmax_error(self, axis=None):
+        return np.argmax(self.error, axis=axis)
+
+    def sum(self, axis=None):
+        return np.sum(self.value, axis=axis)  # type: ignore
+
+    def prod(self, axis=None):
+        return np.prod(self.value, axis=axis)
+
+    def clip(
+        self,
+        v_min=None,
+        v_max=None,
+        e_min=None,
+        e_max=None,
+        out_value=None,
+        out_error=None,
+        clip_value=True,
+        clip_error=True,
+    ):
+        if not v_max:
+            v_max = np.max(self.value)
+
+        if not e_max:
+            e_max = np.max(self.error)
+
+        value = (
+            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        )
+        error = (
+            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        )
+
+        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
+
+    ####################################################################################################
+    #                   Math (Advanced) Functions                                                      #
+    ####################################################################################################
+    @property
+    def db(self):
+        return Valueclass(
+            20 * np.log10(self.value),
+            20 * self.error / (np.log(10) * self.value),
+            self.name,
+            &#34;dB&#34;,
+        )
+
+    @property
+    def norm(self):
+        return Valueclass(
+            self.value / np.sqrt(np.sum(self.value ** 2)),
+            self.error / np.sqrt(np.sum(self.value ** 2)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def fft(self):
+        fft = np.fft.fft(self.value)
+        N = np.size(self.value)
+        v = 2.0 / N * np.abs(fft[: N // 2])
+
+        return Valueclass(v, np.nan, self.name, self.unit, fft_type=&#34;fft_y&#34;)
+
+    @property
+    def fftfreq(self):
+        N = np.size(self.value)
+        return Valueclass(
+            np.fft.fftfreq(N, d=self.value[1] - self.value[0])[: N // 2],
+            np.nan,
+            self.name,
+            self.unit,
+            fft_type=&#34;fft_x&#34;,
+        )
+
+    @property
+    def substract_mean(self):
+        return Valueclass(
+            self.value - np.mean(self.value), self.error, self.name, self.unit
+        )
+
+    @property
+    def ddx(self):  # TODO: fix this
+        return Valueclass(
+            np.gradient(self.value, self.error),
+            np.gradient(self.error, self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    @property
+    def ddxx(self):
+        return Valueclass(
+            np.gradient(np.gradient(self.value, self.error), self.error),
+            np.gradient(np.gradient(self.error, self.error), self.error),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def norm_zero_to_one(self, axis=None):
+        return Valueclass(
+            (self.value - np.min(self.value, axis=axis))
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.error
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    def traces(self, operation=&#34;Show individual&#34;):
+        if operation in (
+            &#34;Show individual&#34;,
+            &#34;show individual&#34;,
+            &#34;individual&#34;,
+            &#34;Individual&#34;,
+        ):
+            return Valueclass(
+                self.value, self.error, self.name, self.unit, self.fft_type,
+            )
+
+        elif operation in (&#34;Substract first&#34;, &#34;substract first&#34;, &#34;first&#34;, &#34;First&#34;):
+            return Valueclass(
+                self.value - self.value[0],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract mean&#34;, &#34;substract mean&#34;, &#34;mean&#34;, &#34;Mean&#34;):
+            return Valueclass(
+                self.value - np.mean(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract last&#34;, &#34;substract last&#34;, &#34;last&#34;, &#34;Last&#34;):
+            return Valueclass(
+                self.value - self.value[-1],
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract min&#34;, &#34;substract min&#34;, &#34;min&#34;, &#34;Min&#34;):
+            return Valueclass(
+                self.value - np.min(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract max&#34;, &#34;substract max&#34;, &#34;max&#34;, &#34;Max&#34;):
+            return Valueclass(
+                self.value - np.max(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (&#34;Substract median&#34;, &#34;substract median&#34;, &#34;median&#34;, &#34;Median&#34;):
+            return Valueclass(
+                self.value - np.median(self.value, axis=0),
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
+
+        elif operation in (
+            &#34;Substract previous&#34;,
+            &#34;substract previous&#34;,
+            &#34;previous&#34;,
+            &#34;Previous&#34;,
+        ):
+            v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
+            v[0] = np.zeros(self.value.shape[1])
+
+            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
+
+        elif operation in (&#34;Average&#34;, &#34;average&#34;):
+            return Valueclass(
+                np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)),
+                self.name,
+                self.unit,
+            )
+
+        elif operation in (&#34;Standard deviation&#34;, &#34;standard deviation&#34;, &#34;std&#34;, &#34;Std&#34;):
+            return Valueclass(
+                np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1)),
+                np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1)),
+                self.name,
+                self.unit,
+            )
+
+        else:
+            raise ValueError(
+                f&#34;Operation &#39;{operation}&#39; not recognized\n&#34;
+                &#34;self.traces() takes one of the following arguments:&#34;
+                &#34;&#39;Show individual&#39;, &#39;Substract first&#39;, &#39;Substract mean&#39;,&#34;
+                &#34;&#39;Substract last&#39;, &#39;Substract min&#39;, &#39;Substract max&#39;, &#39;Substract median&#39;,&#34;
+                &#34;&#39;Substract previous&#39;, &#39;Average&#39;, &#39;Standard deviation&#39;&#34;
+            )
+
+    ####################################################################################################
+    #                   Plot Functions                                                                 #
+    ####################################################################################################
+    def plot(self, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        if np.iscomplexobj(self.value):
+            self._plot_complex(x, x_label, title, fmt, *args, **kwargs)
+        else:
+            self._plot_1d(x, x_label, title, fmt, *args, **kwargs)
+
+    def _plot_1d(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+
+        y = kwargs.pop(&#34;y&#34;, self.value.real)
+        y_label = kwargs.pop(&#34;y_label&#34;, self.name)
+
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        plt.errorbar(x, y, yerr=self.error, fmt=fmt, *args, **kwargs)
+        plt.plot(x, y, *args, **kwargs)
+
+        plt.xlabel(x_label)
+        plt.ylabel(f&#34;{y_label} [{self.unit}]&#34;)
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    def _plot_complex(self, x, x_label, title, fmt, *args, **kwargs):
+        x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+        x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+
+        y = kwargs.pop(&#34;y&#34;, self.value)
+        y_label = kwargs.pop(&#34;y_label&#34;, self.name)
+        y_real_label, y_imag_label = f&#34;{y_label} real&#34;, f&#34;{y_label} imag&#34;
+
+        title = kwargs.pop(&#34;title&#34;, None)
+        fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+        plt.errorbar(
+            y.real,
+            y.imag,
+            yerr=self.error.real,
+            xerr=self.error.imag,
+            fmt=fmt,
+            zorder=0,
+            *args,
+            **kwargs,
+        )
+
+        scatter_plot = plt.scatter(y.real, y.imag, c=x, *args, **kwargs,)
+
+        plt.colorbar(scatter_plot, label=x_label)
+
+        plt.xlabel(f&#34;{y_real_label} [{self.unit}]&#34;)
+        plt.ylabel(f&#34;{y_imag_label} [{self.unit}]&#34;)
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    ####################################################################################################
+    #                   Conversion Functions                                                           #
+    ####################################################################################################
+    def todict(self, split_complex: bool = False):
+        &#34;&#34;&#34;Converts the Parameter into a dictionary.
+
+        Args:
+            split_complex: Whether to split the value and error of a complex
+                parameter into real and imaginary parts.
+        &#34;&#34;&#34;
+        # Convert Parameter to a dictionary
+        valuedict = asdict(self)
+
+        # If the value of the Parameter is complex and split_complex is True
+        if np.iscomplexobj(self.value) and split_complex:
+            # Convert the value to a dictionary with real and imaginary parts
+            valuedict[&#34;value&#34;] = {
+                &#34;real&#34;: self.value.real.tolist(),
+                &#34;imag&#34;: self.value.imag.tolist(),
+            }
+        else:
+            # Convert the value to a list
+            valuedict[&#34;value&#34;] = self.value.tolist()
+
+        # If the error of the Parameter is complex and split_complex is True
+        if np.iscomplexobj(self.error) and split_complex:
+            # Convert the error to a dictionary with real and imaginary parts
+            valuedict[&#34;error&#34;] = {
+                &#34;real&#34;: self.error.real.tolist(),
+                &#34;imag&#34;: self.error.imag.tolist(),
+            }
+        else:
+            # Convert the error to a list
+            valuedict[&#34;error&#34;] = self.error.tolist()
+
+        # If the error is all NaNs
+        if np.isnan(self.error).all():
+            # Remove the error from the dictionary
+            valuedict.pop(&#34;error&#34;)
+
+        # Return the dictionary
+        return valuedict
+
+    def tostr(
+        self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7
+    ):
+        &#34;&#34;&#34;Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values.&#34;&#34;&#34;
+
+        def _getstr(self, scale_values: bool = True):
+            value, unit_prefix, conversion_factor = self.value, &#34;&#34;, 1
+            if scale_values:
+                value, unit_prefix, conversion_factor = convert_array_with_unit(
+                    self.value
+                )
+
+            if self.value.size &gt; 1:
+                return f&#34;{self.name}: {self.value.size}; {np.min(value)} - {np.max(value)} {unit_prefix}{self.unit}&#34;
+
+            value = (
+                value[0]
+                if np.isnan(self.error)
+                else round_on_error(value[0], self.error[0] * conversion_factor)
+            )
+            return f&#34;{self.name}: {value} {unit_prefix}{self.unit}&#34;
+
+        def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
+            if not algin:
+                return vstr
+
+            (name_str, vstr) = vstr.split(&#34;:&#34;) if &#34;:&#34; in vstr else (&#34;&#34;, vstr)
+            (size_str, vstr) = vstr.split(&#34;;&#34;) if &#34;;&#34; in vstr else (&#34;&#34;, vstr)
+
+            return f&#34;{name_str : &lt;{name_width}}{size_str : &lt;{size_width}}{vstr}&#34;
+
+        vstr = _getstr(self, scale_values=scale_values)
+        return _alginstr(vstr, algin, name_width, size_width)
+
+    @staticmethod
+    def fromdict(newdict: dict):
+        def _get_numbers_from_dict(numbersdict):
+            &#34;&#34;&#34;Converts a dictionary of numbers to a 1-D complex array.
+            The dictionary can contain either the keys &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34;
+            
+            Args:
+                numbersdict (dict): Dictionary of numbers.
+            
+            Returns:
+                (np.ndarray): 1-D complex array of numbers.
+            &#34;&#34;&#34;
+            # Check if the input is a dictionary.
+            # If not, return the input as is.
+            if not isinstance(numbersdict, dict):
+                return numbersdict
+
+            # Check if the dictionary has &#34;real&#34; and &#34;imag&#34; keys.
+            # If so, extract the real and imaginary parts of the numbers.
+            if &#34;real&#34; in numbersdict and &#34;imag&#34; in numbersdict:
+                real = numbersdict[&#34;real&#34;]
+                imag = numbersdict[&#34;imag&#34;]
+
+            # Check if the dictionary has &#34;I&#34; and &#34;Q&#34; keys.
+            # If so, extract the real and imaginary parts of the numbers.
+            elif &#34;I&#34; in numbersdict and &#34;Q&#34; in numbersdict:
+                real = numbersdict[&#34;I&#34;]
+                imag = numbersdict[&#34;Q&#34;]
+
+            # If the dictionary doesn&#39;t have the &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34; keys,
+            # return the input as is.
+            else:
+                return numbersdict
+
+            # Convert the real and imaginary parts to numpy arrays and return them
+            # as a complex array.
+            return np.array(real) + 1j * np.array(imag)
+
+        if &#34;value&#34; in newdict:
+            newdict[&#34;value&#34;] = _get_numbers_from_dict(newdict[&#34;value&#34;])
+
+        if &#34;error&#34; in newdict:
+            newdict[&#34;error&#34;] = _get_numbers_from_dict(newdict[&#34;error&#34;])
+
+        return Valueclass(**newdict)
+
+    @staticmethod
+    def fromfloat(
+        value: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+        name: str = &#34;&#34;,
+        unit: str = &#34;&#34;,
+    ) -&gt; &#34;Valueclass&#34;:
+        &#34;&#34;&#34;Converts a float to a Valueclass object.
+
+        Args:
+            value (float): The value to be converted.
+            name (str): The name of the value.
+
+        Returns:
+            Valueclass: The converted value.
+        &#34;&#34;&#34;
+        if isinstance(value, Valueclass):
+            return value
+        return Valueclass(name=name, unit=unit, value=value)
+
+    ####################################################################################################
+    #                   Conversion Functions                                                           #
+    ####################################################################################################
+    def append(
+        self,
+        other: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+        axis: Optional[int] = None,
+    ) -&gt; None:
+        &#34;&#34;&#34;Appends a value to the value array.
+
+        Args:
+            other (Union[Valueclass, list, tuple, np.ndarray]): The value to be appended.
+            axis (Optional[int], optional): The axis to append the value to. Defaults to None.
+        &#34;&#34;&#34;
+        if not isinstance(other, Valueclass):
+            other = self.fromfloat(other, self.name)
+
+        self.value = np.append(self.value, other.value, axis=axis)
+        self.error = np.append(self.error, other.error, axis=axis)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.fft_type"><code class="name">var <span class="ident">fft_type</span> : Union[str, bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.sweep_idx"><code class="name">var <span class="ident">sweep_idx</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.unit"><code class="name">var <span class="ident">unit</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.fromdict"><code class="name flex">
+<span>def <span class="ident">fromdict</span></span>(<span>newdict: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def fromdict(newdict: dict):
+    def _get_numbers_from_dict(numbersdict):
+        &#34;&#34;&#34;Converts a dictionary of numbers to a 1-D complex array.
+        The dictionary can contain either the keys &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34;
+        
+        Args:
+            numbersdict (dict): Dictionary of numbers.
+        
+        Returns:
+            (np.ndarray): 1-D complex array of numbers.
+        &#34;&#34;&#34;
+        # Check if the input is a dictionary.
+        # If not, return the input as is.
+        if not isinstance(numbersdict, dict):
+            return numbersdict
+
+        # Check if the dictionary has &#34;real&#34; and &#34;imag&#34; keys.
+        # If so, extract the real and imaginary parts of the numbers.
+        if &#34;real&#34; in numbersdict and &#34;imag&#34; in numbersdict:
+            real = numbersdict[&#34;real&#34;]
+            imag = numbersdict[&#34;imag&#34;]
+
+        # Check if the dictionary has &#34;I&#34; and &#34;Q&#34; keys.
+        # If so, extract the real and imaginary parts of the numbers.
+        elif &#34;I&#34; in numbersdict and &#34;Q&#34; in numbersdict:
+            real = numbersdict[&#34;I&#34;]
+            imag = numbersdict[&#34;Q&#34;]
+
+        # If the dictionary doesn&#39;t have the &#34;real&#34; and &#34;imag&#34; or &#34;I&#34; and &#34;Q&#34; keys,
+        # return the input as is.
+        else:
+            return numbersdict
+
+        # Convert the real and imaginary parts to numpy arrays and return them
+        # as a complex array.
+        return np.array(real) + 1j * np.array(imag)
+
+    if &#34;value&#34; in newdict:
+        newdict[&#34;value&#34;] = _get_numbers_from_dict(newdict[&#34;value&#34;])
+
+    if &#34;error&#34; in newdict:
+        newdict[&#34;error&#34;] = _get_numbers_from_dict(newdict[&#34;error&#34;])
+
+    return Valueclass(**newdict)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.fromfloat"><code class="name flex">
+<span>def <span class="ident">fromfloat</span></span>(<span>value: Union[ForwardRef('<a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a>'), list, tuple, numpy.ndarray], name: str = '', unit: str = '') ‑> <a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts a float to a Valueclass object.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong> :&ensp;<code>float</code></dt>
+<dd>The value to be converted.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>The name of the value.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a></code></dt>
+<dd>The converted value.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def fromfloat(
+    value: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+    name: str = &#34;&#34;,
+    unit: str = &#34;&#34;,
+) -&gt; &#34;Valueclass&#34;:
+    &#34;&#34;&#34;Converts a float to a Valueclass object.
+
+    Args:
+        value (float): The value to be converted.
+        name (str): The name of the value.
+
+    Returns:
+        Valueclass: The converted value.
+    &#34;&#34;&#34;
+    if isinstance(value, Valueclass):
+        return value
+    return Valueclass(name=name, unit=unit, value=value)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.I"><code class="name">var <span class="ident">I</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def I(self):
+    return self.real</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.Q"><code class="name">var <span class="ident">Q</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Q(self):
+    return self.imag</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.T"><code class="name">var <span class="ident">T</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def T(self):
+    return Valueclass(
+        self.value.T, self.error.T, self.name, self.unit, self.fft_type
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.abs"><code class="name">var <span class="ident">abs</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def abs(self):
+    return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.angle"><code class="name">var <span class="ident">angle</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def angle(self):
+    return self.phase</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.db"><code class="name">var <span class="ident">db</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def db(self):
+    return Valueclass(
+        20 * np.log10(self.value),
+        20 * self.error / (np.log(10) * self.value),
+        self.name,
+        &#34;dB&#34;,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.ddx"><code class="name">var <span class="ident">ddx</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ddx(self):  # TODO: fix this
+    return Valueclass(
+        np.gradient(self.value, self.error),
+        np.gradient(self.error, self.error),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.ddxx"><code class="name">var <span class="ident">ddxx</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ddxx(self):
+    return Valueclass(
+        np.gradient(np.gradient(self.value, self.error), self.error),
+        np.gradient(np.gradient(self.error, self.error), self.error),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.dtype"><code class="name">var <span class="ident">dtype</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dtype(self):
+    return self.value.dtype</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.e"><code class="name">var <span class="ident">e</span></code></dt>
+<dd>
+<div class="desc"><p>Returns the error of the Valueclass object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def e(self):
+    &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+    return self.error</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.error"><code class="name">var <span class="ident">error</span> : numpy.ndarray</code></dt>
+<dd>
+<div class="desc"><p>Returns the error of the Valueclass object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def error(self) -&gt; np.ndarray:
+    &#34;&#34;&#34;Returns the error of the Valueclass object.&#34;&#34;&#34;
+    return self._error</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.fft"><code class="name">var <span class="ident">fft</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def fft(self):
+    fft = np.fft.fft(self.value)
+    N = np.size(self.value)
+    v = 2.0 / N * np.abs(fft[: N // 2])
+
+    return Valueclass(v, np.nan, self.name, self.unit, fft_type=&#34;fft_y&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.fftfreq"><code class="name">var <span class="ident">fftfreq</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def fftfreq(self):
+    N = np.size(self.value)
+    return Valueclass(
+        np.fft.fftfreq(N, d=self.value[1] - self.value[0])[: N // 2],
+        np.nan,
+        self.name,
+        self.unit,
+        fft_type=&#34;fft_x&#34;,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.imag"><code class="name">var <span class="ident">imag</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def imag(self):
+    return Valueclass(
+        np.imag(self.value),
+        np.imag(self.error),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.ndim"><code class="name">var <span class="ident">ndim</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ndim(self):
+    return self.value.ndim</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.norm"><code class="name">var <span class="ident">norm</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def norm(self):
+    return Valueclass(
+        self.value / np.sqrt(np.sum(self.value ** 2)),
+        self.error / np.sqrt(np.sum(self.value ** 2)),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.phase"><code class="name">var <span class="ident">phase</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def phase(self):
+    return Valueclass(
+        np.unwrap(np.angle(self.value)),
+        np.array(np.angle(self.error)),
+        self.name,
+        &#34;rad&#34;,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.real"><code class="name">var <span class="ident">real</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def real(self):
+    return Valueclass(
+        np.real(self.value),
+        np.real(self.error),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.shape"><code class="name">var <span class="ident">shape</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def shape(self):
+    return self.value.shape</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.size"><code class="name">var <span class="ident">size</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def size(self):
+    return self.value.size</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.sprt"><code class="name">var <span class="ident">sprt</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def sprt(self):
+    return Valueclass(
+        np.sqrt(self.value),
+        self.error / (2 * np.sqrt(self.value)),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.substract_mean"><code class="name">var <span class="ident">substract_mean</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def substract_mean(self):
+    return Valueclass(
+        self.value - np.mean(self.value), self.error, self.name, self.unit
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.v"><code class="name">var <span class="ident">v</span></code></dt>
+<dd>
+<div class="desc"><p>Returns the value of the Valueclass object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def v(self):
+    &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+    return self.value</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.value"><code class="name">var <span class="ident">value</span> : numpy.ndarray</code></dt>
+<dd>
+<div class="desc"><p>Returns the value of the Valueclass object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def value(self) -&gt; np.ndarray:  # TODO: don&#39;t return array if input was not array
+    &#34;&#34;&#34;Returns the value of the Valueclass object.&#34;&#34;&#34;
+    if not hasattr(self, &#34;_value&#34;):
+        self.value = ()
+
+    return self._value</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, other: Union[ForwardRef('<a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a>'), list, tuple, numpy.ndarray], axis: Optional[int] = None) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Appends a value to the value array.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code>Union[<a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a>, list, tuple, np.ndarray]</code></dt>
+<dd>The value to be appended.</dd>
+<dt><strong><code>axis</code></strong> :&ensp;<code>Optional[int]</code>, optional</dt>
+<dd>The axis to append the value to. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(
+    self,
+    other: Union[&#34;Valueclass&#34;, list, tuple, np.ndarray],
+    axis: Optional[int] = None,
+) -&gt; None:
+    &#34;&#34;&#34;Appends a value to the value array.
+
+    Args:
+        other (Union[Valueclass, list, tuple, np.ndarray]): The value to be appended.
+        axis (Optional[int], optional): The axis to append the value to. Defaults to None.
+    &#34;&#34;&#34;
+    if not isinstance(other, Valueclass):
+        other = self.fromfloat(other, self.name)
+
+    self.value = np.append(self.value, other.value, axis=axis)
+    self.error = np.append(self.error, other.error, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.argmax"><code class="name flex">
+<span>def <span class="ident">argmax</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmax(self, axis=None):
+    return np.argmax(self.value, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.argmax_error"><code class="name flex">
+<span>def <span class="ident">argmax_error</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmax_error(self, axis=None):
+    return np.argmax(self.error, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.argmin"><code class="name flex">
+<span>def <span class="ident">argmin</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmin(self, axis=None):
+    return np.argmin(self.value, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.argmin_error"><code class="name flex">
+<span>def <span class="ident">argmin_error</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def argmin_error(self, axis=None):
+    return np.argmin(self.error, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.clip"><code class="name flex">
+<span>def <span class="ident">clip</span></span>(<span>self, v_min=None, v_max=None, e_min=None, e_max=None, out_value=None, out_error=None, clip_value=True, clip_error=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clip(
+    self,
+    v_min=None,
+    v_max=None,
+    e_min=None,
+    e_max=None,
+    out_value=None,
+    out_error=None,
+    clip_value=True,
+    clip_error=True,
+):
+    if not v_max:
+        v_max = np.max(self.value)
+
+    if not e_max:
+        e_max = np.max(self.error)
+
+    value = (
+        np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+    )
+    error = (
+        np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+    )
+
+    return Valueclass(value, error, self.name, self.unit, self.fft_type,)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.max"><code class="name flex">
+<span>def <span class="ident">max</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def max(self, axis=None):
+    return np.max(self.value, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.max_error"><code class="name flex">
+<span>def <span class="ident">max_error</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def max_error(self, axis=None):
+    return np.max(self.error, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.mean"><code class="name flex">
+<span>def <span class="ident">mean</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean(self, axis=None):
+    return Valueclass(
+        np.mean(self.value, axis=axis),
+        np.mean(self.error, axis=axis),
+        self.name,
+        self.unit,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.min"><code class="name flex">
+<span>def <span class="ident">min</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def min(self, axis=None):
+    return np.min(self.value, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.min_error"><code class="name flex">
+<span>def <span class="ident">min_error</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def min_error(self, axis=None):
+    return np.min(self.error, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.norm_zero_to_one"><code class="name flex">
+<span>def <span class="ident">norm_zero_to_one</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def norm_zero_to_one(self, axis=None):
+    return Valueclass(
+        (self.value - np.min(self.value, axis=axis))
+        / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+        self.error
+        / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+        self.name,
+        self.unit,
+        self.fft_type,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.plot"><code class="name flex">
+<span>def <span class="ident">plot</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot(self, *args, **kwargs):
+    x = kwargs.pop(&#34;x&#34;, np.arange(len(self.value)))
+    x_label = kwargs.pop(&#34;x_label&#34;, &#34;index&#34;)
+    title = kwargs.pop(&#34;title&#34;, None)
+    fmt = kwargs.pop(&#34;fmt&#34;, &#34;.&#34;)
+
+    if np.iscomplexobj(self.value):
+        self._plot_complex(x, x_label, title, fmt, *args, **kwargs)
+    else:
+        self._plot_1d(x, x_label, title, fmt, *args, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.prod"><code class="name flex">
+<span>def <span class="ident">prod</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prod(self, axis=None):
+    return np.prod(self.value, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.std"><code class="name flex">
+<span>def <span class="ident">std</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def std(self, axis=None):
+    return Valueclass(
+        np.std(self.value, axis=axis),
+        np.std(self.error, axis=axis),
+        self.name,
+        self.unit,
+    )</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.sum"><code class="name flex">
+<span>def <span class="ident">sum</span></span>(<span>self, axis=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum(self, axis=None):
+    return np.sum(self.value, axis=axis)  # type: ignore</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.todict"><code class="name flex">
+<span>def <span class="ident">todict</span></span>(<span>self, split_complex: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts the Parameter into a dictionary.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>split_complex</code></strong></dt>
+<dd>Whether to split the value and error of a complex
+parameter into real and imaginary parts.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def todict(self, split_complex: bool = False):
+    &#34;&#34;&#34;Converts the Parameter into a dictionary.
+
+    Args:
+        split_complex: Whether to split the value and error of a complex
+            parameter into real and imaginary parts.
+    &#34;&#34;&#34;
+    # Convert Parameter to a dictionary
+    valuedict = asdict(self)
+
+    # If the value of the Parameter is complex and split_complex is True
+    if np.iscomplexobj(self.value) and split_complex:
+        # Convert the value to a dictionary with real and imaginary parts
+        valuedict[&#34;value&#34;] = {
+            &#34;real&#34;: self.value.real.tolist(),
+            &#34;imag&#34;: self.value.imag.tolist(),
+        }
+    else:
+        # Convert the value to a list
+        valuedict[&#34;value&#34;] = self.value.tolist()
+
+    # If the error of the Parameter is complex and split_complex is True
+    if np.iscomplexobj(self.error) and split_complex:
+        # Convert the error to a dictionary with real and imaginary parts
+        valuedict[&#34;error&#34;] = {
+            &#34;real&#34;: self.error.real.tolist(),
+            &#34;imag&#34;: self.error.imag.tolist(),
+        }
+    else:
+        # Convert the error to a list
+        valuedict[&#34;error&#34;] = self.error.tolist()
+
+    # If the error is all NaNs
+    if np.isnan(self.error).all():
+        # Remove the error from the dictionary
+        valuedict.pop(&#34;error&#34;)
+
+    # Return the dictionary
+    return valuedict</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.tostr"><code class="name flex">
+<span>def <span class="ident">tostr</span></span>(<span>self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tostr(
+    self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7
+):
+    &#34;&#34;&#34;Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values.&#34;&#34;&#34;
+
+    def _getstr(self, scale_values: bool = True):
+        value, unit_prefix, conversion_factor = self.value, &#34;&#34;, 1
+        if scale_values:
+            value, unit_prefix, conversion_factor = convert_array_with_unit(
+                self.value
+            )
+
+        if self.value.size &gt; 1:
+            return f&#34;{self.name}: {self.value.size}; {np.min(value)} - {np.max(value)} {unit_prefix}{self.unit}&#34;
+
+        value = (
+            value[0]
+            if np.isnan(self.error)
+            else round_on_error(value[0], self.error[0] * conversion_factor)
+        )
+        return f&#34;{self.name}: {value} {unit_prefix}{self.unit}&#34;
+
+    def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
+        if not algin:
+            return vstr
+
+        (name_str, vstr) = vstr.split(&#34;:&#34;) if &#34;:&#34; in vstr else (&#34;&#34;, vstr)
+        (size_str, vstr) = vstr.split(&#34;;&#34;) if &#34;;&#34; in vstr else (&#34;&#34;, vstr)
+
+        return f&#34;{name_str : &lt;{name_width}}{size_str : &lt;{size_width}}{vstr}&#34;
+
+    vstr = _getstr(self, scale_values=scale_values)
+    return _alginstr(vstr, algin, name_width, size_width)</code></pre>
+</details>
+</dd>
+<dt id="dataanalyzer.utilities.valueclass.Valueclass.traces"><code class="name flex">
+<span>def <span class="ident">traces</span></span>(<span>self, operation='Show individual')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def traces(self, operation=&#34;Show individual&#34;):
+    if operation in (
+        &#34;Show individual&#34;,
+        &#34;show individual&#34;,
+        &#34;individual&#34;,
+        &#34;Individual&#34;,
+    ):
+        return Valueclass(
+            self.value, self.error, self.name, self.unit, self.fft_type,
+        )
+
+    elif operation in (&#34;Substract first&#34;, &#34;substract first&#34;, &#34;first&#34;, &#34;First&#34;):
+        return Valueclass(
+            self.value - self.value[0],
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (&#34;Substract mean&#34;, &#34;substract mean&#34;, &#34;mean&#34;, &#34;Mean&#34;):
+        return Valueclass(
+            self.value - np.mean(self.value, axis=0),
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (&#34;Substract last&#34;, &#34;substract last&#34;, &#34;last&#34;, &#34;Last&#34;):
+        return Valueclass(
+            self.value - self.value[-1],
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (&#34;Substract min&#34;, &#34;substract min&#34;, &#34;min&#34;, &#34;Min&#34;):
+        return Valueclass(
+            self.value - np.min(self.value, axis=0),
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (&#34;Substract max&#34;, &#34;substract max&#34;, &#34;max&#34;, &#34;Max&#34;):
+        return Valueclass(
+            self.value - np.max(self.value, axis=0),
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (&#34;Substract median&#34;, &#34;substract median&#34;, &#34;median&#34;, &#34;Median&#34;):
+        return Valueclass(
+            self.value - np.median(self.value, axis=0),
+            self.error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
+
+    elif operation in (
+        &#34;Substract previous&#34;,
+        &#34;substract previous&#34;,
+        &#34;previous&#34;,
+        &#34;Previous&#34;,
+    ):
+        v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
+        v[0] = np.zeros(self.value.shape[1])
+
+        return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
+
+    elif operation in (&#34;Average&#34;, &#34;average&#34;):
+        return Valueclass(
+            np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)),
+            np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)),
+            self.name,
+            self.unit,
+        )
+
+    elif operation in (&#34;Standard deviation&#34;, &#34;standard deviation&#34;, &#34;std&#34;, &#34;Std&#34;):
+        return Valueclass(
+            np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1)),
+            np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1)),
+            self.name,
+            self.unit,
+        )
+
+    else:
+        raise ValueError(
+            f&#34;Operation &#39;{operation}&#39; not recognized\n&#34;
+            &#34;self.traces() takes one of the following arguments:&#34;
+            &#34;&#39;Show individual&#39;, &#39;Substract first&#39;, &#39;Substract mean&#39;,&#34;
+            &#34;&#39;Substract last&#39;, &#39;Substract min&#39;, &#39;Substract max&#39;, &#39;Substract median&#39;,&#34;
+            &#34;&#39;Substract previous&#39;, &#39;Average&#39;, &#39;Standard deviation&#39;&#34;
+        )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dataanalyzer.utilities" href="index.html">dataanalyzer.utilities</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="dataanalyzer.utilities.valueclass.Valueclass" href="#dataanalyzer.utilities.valueclass.Valueclass">Valueclass</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.I" href="#dataanalyzer.utilities.valueclass.Valueclass.I">I</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.Q" href="#dataanalyzer.utilities.valueclass.Valueclass.Q">Q</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.T" href="#dataanalyzer.utilities.valueclass.Valueclass.T">T</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.abs" href="#dataanalyzer.utilities.valueclass.Valueclass.abs">abs</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.angle" href="#dataanalyzer.utilities.valueclass.Valueclass.angle">angle</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.append" href="#dataanalyzer.utilities.valueclass.Valueclass.append">append</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.argmax" href="#dataanalyzer.utilities.valueclass.Valueclass.argmax">argmax</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.argmax_error" href="#dataanalyzer.utilities.valueclass.Valueclass.argmax_error">argmax_error</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.argmin" href="#dataanalyzer.utilities.valueclass.Valueclass.argmin">argmin</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.argmin_error" href="#dataanalyzer.utilities.valueclass.Valueclass.argmin_error">argmin_error</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.clip" href="#dataanalyzer.utilities.valueclass.Valueclass.clip">clip</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.db" href="#dataanalyzer.utilities.valueclass.Valueclass.db">db</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.ddx" href="#dataanalyzer.utilities.valueclass.Valueclass.ddx">ddx</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.ddxx" href="#dataanalyzer.utilities.valueclass.Valueclass.ddxx">ddxx</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.dtype" href="#dataanalyzer.utilities.valueclass.Valueclass.dtype">dtype</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.e" href="#dataanalyzer.utilities.valueclass.Valueclass.e">e</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.error" href="#dataanalyzer.utilities.valueclass.Valueclass.error">error</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.fft" href="#dataanalyzer.utilities.valueclass.Valueclass.fft">fft</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.fft_type" href="#dataanalyzer.utilities.valueclass.Valueclass.fft_type">fft_type</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.fftfreq" href="#dataanalyzer.utilities.valueclass.Valueclass.fftfreq">fftfreq</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.fromdict" href="#dataanalyzer.utilities.valueclass.Valueclass.fromdict">fromdict</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.fromfloat" href="#dataanalyzer.utilities.valueclass.Valueclass.fromfloat">fromfloat</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.imag" href="#dataanalyzer.utilities.valueclass.Valueclass.imag">imag</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.max" href="#dataanalyzer.utilities.valueclass.Valueclass.max">max</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.max_error" href="#dataanalyzer.utilities.valueclass.Valueclass.max_error">max_error</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.mean" href="#dataanalyzer.utilities.valueclass.Valueclass.mean">mean</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.min" href="#dataanalyzer.utilities.valueclass.Valueclass.min">min</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.min_error" href="#dataanalyzer.utilities.valueclass.Valueclass.min_error">min_error</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.name" href="#dataanalyzer.utilities.valueclass.Valueclass.name">name</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.ndim" href="#dataanalyzer.utilities.valueclass.Valueclass.ndim">ndim</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.norm" href="#dataanalyzer.utilities.valueclass.Valueclass.norm">norm</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.norm_zero_to_one" href="#dataanalyzer.utilities.valueclass.Valueclass.norm_zero_to_one">norm_zero_to_one</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.phase" href="#dataanalyzer.utilities.valueclass.Valueclass.phase">phase</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.plot" href="#dataanalyzer.utilities.valueclass.Valueclass.plot">plot</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.prod" href="#dataanalyzer.utilities.valueclass.Valueclass.prod">prod</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.real" href="#dataanalyzer.utilities.valueclass.Valueclass.real">real</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.shape" href="#dataanalyzer.utilities.valueclass.Valueclass.shape">shape</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.size" href="#dataanalyzer.utilities.valueclass.Valueclass.size">size</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.sprt" href="#dataanalyzer.utilities.valueclass.Valueclass.sprt">sprt</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.std" href="#dataanalyzer.utilities.valueclass.Valueclass.std">std</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.substract_mean" href="#dataanalyzer.utilities.valueclass.Valueclass.substract_mean">substract_mean</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.sum" href="#dataanalyzer.utilities.valueclass.Valueclass.sum">sum</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.sweep_idx" href="#dataanalyzer.utilities.valueclass.Valueclass.sweep_idx">sweep_idx</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.todict" href="#dataanalyzer.utilities.valueclass.Valueclass.todict">todict</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.tostr" href="#dataanalyzer.utilities.valueclass.Valueclass.tostr">tostr</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.traces" href="#dataanalyzer.utilities.valueclass.Valueclass.traces">traces</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.unit" href="#dataanalyzer.utilities.valueclass.Valueclass.unit">unit</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.v" href="#dataanalyzer.utilities.valueclass.Valueclass.v">v</a></code></li>
+<li><code><a title="dataanalyzer.utilities.valueclass.Valueclass.value" href="#dataanalyzer.utilities.valueclass.Valueclass.value">value</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

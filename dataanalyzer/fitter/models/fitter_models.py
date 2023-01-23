@@ -6,8 +6,6 @@ from typing import Iterable, Optional, Union
 
 import numpy as np
 
-# from sklearn.mixture import GaussianMixture
-
 from dataanalyzer.fitter.fitter_classsetup import *
 from dataanalyzer.fitter.fitter_decorators import symbol_wrapper, unit_wrapper
 
@@ -17,9 +15,14 @@ from dataanalyzer.fitter.fitter_decorators import symbol_wrapper, unit_wrapper
 ####################################################################################################
 class ModelABC(ABC):
     def __init__(self, prefix: str = "", **kwargs):
-        self.param_names: list[str] = []
+        """Abstract base class for all models. Must be subclassed.
+
+        Args:
+            prefix (str, optional): The prefix of the model. Defaults to "".
+            **kwargs: Additional keyword arguments.
+        """
+
         self._prefix: str = prefix
-        self._root2full: dict[str, str] = {}
         self._params_guess: dict[str, Fitparam] = {}
 
         self.x_unit: str = kwargs.pop("x_unit", "")
@@ -28,26 +31,55 @@ class ModelABC(ABC):
         self.params_hint: dict = kwargs.pop("params_hint", {})
         self.independent_vars: list[str] = kwargs.pop("independent_vars", ["x"])
         self._param_root_names: list[str] = kwargs.pop("param_names", [])
-        # self._frequency_in_hz = kwargs.pop("frequency_in_hz", False)
 
         self._make_param_names()
 
     @abstractmethod
     def func(self, *args, **kwargs):
+        """Function to be fitted. Must be implemented in subclass.
+
+        Args:
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         pass
 
     @abstractmethod
     def guess(
         self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
     ) -> dict[str, Fitparam]:
+        """Guesses initial parameters for the fit. Must be implemented in subclass.
+
+        Args:
+            x (Union[float, Iterable]): The independent variable.
+            y (Union[float, Iterable]): The dependent variable.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict[str, Fitparam]: A dict of the initial parameters."""
         pass
 
     @abstractmethod
     def funcname(self, *params):
+        """Returns the name of the function to be fitted. Must be implemented in subclass.
+
+        Args:
+            *params (str): The parameters of the function.
+        """
         pass
 
     @abstractmethod
     def units(self, x_unit, y_unit) -> dict[str, str]:
+        """Returns the units of the parameters. Must be implemented in subclass.
+
+        Args:
+            x_unit (str): The unit of the independent variable.
+            y_unit (str): The unit of the dependent variable.
+
+        Returns:
+            dict[str, str]: A dict of the units of the parameters.
+        """
         if x_unit == "":
             x_unit = self.x_unit
 
@@ -58,47 +90,81 @@ class ModelABC(ABC):
 
     @symbol_wrapper
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+        """Returns the symbols of the parameters. Must be implemented in subclass.
+
+        Returns:
+            dict[str, str]: A dict of the symbols of the parameters.
+        """
         return dict(zip(self._param_root_names, self._param_root_names))
 
     def _make_param_root_names(self):
+        """Creates a list of the root names of the parameters."""
+        # Create a dict of any positional parameters that have default values
         pos_params: dict[str, Optional[float]] = {}
+        # Create a dict of the default values of the parameters
         self._def_values: dict[str, Optional[float]] = {}
 
+        # If the function has an attribute "argnames" and "defaults"
         if hasattr(self.func, "argnames") and hasattr(self.func, "defaults"):
+            # Add the argnames and defaults to the dict of positional parameters
             pos_params[self.func.argnames] = self.func.defaults
         else:
+            # Otherwise, iterate over the positional arguments of the function
             for arg_name, arg_value in inspect.signature(self.func).parameters.items():
+                # If the argument is positional or keyword (i.e. not *args or **kwargs),
+                # and it has a default value
                 if (
                     arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
                     and arg_value.default != arg_value.empty
                 ):
+                    # Add the argument name and default value to the dict of positional parameters
                     pos_params[arg_name] = arg_value.default
 
+        # Iterate over the items of the dict of positional parameters
         for pos_key, pos_val in list(pos_params.items()):
+            # If the key is None or the value is not an int or float
             if not (pos_key is None or isinstance(pos_val, (int, float))):
+                # Remove the item from the dict of positional parameters
                 pos_params.pop(pos_key)
 
+            # If the key is in the list of independent variables
             if pos_key in self.independent_vars:
+                # Remove the item from the dict of positional parameters
                 pos_params.pop(pos_key)
 
+        # Iterate over the keys in the dict of positional parameters
         for pos_param in list(pos_params.keys()):
+            # If the key is not in the list of parameter root names
             if pos_param not in self._param_root_names:
+                # Add the key to the list of parameter root names
                 self._param_root_names.append(pos_param)
 
+        # Add the dict of positional parameters to the dict of default values
         self._def_values = pos_params
 
     def _make_param_names(self):
+        """Creates a list of the full names of the parameters."""
         self._make_param_root_names()
         self.param_names = [self._prefix + name for name in self._param_root_names]
         self._root2full = dict(zip(self._param_root_names, self.param_names))
 
     @property
     def param_symbols(self) -> dict[str, str]:
+        """Returns the symbols of the parameters.
+
+        Returns:
+            dict[str, str]: A dict of the symbols of the parameters.
+        """
         if not hasattr(self, "_param_symbols"):
             self.symbols()
         return self._param_symbols
 
     def _make_parameters(self, **kwargs) -> dict[str, Fitparam]:
+        """Creates a dict of the parameters.
+
+        Returns:
+            dict[str, Fitparam]: A dict of the parameters.
+        """
         if not self.param_names:
             self._make_param_names()
 
@@ -137,6 +203,14 @@ class ModelABC(ABC):
         return params
 
     def _make_units(self, **kwargs) -> dict[str, str]:
+        """Creates a dict of the units of the parameters.
+
+        Args:
+            **kwargs: The units of the parameters.
+
+        Returns:
+            dict[str, str]: A dict of the units of the parameters.
+        """
         units = {}
         for name in self.param_names:
             basename = name[len(self._prefix) :]
@@ -152,12 +226,42 @@ class ModelABC(ABC):
         return units
 
     def get_extrema(self, params: dict) -> dict:
+        """Returns the extrema of the model.
+
+        Args:
+            params (dict): Fitted parameters of the model.
+
+        Raises:
+            NotImplementedError: get_extrema not implemented for this model.
+
+        Returns:
+            dict: The extrema of the model.
+        """
         raise NotImplementedError("get_extrema not implemented for this model")
 
     def get_period(self, params: dict) -> float:
+        """Returns the period of the model.
+
+        Args:
+            params (dict): Fitted parameters of the model.
+
+        Raises:
+            NotImplementedError: get_period not implemented for this model.
+
+        Returns:
+            float: The period of the model.
+        """
         raise NotImplementedError("get_period not implemented for this model")
 
     def __add__(self, other):
+        """Adds two models.
+
+        Args:
+            other (ModelABC): The model to add.
+
+        Returns:
+            SumModel: The sum of the two models.
+        """
         return SumModel(self, other)
 
 
@@ -165,7 +269,18 @@ class ModelABC(ABC):
 #                   ABC Model Class __add__ function                                               #
 ####################################################################################################
 class SumModel(ModelABC):
+    """A class for the sum of models. The models are added in the order they are given.
+
+    Args:
+        *models (ModelABC): The models to add.
+    """
+
     def __init__(self, *models):
+        """Initializes the sum of models. The models are added in the order they are given.
+
+        Args:
+            *models (ModelABC): The models to add.
+        """
         self.models = [copy.deepcopy(model) for model in models]
         self.param_names: list[str] = []
         self._prefix: list[str] = []
@@ -193,14 +308,24 @@ class SumModel(ModelABC):
         self.symbols()
 
     def _set_param_root_name_and_get_prefix(self):
+        """Sets the root names of the parameters and gets the prefix of the parameters.
+
+        Raises:
+            ValueError: The models have the same parameter names.
+        """
+        # Get the root names of the parameters
         root_names_temp = [model._param_root_names for model in self.models]
 
+        # Check if the models have the same parameter names
         for i, param_list in enumerate(root_names_temp):
+            # If the models have the same parameter names
             if common_member(*root_names_temp):
+                # Add the index of the model as a postfix to the parameters
                 self._postfix[i] = f"_{i}"
                 param_list = [f"{name}_{i}" for name in param_list]
             self._param_root_names += param_list
 
+            # Set the parameter names
             limit = len(param_list)
             if hasattr(self.models[i], "poly_degree"):
                 limit = self.models[i].poly_degree + 1
@@ -211,28 +336,67 @@ class SumModel(ModelABC):
             ]
 
     def func(self, x, *args, **kwargs):
+        """Returns the sum of the models.
+
+        Args:
+            x (np.ndarray): Independent variable.
+
+        Returns:
+            np.ndarray: The sum of the models.
+        """
+        # Unpack the positional arguments into keyword arguments
         if args:
             kwargs = dict(zip(self.param_names, args))
 
+        # Convert the independent variable to a numpy array
         x = np.array(x)
+
+        # Initialize an array to store the sum of the model functions
         func_sum = np.zeros(x.shape)
+
+        # Loop over the models
         for i, model in enumerate(self.models):
+            # Get the postfix of the model
             p = self._postfix[i]
+
+            # Create a dictionary of the keyword arguments for the model
             model_kwargs = {
                 k.replace(p, ""): v for k, v in kwargs.items() if k in model.param_names
             }
+
+            # Add the model function evaluated with the model-specific keyword arguments
             func_sum += model.func(x, **model_kwargs)
+
         return func_sum
 
     def guess(
         self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
     ):
+        """Returns the guessed parameters of the model.
+
+        Args:
+            x (Union[float, Iterable]): Independent variable.
+            y (Union[float, Iterable]): Dependent variable.
+
+        Returns:
+            dict: The guessed parameters of the model.
+        """
+        # Convert x, y to numpy arrays
         x, y = np.array(x), np.array(y)
+
+        # Initialize a dictionary to store the guessed parameters
         guess = {}
+
+        # Iterate through all models
         for model in self.models:
+            # Get the guessed parameters of the model
             model_guess = model.guess(x=x, y=y, *args, **kwargs)
+
+            # Update the dictionary with the guessed parameters of the model
             guess |= model_guess
 
+            # Update the guess of y by subtracting the model's guess from the
+            # previous guess of y
             guess_values = {k: v.values for k, v in model_guess.items()}
             y_guess = model.func(x, **guess_values)
             y = y - y_guess
@@ -240,39 +404,87 @@ class SumModel(ModelABC):
         return guess
 
     def funcname(self, *args, **kwargs):
+        """Returns the function name of the model.
+
+        Returns:
+            str: The function name of the model.
+        """
+        # Initialize the function names and function strings
         func_names, func_strs = "", ""
+
+        # Loop over the models
         for model in self.models:
+            # Get the function name and the function string
             func_name, func_str = (
                 model.funcname(*args, **kwargs).replace("$", "").split(" = ")
             )
 
+            # Add the function name to the function names
             func_names += f"{func_name} +"
+            # Add the function string to the function strings
             func_strs += f"{func_str} +"
 
+        # Return the function names and function strings
         return f"${func_names[:-1]} = {func_strs[:-1]}$"
 
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        """Returns the units of the model.
+
+        Args:
+            x (Union[float, str, None]): Independent variable.
+            y (Union[float, str, None]): Dependent variable.
+
+        Returns:
+            dict: The units of the model.
+        """
+        # Initialize the units dictionary
         units = {}
+
+        # Iterate over the models and update the units dictionary
         for model in self.models:
             units |= model.units(x=x, y=y)
+        # Return the units dictionary
         return units
 
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+        """Returns the symbols of the model.
+
+        Returns:
+            dict[str, str]: The symbols of the model.
+        """
+        # Initialize the symbols dictionary
         symbols = {}
         self._root2symbol = {}
 
+        # Iterate over the models and update the symbols dictionary
         for model in self.models:
             symbols |= model.symbols(**symbols)
             self._root2symbol.update(model._root2symbol)
         return symbols
 
     def get_extrema(self, params: dict) -> dict[str, dict[str, float]]:
+        """Returns the extrema of the model.
+
+        Args:
+            params (dict): The parameters of the model.
+
+        Returns:
+            dict[str, dict[str, float]]: The extrema of the model.
+        """
+        # Initialize the extrema dictionary
         extrema = {}
+
+        # Iterate over the models and update the extrema dictionary
         for i, model in enumerate(self.models):
+            # Get the postfix of the model
             p = self._postfix[i]
+
+            # Create a dictionary of the keyword arguments for the model
             model_params = {
                 k.replace(p, ""): v for k, v in params.items() if k in model.param_names
             }
+
+            # Get the extrema of the model
             model_name = f"{model.__class__.__name__}{p}"
             extrema |= {model_name: model.get_extrema(model_params)}
         return extrema
@@ -282,20 +494,58 @@ class SumModel(ModelABC):
 #                   Linear Model                                                                   #
 ####################################################################################################
 class LinearModel(ModelABC):
+    """Linear Model Class for fitting.
+
+    This class is a subclass of ModelABC. It is used to fit a linear function to data.
+
+    Args:
+        ModelABC (class): ModelABC class
+    """
+
     def __init__(self, independent_vars=None, prefix="", **kwargs):
+        """Initialize the LinearModel class.
+
+        Args:
+            independent_vars (list, optional): List of independent variables. Defaults to None.
+            prefix (str, optional): Prefix for the model. Defaults to "".
+        """
         kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, slope=1.0, intercept=0.0):
+        """Function to fit.
+
+        Args:
+            x (array): Independent variable.
+            slope (float, optional): The slope of the line. Defaults to 1.0.
+            intercept (float, optional): The intercept of the line. Defaults to 0.0.
+
+        Returns:
+            array: The fitted function.
+        """
         x = np.array(x)
         return slope * x + intercept
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        """Guess the parameters of the function.
+
+        Args:
+            x (Union[float, Iterable]): The independent variable.
+            y (Union[float, Iterable]): The dependent variable.
+
+        Returns:
+            dict: The guessed parameters.
+        """
         x, y = np.array(x), np.array(y)
         slope, intercept = np.polyfit(x, y, 1)
         return self._make_parameters(slope=slope, intercept=intercept)
 
     def funcname(self, *params) -> str:
+        """Function name.
+
+        Returns:
+            str: The function name.
+        """
         if not params:
             params = self.param_symbols
 
@@ -303,6 +553,15 @@ class LinearModel(ModelABC):
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        """Units of the function.
+
+        Args:
+            x (Union[float, str, None]): If float, the value of the independent variable. If str, the unit of the independent variable. If None, the independent variable is dimensionless.
+            y (Union[float, str, None]): If float, the value of the dependent variable. If str, the unit of the dependent variable. If None, the dependent variable is dimensionless.
+
+        Returns:
+            dict: The units or scaling factors of the parameters.
+        """
         return {"slope": "y/x", "intercept": "y"}
 
     @symbol_wrapper
@@ -317,7 +576,22 @@ class LinearModel(ModelABC):
 #                   Proportional Model                                                             #
 ####################################################################################################
 class ProportionalModel(ModelABC):
+    """Proportional Model Class for fitting.
+
+    This class is a subclass of ModelABC. It is used to fit a proportional function to data.
+
+    Args:
+        ModelABC (class): ModelABC class
+    """
+
     def __init__(self, independent_vars=None, prefix="", **kwargs):
+        """Initialize the ProportionalModel class.
+
+        Args:
+            independent_vars (list, optional): List of independent variables. Defaults to None.
+            prefix (str, optional): Prefix for the model. Defaults to "".
+        """
+
         kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
@@ -925,59 +1199,3 @@ class ExponentialDecayModel(ModelABC):
     @symbol_wrapper
     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
         return {"amplitude": "A", "decay": "τ", "offset": "c"}
-
-
-####################################################################################################
-#                   Gaussian Mixture Model                                                         #
-####################################################################################################
-# Implementation of a Gaussian Mixture Model (GMM) from sklearn
-# Inheriting from ModelABC is not possible because the GMM is not a function
-# class GaussianMixtureModel:
-#     def __init__(
-#         self, n_components=1, covariance_type="full", tol=1e-3, reg_covar=1e-6
-#     ):
-#         self.n_components = n_components
-#         self.covariance_type = covariance_type
-#         self.tol = tol
-#         self.reg_covar = reg_covar
-
-#         self.gmm = GaussianMixture(
-#             n_components=n_components,
-#             covariance_type=covariance_type,
-#             tol=tol,
-#             reg_covar=reg_covar,
-#         )
-
-#     def fit(self, x: Union[float, Iterable], y: Union[float, Iterable]):
-#         x, y = np.array(x), np.array(y)
-#         self.gmm.fit(np.array([x, y]).T)
-
-#     def predict(self, x: Union[float, Iterable], y: Union[float, Iterable]):
-#         x, y = np.array(x), np.array(y)
-#         return self.gmm.predict(np.array([x, y]).T)
-
-#     def predict_proba(self, x: Union[float, Iterable], y: Union[float, Iterable]):
-#         x, y = np.array(x), np.array(y)
-#         return self.gmm.predict_proba(np.array([x, y]).T)
-
-#     def score_samples(self, x: Union[float, Iterable], y: Union[float, Iterable]):
-#         x, y = np.array(x), np.array(y)
-#         return self.gmm.score_samples(np.array([x, y]).T)
-
-#     def score(self, x: Union[float, Iterable], y: Union[float, Iterable]):
-#         x, y = np.array(x), np.array(y)
-#         return self.gmm.score(np.array([x, y]).T)
-
-#     def sample(self, n_samples=100):
-#         return self.gmm.sample(n_samples=n_samples)
-
-#     def funcname(self, *params) -> str:
-#         return rf"$\mathrm{{gaussian\ mixture\ model}}$"
-
-#     @unit_wrapper
-#     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
-#         return {}
-
-#     @symbol_wrapper
-#     def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
-#         return {}

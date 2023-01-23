@@ -59,6 +59,12 @@ class Valueclass:
         return self[key]
 
     def __setitem__(self, key, value) -> None:
+        """Sets a slice of the Valueclass object.
+
+        Args:
+            key (str, slice, int): Key to slice the Valueclass object.
+            value (object): Value to set the slice to.
+        """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
             if not isinstance(value, Valueclass):
                 value = Valueclass(value, self.error[key], self.name, self.unit)
@@ -78,12 +84,16 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value + other, self.error, self.name, self.unit, self.fft_type,
+                self.value + other,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
                 self.value + other.value,
-                np.sqrt(self.error ** 2 + other.error ** 2),
+                np.sqrt(self.error**2 + other.error**2),
                 self.name,
                 self.unit,
             )
@@ -99,12 +109,16 @@ class Valueclass:
         """
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value - other, self.error, self.name, self.unit, self.fft_type,
+                self.value - other,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
         else:
             return Valueclass(
                 self.value - other.value,
-                np.sqrt(self.error ** 2 + other.error ** 2),
+                np.sqrt(self.error**2 + other.error**2),
                 self.name,
                 self.unit,
             )
@@ -142,7 +156,7 @@ class Valueclass:
                 self.value / other.value,
                 np.sqrt(
                     (self.error / other.value) ** 2
-                    + (self.value * other.error / other.value ** 2) ** 2
+                    + (self.value * other.error / other.value**2) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -151,7 +165,7 @@ class Valueclass:
     def __pow__(self, other) -> "Valueclass":
         if "Valueclass" not in str(type(other)):
             return Valueclass(
-                self.value ** other,
+                self.value**other,
                 self.error
                 * other
                 * self.value ** (other - 1),  # TODO: make correct error propagation
@@ -160,10 +174,10 @@ class Valueclass:
             )
         else:
             return Valueclass(
-                self.value ** other.value,
+                self.value**other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value ** other.value * other.error * np.log(self.value))
+                    + (self.value**other.value * other.error * np.log(self.value))
                     ** 2
                 ),
                 self.name,
@@ -182,7 +196,7 @@ class Valueclass:
     def __rtruediv__(self, other) -> "Valueclass":
         return Valueclass(
             other / self.value,
-            other * self.error / self.value ** 2,
+            other * self.error / self.value**2,
             self.name,
             self.unit,
             self.fft_type,
@@ -190,8 +204,8 @@ class Valueclass:
 
     def __rpow__(self, other) -> "Valueclass":
         return Valueclass(
-            other ** self.value,
-            other ** self.value * self.error * np.log(other),
+            other**self.value,
+            other**self.value * self.error * np.log(other),
             self.name,
             self.unit,
             self.fft_type,
@@ -200,8 +214,8 @@ class Valueclass:
     def __len__(self):
         return len(self.value)
 
-    def __max__(self):  # TODO: fix this
-        return max(self.value)
+    def __lt__(self, other) -> bool:
+        return self.value.max() < other.value.max()
 
     ####################################################################################################
     #                   Main Functions                                                                 #
@@ -439,7 +453,13 @@ class Valueclass:
             np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
         )
 
-        return Valueclass(value, error, self.name, self.unit, self.fft_type,)
+        return Valueclass(
+            value,
+            error,
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
 
     ####################################################################################################
     #                   Math (Advanced) Functions                                                      #
@@ -456,8 +476,8 @@ class Valueclass:
     @property
     def norm(self):
         return Valueclass(
-            self.value / np.sqrt(np.sum(self.value ** 2)),
-            self.error / np.sqrt(np.sum(self.value ** 2)),
+            self.value / np.sqrt(np.sum(self.value**2)),
+            self.error / np.sqrt(np.sum(self.value**2)),
             self.name,
             self.unit,
             self.fft_type,
@@ -527,7 +547,11 @@ class Valueclass:
             "Individual",
         ):
             return Valueclass(
-                self.value, self.error, self.name, self.unit, self.fft_type,
+                self.value,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
             )
 
         elif operation in ("Substract first", "substract first", "first", "First"):
@@ -593,7 +617,13 @@ class Valueclass:
             v = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
             v[0] = np.zeros(self.value.shape[1])
 
-            return Valueclass(v, self.error, self.name, self.unit, self.fft_type,)
+            return Valueclass(
+                v,
+                self.error,
+                self.name,
+                self.unit,
+                self.fft_type,
+            )
 
         elif operation in ("Average", "average"):
             return Valueclass(
@@ -677,7 +707,13 @@ class Valueclass:
             **kwargs,
         )
 
-        scatter_plot = plt.scatter(y.real, y.imag, c=x, *args, **kwargs,)
+        scatter_plot = plt.scatter(
+            y.real,
+            y.imag,
+            c=x,
+            *args,
+            **kwargs,
+        )
 
         plt.colorbar(scatter_plot, label=x_label)
 
@@ -771,10 +807,10 @@ class Valueclass:
         def _get_numbers_from_dict(numbersdict):
             """Converts a dictionary of numbers to a 1-D complex array.
             The dictionary can contain either the keys "real" and "imag" or "I" and "Q"
-            
+
             Args:
                 numbersdict (dict): Dictionary of numbers.
-            
+
             Returns:
                 (np.ndarray): 1-D complex array of numbers.
             """
@@ -850,4 +886,3 @@ class Valueclass:
 
         self.value = np.append(self.value, other.value, axis=axis)
         self.error = np.append(self.error, other.error, axis=axis)
-

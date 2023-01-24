@@ -867,6 +867,42 @@ class Valueclass:
             return value
         return Valueclass(name=name, unit=unit, value=value)
 
+    @staticmethod
+    def fromlisttoone(
+        newlist: list[dict], name: str = None, unit: str = None, **kwargs
+    ) -> "Valueclass":
+        """Converts a list of dictionaries to a Valueclass object.
+
+        Args:
+            newlist (list[dict]): The list of dictionaries to be converted.
+
+        Returns:
+            Valueclass: The converted list.
+        """
+        newdict = {}
+        for key in newlist[0].keys():
+            newdict[key] = [newdict[key] for newdict in newlist]
+
+        if name is not None:
+            newdict["name"] = name
+
+        if unit is not None:
+            newdict["unit"] = unit
+
+        if kwargs.get("value", None):
+            newdict["value"] = kwargs["value"]
+        
+        if kwargs.get("error", None):
+            newdict["error"] = kwargs["error"]
+        
+        if kwargs.get("fft_type", None):
+            newdict["fft_type"] = kwargs["fft_type"]
+        
+        if kwargs.get("sweep_idx", None):
+            newdict["sweep_idx"] = kwargs["sweep_idx"]
+
+        return Valueclass.fromdict(newdict)
+
     ####################################################################################################
     #                   Conversion Functions                                                           #
     ####################################################################################################

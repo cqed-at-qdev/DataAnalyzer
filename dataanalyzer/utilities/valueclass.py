@@ -884,5 +884,5 @@ class Valueclass:
         if not isinstance(other, Valueclass):
             other = self.fromfloat(other, self.name)
 
-        self.value = np.append(self.value, other.value, axis=axis)
-        self.error = np.append(self.error, other.error, axis=axis)
+        self._value = np.append(self.value, other.value, axis=axis)
+        self._error = np.append(self.error, other.error, axis=axis)

@@ -49,7 +49,7 @@ class Plotter:
         self.metadata = ""
 
     def _setup_fig_and_ax(self, subplots: tuple) -> None:
-        """Setup the figure and axes. If a figure is provided in the keyword arguments, 
+        """Setup the figure and axes. If a figure is provided in the keyword arguments,
         it will be used. Otherwise, a new figure will be created.
 
         Args:
@@ -200,7 +200,11 @@ class Plotter:
 
     @matplotlib_decorator
     def plot(
-        self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs,
+        self,
+        x: Valueclass,
+        y: Valueclass,
+        ax: tuple = (),
+        **kwargs,
     ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -759,12 +763,8 @@ class Plotter:
             if ax.get_legend_handles_labels() != ([], [])
         ]
 
-    def show(self, return_fig: bool = False):
-        """Shows the plot. This function is a wrapper for matplotlib.pyplot.show
-
-        Returns:
-            fig: The figure object
-        """
+    def _final_formatting(self):
+        """Performs final formatting on the plot."""
         plt.figure(self.fig)
 
         if self._remove_ax_anotate:
@@ -773,6 +773,14 @@ class Plotter:
 
         self._rescale_axes()
         plt.tight_layout()
+
+    def show(self, return_fig: bool = False):
+        """Shows the plot. This function is a wrapper for matplotlib.pyplot.show
+
+        Returns:
+            fig: The figure object
+        """
+        self._final_formatting()
 
         if not return_fig:
             return plt.show()
@@ -790,4 +798,5 @@ class Plotter:
         Args:
             path (str): The path to save the plot to.
         """
+        self._final_formatting()
         plt.savefig(path, **kwargs)

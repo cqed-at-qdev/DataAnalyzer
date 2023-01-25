@@ -3,7 +3,6 @@ import copy
 import inspect
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional, Union
-
 import numpy as np
 
 from dataanalyzer.fitter.fitter_classsetup import *
@@ -33,6 +32,18 @@ class ModelABC(ABC):
         self._param_root_names: list[str] = kwargs.pop("param_names", [])
 
         self._make_param_names()
+
+    def __mul__(self, other):
+        """Returns a new model that is the product of self and other.
+
+        Args:
+            other (ModelABC): The other model.
+
+        Returns:
+            ModelABC: The product of self and other.
+        """
+        if isinstance(other, int):
+            return SumModel(*([self] * other))
 
     @abstractmethod
     def func(self, *args, **kwargs):
@@ -281,7 +292,9 @@ class SumModel(ModelABC):
         Args:
             *models (ModelABC): The models to add.
         """
-        self.models = [copy.deepcopy(model) for model in models]
+
+        self.models = self._flatten_models(models)
+
         self.param_names: list[str] = []
         self._prefix: list[str] = []
         self._postfix: list[str] = ["" for _ in range(len(self.models))]
@@ -306,6 +319,28 @@ class SumModel(ModelABC):
         self._set_param_root_name_and_get_prefix()
         self._make_parameters()
         self.symbols()
+
+    def _flatten_models(self, models: list[ModelABC]) -> list[ModelABC]:
+        """Flattens the models.
+
+        Args:
+            models (list[ModelABC]): The models to flatten.
+
+        Returns:
+            list[ModelABC]: The flattened models.
+        """
+        flattened_models = []
+        for model in models:
+            if isinstance(model, SumModel):
+                print("Flattening SumModel")
+                flattened_models += self._flatten_models(model.models)
+
+            elif isinstance(model, ModelABC):
+                flattened_models.append(model)
+
+            else:
+                raise TypeError(f"Model {model} is not a ModelABC or SumModel.")
+        return flattened_models
 
     def _set_param_root_name_and_get_prefix(self):
         """Sets the root names of the parameters and gets the prefix of the parameters.
@@ -388,16 +423,21 @@ class SumModel(ModelABC):
         guess = {}
 
         # Iterate through all models
-        for model in self.models:
+        for i, model in enumerate(self.models):
+            print(model.param_names)
+            print("priny postfix", self._postfix)
             # Get the guessed parameters of the model
             model_guess = model.guess(x=x, y=y, *args, **kwargs)
 
             # Update the dictionary with the guessed parameters of the model
             guess |= model_guess
 
+            # Get the postfix of the model
+            p = self._postfix[i]
+
             # Update the guess of y by subtracting the model's guess from the
             # previous guess of y
-            guess_values = {k: v.values for k, v in model_guess.items()}
+            guess_values = {k.replace(p, ""): v.values for k, v in model_guess.items()}
             y_guess = model.func(x, **guess_values)
             y = y - y_guess
 
@@ -908,7 +948,7 @@ class PolynomialModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self.param_symbols
-        return rf"$\mathrm{{polynomial}}(x) = {params[0]} + {' + '.join(f'{params[i]} x^{i}' for i in range(1, self.poly_degree +1))}$"
+        return rf"$\mathrm{{polynomial}}(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
 
     @unit_wrapper
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):

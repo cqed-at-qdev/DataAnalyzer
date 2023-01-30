@@ -79,7 +79,7 @@ class Plotter:
         # Set up the axis for the annotations
         self._setup_ax_anotate(ax_anotate=axs[0:, -1])
 
-    def _setup_ax_anotate(self, ax_anotate: np.ndarray[Axes, Any]) -> None:
+    def _setup_ax_anotate(self, ax_anotate: "np.ndarray[Axes, Any]"):
         """Setup the axis for the annotations. This function removes all axes from the figure and adds a new axis to the figure.
 
         Args:

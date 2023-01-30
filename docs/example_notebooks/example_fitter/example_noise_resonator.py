@@ -18,7 +18,7 @@ n_negative_resonators = 1
 
 
 # Make polynomial function
-poly_order = 1
+poly_order = 2
 number = -0.00
 pol_params = {
     "c0": r.uniform(number, number),
@@ -28,8 +28,7 @@ pol_params = {
     "c4": r.uniform(number, number),
 }
 
-pol_func = fitmodels.PolynomialModel(degree=poly_order)
-
+pol_func = fitmodels.PolynomialModel(poly_order)
 
 # Create background polynomial with noise
 y_noise = r.uniform(0, noise_factor, n_points)
@@ -53,14 +52,11 @@ for resonator_param in resonator_params:
 y_data = Valueclass(value=y_pol + y_res + y_noise, name="Simulated data", unit="a.u.")
 
 # Fit data
-func = fitmodels.LorentzianModel() + fitmodels.LorentzianModel()
-
-func.models[1]._param_root_names
+func = fitmodels.LorentzianModel() * n_resonators
 
 fit = Fitter(x=x, y=y_data.value, func=func)
 x_fit, y_fit, params, report = fit.do_fit()
 
 plot = Plotter()
-plot.scatter(x=x, y=y_data.value, label="Data")
-plot.plot(x=x_fit, y=y_fit, c="r", label="Fit")
+plot.plot_fit(fit_obejct=fit)
 plot.show()

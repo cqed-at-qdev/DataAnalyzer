@@ -8,15 +8,114 @@ import numpy as np
 ####################################################################################################
 @dataclass
 class Fitparam:
+    base_name: str = ""
     values: Optional[float] = 0
     errors: Optional[float] = None
     limits: Optional[Iterable[float]] = (-np.inf, np.inf)
     fixed: bool = False
 
+    model: "ModelABC" = None  # type: ignore
+
     def __repr__(self):
-        if self.errors is None:
-            return f"Fitparam(values={self.values}, limits={self.limits}, fixed={self.fixed})"
-        return f"Fitparam(values={self.values}, errors={self.errors}, limits={self.limits}, fixed={self.fixed})"
+        repr_str = "Fitparam("
+
+        if self.base_name:
+            repr_str += f"base_name={self.base_name}"
+        if self.full_name != self.base_name:
+            repr_str += f", full_name={self.full_name}"
+        if self.display_name:
+            repr_str += f", display_name={self.display_name}"
+        if self.unit is not None:
+            repr_str += f", unit={self.unit}"
+        if self.values is not None:
+            repr_str += f", values={self.values}"
+        if self.errors is not None:
+            repr_str += f", errors={self.errors}"
+        if self.limits is not None:
+            repr_str += f", limits={self.limits}"
+        if self.fixed is not None:
+            repr_str += f", fixed={self.fixed}"
+        repr_str += ")"
+
+        return repr_str
+
+    @property
+    def full_name(self):
+        self.full_name = None
+
+        return self._full_name
+
+    @full_name.setter
+    def full_name(self, value):
+        if value is None:
+            if self.model:
+                self._full_name = (
+                    self.model._prefix + self.base_name + self.model._suffix
+                )
+            else:
+                self._full_name = self.base_name
+        else:
+            self._full_name = value
+
+    @property
+    def display_name(self):
+        if not hasattr(self, "_display_name"):
+            self.display_name = None
+            self._costom_display_name = False
+
+        if not self._costom_display_name:
+            self.display_name = None
+
+        return self._display_name
+
+    @display_name.setter
+    def display_name(self, value):
+        if value is None:
+            if self.model:
+                self._display_name = (
+                    self.model._prefix + self.symbol + self.model._suffix
+                )
+            else:
+                self._display_name = self.symbol
+        else:
+            self._costom_display_name = True
+            self._display_name = value
+
+    @property
+    def unit(self) -> str:
+        if not hasattr(self, "_unit"):
+            self.unit = None
+        return self._unit
+
+    @unit.setter
+    def unit(self, value):
+        if value is None:
+            self._unit = (
+                self.model.units[self.base_name]
+                if self.base_name in self.model.units
+                else ""
+            )
+        else:
+            self._unit = value
+
+    @property
+    def symbol(self):
+        if not hasattr(self, "_symbol"):
+            self.symbol = None
+
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, value):
+        if value is None:
+            self._symbol = (
+                self.model.symbols[self.base_name]
+                if hasattr(self.model, "symbols")
+                and self.base_name in self.model.symbols
+                else self.base_name
+            )
+        else:
+            self._symbol = value
 
     def __eq__(self, other):
         if isinstance(other, Fitparam):
@@ -75,7 +174,7 @@ def guess_from_peak(y, x, negative, ampscale=1.0, sigscale=1.0):
 
     amp = Fitparam(values=amp)
     cen = Fitparam(values=cen)
-    sig = Fitparam(values=sig)
+    sig = Fitparam(values=sig, limits=(0, np.inf))
 
     return amp, cen, sig
 

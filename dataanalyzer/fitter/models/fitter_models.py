@@ -2,11 +2,11 @@
 import copy
 import inspect
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Union
+from typing import Iterable, Union
 import numpy as np
 
 from dataanalyzer.fitter.fitter_classsetup import *
-from dataanalyzer.fitter.fitter_decorators import symbol_wrapper, unit_wrapper
+from dataanalyzer.utilities.utilities import convert_unit_to_str_or_float
 
 
 ####################################################################################################
@@ -21,29 +21,86 @@ class ModelABC(ABC):
             **kwargs: Additional keyword arguments.
         """
 
-        self._prefix: str = prefix
-        self._params_guess: dict[str, Fitparam] = {}
+        self._name = (self.__class__.__name__,)
+        self._prefix = prefix
+        self._suffix = kwargs.pop("suffix", "")
 
-        self.x_unit: str = kwargs.pop("x_unit", "")
-        self.y_unit: str = kwargs.pop("y_unit", "")
+    def _make_inital_parameters(self):
+        self._parameters = [
+            Fitparam(base_name=arg_name, values=arg_value.default, model=self)
+            for arg_name, arg_value in inspect.signature(self.func).parameters.items()
+            if (
+                arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
+                and arg_value.default != arg_value.empty
+            )
+        ]
 
-        self.params_hint: dict = kwargs.pop("params_hint", {})
-        self.independent_vars: list[str] = kwargs.pop("independent_vars", ["x"])
-        self._param_root_names: list[str] = kwargs.pop("param_names", [])
+    @property
+    def parameters(self):
+        if not hasattr(self, "_parameters"):
+            self._make_inital_parameters()
+        return self._parameters
 
-        self._make_param_names()
+    @property
+    def _base_name_list(self):
+        return [param.base_name for param in self.parameters]
 
-    def __mul__(self, other):
-        """Returns a new model that is the product of self and other.
+    @property
+    def _full_name_list(self):
+        return [param.full_name for param in self.parameters]
+
+    @property
+    def _display_name_list(self):
+        return [param.display_name for param in self.parameters]
+
+    def update_parameters(self, **params):
+        """Updates the parameters of the model.
 
         Args:
-            other (ModelABC): The other model.
+            **params: The parameters to update.
+        """
+        for param in self.parameters:
+            if param.base_name in params:
+                if isinstance(params[param.base_name], Fitparam):
+                    param.values = params[param.base_name].values
+                    param.errors = params[param.base_name].errors
+                    param.limits = params[param.base_name].limits
+                    param.fixed = params[param.base_name].fixed
+
+                elif isinstance(params[param.base_name], (float, int)):
+                    param.values = params[param.base_name]
+
+            if param.values in (None, np.inf, -np.inf, np.nan):
+                param.values = 0
+
+    def _get_parameters_as_dict(self, **params) -> dict[str, Fitparam]:
+        """Returns a dict of the parameters.
+
+        Args:
+            **params: The parameters to update.
 
         Returns:
-            ModelABC: The product of self and other.
+            list[Fitparam]: A list of the parameters.
         """
-        if isinstance(other, int):
-            return SumModel(*([self] * other))
+        self.update_parameters(**params)
+        return {param.full_name: param for param in self.parameters}
+
+    def get_units(self, x, y) -> dict[str, Union[float, str]]:
+        """Returns a dict of the units of the parameters.
+
+        Args:
+            x (Union[float, Iterable]): The independent variable.
+            y (Union[float, Iterable]): The dependent variable.
+
+        Returns:
+            dict[str, Union[float, str]]: A dict of the units of the parameters.
+        """
+        return {
+            parameter.full_name: convert_unit_to_str_or_float(
+                f=parameter.unit, x=x, y=y
+            )
+            for parameter in self.parameters
+        }  # type: ignore
 
     @abstractmethod
     def func(self, *args, **kwargs):
@@ -68,11 +125,11 @@ class ModelABC(ABC):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            dict[str, Fitparam]: A dict of the initial parameters."""
+            list[Fitparam]: A list of the parameters."""
         pass
 
     @abstractmethod
-    def funcname(self, *params):
+    def funcname(self, *params) -> str:
         """Returns the name of the function to be fitted. Must be implemented in subclass.
 
         Args:
@@ -80,8 +137,9 @@ class ModelABC(ABC):
         """
         pass
 
+    @property
     @abstractmethod
-    def units(self, x_unit, y_unit) -> dict[str, str]:
+    def units(self) -> dict[str, str]:
         """Returns the units of the parameters. Must be implemented in subclass.
 
         Args:
@@ -91,150 +149,23 @@ class ModelABC(ABC):
         Returns:
             dict[str, str]: A dict of the units of the parameters.
         """
-        if x_unit == "":
-            x_unit = self.x_unit
+        pass
 
-        if y_unit == "":
-            y_unit = self.y_unit
-
-        return x_unit, y_unit
-
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    @abstractmethod
+    def symbols(self, **symbols: str) -> dict[str, str]:
         """Returns the symbols of the parameters. Must be implemented in subclass.
 
         Returns:
             dict[str, str]: A dict of the symbols of the parameters.
         """
-        return dict(zip(self._param_root_names, self._param_root_names))
+        pass
 
-    def _make_param_root_names(self):
-        """Creates a list of the root names of the parameters."""
-        # Create a dict of any positional parameters that have default values
-        pos_params: dict[str, Optional[float]] = {}
-        # Create a dict of the default values of the parameters
-        self._def_values: dict[str, Optional[float]] = {}
-
-        # If the function has an attribute "argnames" and "defaults"
-        if hasattr(self.func, "argnames") and hasattr(self.func, "defaults"):
-            # Add the argnames and defaults to the dict of positional parameters
-            pos_params[self.func.argnames] = self.func.defaults
-        else:
-            # Otherwise, iterate over the positional arguments of the function
-            for arg_name, arg_value in inspect.signature(self.func).parameters.items():
-                # If the argument is positional or keyword (i.e. not *args or **kwargs),
-                # and it has a default value
-                if (
-                    arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
-                    and arg_value.default != arg_value.empty
-                ):
-                    # Add the argument name and default value to the dict of positional parameters
-                    pos_params[arg_name] = arg_value.default
-
-        # Iterate over the items of the dict of positional parameters
-        for pos_key, pos_val in list(pos_params.items()):
-            # If the key is None or the value is not an int or float
-            if not (pos_key is None or isinstance(pos_val, (int, float))):
-                # Remove the item from the dict of positional parameters
-                pos_params.pop(pos_key)
-
-            # If the key is in the list of independent variables
-            if pos_key in self.independent_vars:
-                # Remove the item from the dict of positional parameters
-                pos_params.pop(pos_key)
-
-        # Iterate over the keys in the dict of positional parameters
-        for pos_param in list(pos_params.keys()):
-            # If the key is not in the list of parameter root names
-            if pos_param not in self._param_root_names:
-                # Add the key to the list of parameter root names
-                self._param_root_names.append(pos_param)
-
-        # Add the dict of positional parameters to the dict of default values
-        self._def_values = pos_params
-
-    def _make_param_names(self):
-        """Creates a list of the full names of the parameters."""
-        self._make_param_root_names()
-        self.param_names = [self._prefix + name for name in self._param_root_names]
-        self._root2full = dict(zip(self._param_root_names, self.param_names))
-
-    @property
-    def param_symbols(self) -> dict[str, str]:
-        """Returns the symbols of the parameters.
-
-        Returns:
-            dict[str, str]: A dict of the symbols of the parameters.
-        """
-        if not hasattr(self, "_param_symbols"):
-            self.symbols()
-        return self._param_symbols
-
-    def _make_parameters(self, **kwargs) -> dict[str, Fitparam]:
-        """Creates a dict of the parameters.
-
-        Returns:
-            dict[str, Fitparam]: A dict of the parameters.
-        """
-        if not self.param_names:
-            self._make_param_names()
-
-        params = {}
-
-        for name in self.param_names:
-            # Making empty parameter dict
-            par = params.get(name, Fitparam())
-            basename = name[len(self._prefix) :]
-
-            # Updates parameter from guess
-            if basename in self._def_values:
-                par.values = self._def_values[basename]
-            if par.values in (None, np.inf, -np.inf, np.nan):
-                par.values = 0
-
-            # Updates parameter from hint
-            if basename in self.params_hint:
-                par.values = self.params_hint[basename]
-
-            # Updates parameter from kwargs (no prefix)
-            if basename in kwargs:
-                if isinstance(kwargs[basename], Fitparam):
-                    par.update(kwargs[basename])
-                elif isinstance(kwargs[basename], (int, float)):
-                    par.values = kwargs[basename]
-
-            # Updates parameter from kwargs (with prefix)
-            if name in kwargs:
-                if isinstance(kwargs[name], Fitparam):
-                    par.update(kwargs[name])
-                elif isinstance(kwargs[name], (int, float)):
-                    par.values = kwargs[name]
-
-            params[name] = par
-        return params
-
-    def _make_units(self, **kwargs) -> dict[str, str]:
-        """Creates a dict of the units of the parameters.
-
-        Args:
-            **kwargs: The units of the parameters.
-
-        Returns:
-            dict[str, str]: A dict of the units of the parameters.
-        """
-        units = {}
-        for name in self.param_names:
-            basename = name[len(self._prefix) :]
-
-            # Updates unit from kwargs (no prefix)
-            if basename in kwargs:
-                units[name] = kwargs[basename]
-
-            # Updates unit from kwargs (with prefix)
-            if name in kwargs:
-                units[name] = kwargs[name]
-
-        return units
+    @symbols.setter
+    def symbols(self, **symbols: str):
+        for symbol, param in zip(symbols, self.parameters):
+            if param.base_name == symbol:
+                param.symbol = symbols[symbol]
 
     def get_extrema(self, params: dict) -> dict:
         """Returns the extrema of the model.
@@ -264,7 +195,7 @@ class ModelABC(ABC):
         """
         raise NotImplementedError("get_period not implemented for this model")
 
-    def __add__(self, other):
+    def __add__(self, other) -> "SumModel":
         """Adds two models.
 
         Args:
@@ -274,6 +205,24 @@ class ModelABC(ABC):
             SumModel: The sum of the two models.
         """
         return SumModel(self, other)
+
+    def __mul__(self, other) -> "SumModel":
+        """Returns a new model that is the product of self and other.
+
+        Args:
+            other (ModelABC): The other model.
+
+        Returns:
+            ModelABC: The product of self and other.
+        """
+        if isinstance(other, int):
+            self_copy = copy.copy(self)
+            for _ in range(other - 1):
+                self_copy += copy.copy(self)
+            return self_copy  # type: ignore
+
+        else:
+            raise TypeError("Can only multiply model with int")
 
 
 ####################################################################################################
@@ -286,7 +235,7 @@ class SumModel(ModelABC):
         *models (ModelABC): The models to add.
     """
 
-    def __init__(self, *models):
+    def __init__(self, *models: ModelABC):
         """Initializes the sum of models. The models are added in the order they are given.
 
         Args:
@@ -294,33 +243,11 @@ class SumModel(ModelABC):
         """
 
         self.models = self._flatten_models(models)
+        self._add_sufixes()
 
-        self.param_names: list[str] = []
-        self._prefix: list[str] = []
-        self._postfix: list[str] = ["" for _ in range(len(self.models))]
-
-        self._root2full: dict[str, str] = {}
-        self._params_guess: dict[str, Fitparam] = {}
-        self._def_values: dict[str, Optional[float]] = {}
-        self.params_hint: dict = {}
-        self._param_root_names: list[str] = []
-
-        for model in self.models:
-            if isinstance(model._prefix, list):
-                self._prefix += model._prefix
-            else:
-                self._prefix.append(model._prefix)
-
-            self._root2full.update(model._root2full)
-            self._params_guess.update(model._params_guess)
-
-            self.params_hint.update(model.params_hint)
-
-        self._set_param_root_name_and_get_prefix()
-        self._make_parameters()
-        self.symbols()
-
-    def _flatten_models(self, models: list[ModelABC]) -> list[ModelABC]:
+    def _flatten_models(
+        self, models: Union[tuple[ModelABC], list[ModelABC]]
+    ) -> list[ModelABC]:
         """Flattens the models.
 
         Args:
@@ -332,7 +259,6 @@ class SumModel(ModelABC):
         flattened_models = []
         for model in models:
             if isinstance(model, SumModel):
-                print("Flattening SumModel")
                 flattened_models += self._flatten_models(model.models)
 
             elif isinstance(model, ModelABC):
@@ -342,33 +268,13 @@ class SumModel(ModelABC):
                 raise TypeError(f"Model {model} is not a ModelABC or SumModel.")
         return flattened_models
 
-    def _set_param_root_name_and_get_prefix(self):
-        """Sets the root names of the parameters and gets the prefix of the parameters.
-
-        Raises:
-            ValueError: The models have the same parameter names.
-        """
-        # Get the root names of the parameters
-        root_names_temp = [model._param_root_names for model in self.models]
-
-        # Check if the models have the same parameter names
-        for i, param_list in enumerate(root_names_temp):
-            # If the models have the same parameter names
-            if common_member(*root_names_temp):
-                # Add the index of the model as a postfix to the parameters
-                self._postfix[i] = f"_{i}"
-                param_list = [f"{name}_{i}" for name in param_list]
-            self._param_root_names += param_list
-
-            # Set the parameter names
-            limit = len(param_list)
-            if hasattr(self.models[i], "poly_degree"):
-                limit = self.models[i].poly_degree + 1
-
-            self.models[i].param_names = param_list[:limit]
-            self.param_names += [f"{self._prefix[i]}{name}" for name in param_list][
-                :limit
-            ]
+    def _add_sufixes(self):
+        if duplicats_list := [
+            x for x in self._base_name_list if self._base_name_list.count(x) > 1
+        ]:
+            for i, model in enumerate(self.models, start=1):
+                if all(item in duplicats_list for item in model._base_name_list):
+                    model._suffix = f"_{i}"
 
     def func(self, x, *args, **kwargs):
         """Returns the sum of the models.
@@ -381,7 +287,7 @@ class SumModel(ModelABC):
         """
         # Unpack the positional arguments into keyword arguments
         if args:
-            kwargs = dict(zip(self.param_names, args))
+            kwargs = dict(zip(self._full_name_list, args))
 
         # Convert the independent variable to a numpy array
         x = np.array(x)
@@ -390,14 +296,13 @@ class SumModel(ModelABC):
         func_sum = np.zeros(x.shape)
 
         # Loop over the models
-        for i, model in enumerate(self.models):
-            # Get the postfix of the model
-            p = self._postfix[i]
-
+        for model in self.models:
             # Create a dictionary of the keyword arguments for the model
-            model_kwargs = {
-                k.replace(p, ""): v for k, v in kwargs.items() if k in model.param_names
-            }
+            model_kwargs = {}
+            for k, v in kwargs.items():
+                if k in model._full_name_list:
+                    k_index = model._full_name_list.index(k)
+                    model_kwargs[model._base_name_list[k_index]] = v
 
             # Add the model function evaluated with the model-specific keyword arguments
             func_sum += model.func(x, **model_kwargs)
@@ -423,24 +328,18 @@ class SumModel(ModelABC):
         guess = {}
 
         # Iterate through all models
-        for i, model in enumerate(self.models):
-            print(model.param_names)
-            print("priny postfix", self._postfix)
+        for model in self.models:
             # Get the guessed parameters of the model
             model_guess = model.guess(x=x, y=y, *args, **kwargs)
 
             # Update the dictionary with the guessed parameters of the model
             guess |= model_guess
 
-            # Get the postfix of the model
-            p = self._postfix[i]
-
             # Update the guess of y by subtracting the model's guess from the
             # previous guess of y
-            guess_values = {k.replace(p, ""): v.values for k, v in model_guess.items()}
+            guess_values = {v.base_name: v.values for k, v in model_guess.items()}
             y_guess = model.func(x, **guess_values)
-            y = y - y_guess
-
+            y -= y_guess
         return guess
 
     def funcname(self, *args, **kwargs):
@@ -482,11 +381,12 @@ class SumModel(ModelABC):
 
         # Iterate over the models and update the units dictionary
         for model in self.models:
-            units |= model.units(x=x, y=y)
+            units |= model.get_units(x=x, y=y)
         # Return the units dictionary
         return units
 
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self, **symbols: str) -> dict[str, str]:
         """Returns the symbols of the model.
 
         Returns:
@@ -494,12 +394,10 @@ class SumModel(ModelABC):
         """
         # Initialize the symbols dictionary
         symbols = {}
-        self._root2symbol = {}
 
         # Iterate over the models and update the symbols dictionary
         for model in self.models:
-            symbols |= model.symbols(**symbols)
-            self._root2symbol.update(model._root2symbol)
+            symbols.update(**model.symbols)
         return symbols
 
     def get_extrema(self, params: dict) -> dict[str, dict[str, float]]:
@@ -515,19 +413,30 @@ class SumModel(ModelABC):
         extrema = {}
 
         # Iterate over the models and update the extrema dictionary
-        for i, model in enumerate(self.models):
+        for model in self.models:
             # Get the postfix of the model
-            p = self._postfix[i]
+            p = model._suffix
 
             # Create a dictionary of the keyword arguments for the model
             model_params = {
-                k.replace(p, ""): v for k, v in params.items() if k in model.param_names
+                k.replace(p, ""): v
+                for k, v in params.items()
+                if k in model._full_name_list
             }
 
             # Get the extrema of the model
             model_name = f"{model.__class__.__name__}{p}"
             extrema |= {model_name: model.get_extrema(model_params)}
         return extrema
+
+    @property
+    def parameters(self):
+        if not hasattr(self, "_parameters"):
+            self._parameters = []
+            for model in self.models:
+                self._parameters += model.parameters
+
+        return self._parameters
 
 
 ####################################################################################################
@@ -542,14 +451,13 @@ class LinearModel(ModelABC):
         ModelABC (class): ModelABC class
     """
 
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
+    def __init__(self, **kwargs):
         """Initialize the LinearModel class.
 
         Args:
             independent_vars (list, optional): List of independent variables. Defaults to None.
             prefix (str, optional): Prefix for the model. Defaults to "".
         """
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, slope=1.0, intercept=0.0):
@@ -578,7 +486,7 @@ class LinearModel(ModelABC):
         """
         x, y = np.array(x), np.array(y)
         slope, intercept = np.polyfit(x, y, 1)
-        return self._make_parameters(slope=slope, intercept=intercept)
+        return self._get_parameters_as_dict(slope=slope, intercept=intercept)
 
     def funcname(self, *params) -> str:
         """Function name.
@@ -587,12 +495,12 @@ class LinearModel(ModelABC):
             str: The function name.
         """
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
 
         return rf"$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         """Units of the function.
 
         Args:
@@ -604,8 +512,8 @@ class LinearModel(ModelABC):
         """
         return {"slope": "y/x", "intercept": "y"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"slope": "a", "intercept": "b"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -624,7 +532,7 @@ class ProportionalModel(ModelABC):
         ModelABC (class): ModelABC class
     """
 
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
+    def __init__(self, **kwargs):
         """Initialize the ProportionalModel class.
 
         Args:
@@ -632,7 +540,6 @@ class ProportionalModel(ModelABC):
             prefix (str, optional): Prefix for the model. Defaults to "".
         """
 
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, slope=1.0):
@@ -642,20 +549,20 @@ class ProportionalModel(ModelABC):
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
         slope = (y[-1] - y[0]) / (x[-1] - x[0])
-        return self._make_parameters(slope=slope)
+        return self._get_parameters_as_dict(slope=slope)
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
 
         return rf"$\mathrm{{proportional}}(x) = {params[0]} x"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"slope": "y/x"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"slope": "a"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -666,8 +573,7 @@ class ProportionalModel(ModelABC):
 #                   Gaussian Model                                                                 #
 ####################################################################################################
 class GaussianModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", negative_peak=False, **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, negative_peak=False, **kwargs):
         self.negative_peak = negative_peak
         super().__init__(**kwargs)
 
@@ -677,25 +583,28 @@ class GaussianModel(ModelABC):
 
     def guess(
         self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
-    ) -> dict:
+    ) -> dict[str, Fitparam]:
         if negative_peak is None:
             negative_peak = self.negative_peak
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
-        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma
+        )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "center": "x", "sigma": "x"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "center": "μ", "sigma": "σ"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -706,8 +615,7 @@ class GaussianModel(ModelABC):
 #                   Gaussian + Constant Model                                                      #
 ####################################################################################################
 class GaussianConstantModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", negative_peak=False, **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, negative_peak=False, **kwargs):
         self.negative_peak = negative_peak
         super().__init__(**kwargs)
 
@@ -724,21 +632,21 @@ class GaussianConstantModel(ModelABC):
         x, y = np.array(x), np.array(y)
         offset = np.mean(y)
         amplitude, center, sigma = guess_from_peak(y - offset, x, negative_peak)
-        return self._make_parameters(
+        return self._get_parameters_as_dict(
             amplitude=amplitude, center=center, sigma=sigma, offset=offset
         )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "center": "x", "sigma": "x", "offset": "y"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "center": "μ", "sigma": "σ", "offset": "c"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -749,8 +657,7 @@ class GaussianConstantModel(ModelABC):
 #                   Lorentzian Model                                                               #
 ####################################################################################################
 class LorentzianModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", negative_peak=False, **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, negative_peak=False, **kwargs):
         self.negative_peak = negative_peak
         super().__init__(**kwargs)
 
@@ -766,20 +673,22 @@ class LorentzianModel(ModelABC):
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._make_parameters(amplitude=amplitude, center=center, sigma=sigma)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma
+        )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
 
         return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "center": "x", "sigma": "x"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "center": "μ", "sigma": "σ"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -790,8 +699,7 @@ class LorentzianModel(ModelABC):
 #                   Lorentzian + Constant Model                                                    #
 ####################################################################################################
 class LorentzianConstantModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", negative_peak=False, **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, negative_peak=False, **kwargs):
         self.negative_peak = negative_peak
         super().__init__(**kwargs)
 
@@ -811,22 +719,22 @@ class LorentzianConstantModel(ModelABC):
         x, y = np.array(x), np.array(y)
         offset = np.mean(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._make_parameters(
+        return self._get_parameters_as_dict(
             amplitude=amplitude, center=center, sigma=sigma, offset=offset
         )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
 
         return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "center": "x", "sigma": "x", "offset": "y"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "center": "μ", "sigma": "σ", "offset": "c"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -839,13 +747,10 @@ class LorentzianConstantModel(ModelABC):
 class LorentzianPolynomialModel(ModelABC):
     def __init__(
         self,
-        independent_vars=None,
-        prefix="",
         degree: int = 3,
         negative_peak: bool = False,
         **kwargs,
     ):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
 
         super().__init__(**kwargs)
         self.__model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
@@ -866,16 +771,16 @@ class LorentzianPolynomialModel(ModelABC):
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         return self.__model.units(x, y)
 
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
-        return self.__model.symbols(**symbols)
+    @property
+    def symbols(self) -> dict[str, str]:
+        return self.__model.symbols
 
 
 ####################################################################################################
 #                   Split Lorentzian Model                                                         #
 ####################################################################################################
 class SplitLorentzianModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", negative_peak=False, **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, negative_peak=False, **kwargs):
         self.negative_peak = negative_peak
         super().__init__(**kwargs)
 
@@ -897,24 +802,24 @@ class SplitLorentzianModel(ModelABC):
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._make_parameters(
+        return self._get_parameters_as_dict(
             amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma
         )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return (
             rf"$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}"
             rf"{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
         )
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "center": "x", "sigma": "x", "split": "x"}
 
-    @symbol_wrapper
-    def symbols(self, *params) -> list[str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "center": "μ", "sigma": "σ", "split": "σ_r"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -925,11 +830,10 @@ class SplitLorentzianModel(ModelABC):
 #                   Polynomial Model                                                               #
 ####################################################################################################
 class PolynomialModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", degree: int = 3, **kwargs):
+    def __init__(self, degree: int = 3, **kwargs):
         self.poly_degree = degree
-        kwargs["param_names"] = [f"c{i}" for i in range(degree + 1)]
+        kwargs["_param_names"] = [f"c{i}" for i in range(degree + 1)]
 
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0):
@@ -938,28 +842,28 @@ class PolynomialModel(ModelABC):
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
         coeffs = np.polyfit(x, y, self.poly_degree)
-        coeffs_dict = dict(zip(self.param_names, coeffs[::-1]))
+        coeffs_dict = dict(zip(self._full_name_list, coeffs[::-1]))
 
         for i in range(self.poly_degree + 1, 8):
-            coeffs_dict[f"c{i}"] = Fitparam(0.0, fixed=True)
+            coeffs_dict[f"c{i}"] = Fitparam(values=0.0, fixed=True)
 
-        return self._make_parameters(**coeffs_dict)
+        return self._get_parameters_as_dict(**coeffs_dict)
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return rf"$\mathrm{{polynomial}}(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         coeffs_units = {"c0": "y"}
         for i in range(1, self.poly_degree + 1):
             coeffs_units[f"c{i}"] = f"y / x**{i}"
 
         return coeffs_units
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {f"c{i}": f"c_{i}" for i in range(self.poly_degree + 1)}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
@@ -999,9 +903,8 @@ class PolynomialModel(ModelABC):
 #                   Oscillation Model                                                              #
 ####################################################################################################
 class OscillationModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
+    def __init__(self, **kwargs):
         self.angular = kwargs.pop("angular", False)
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, offset=0.0):
@@ -1014,7 +917,7 @@ class OscillationModel(ModelABC):
         x, y = np.array(x), np.array(y)
         [amplitude, frequency, phi, offset] = self._oscillations_guess(x, y)
 
-        return self._make_parameters(
+        return self._get_parameters_as_dict(
             amplitude=amplitude,
             frequency=frequency,
             phi=phi,
@@ -1045,12 +948,12 @@ class OscillationModel(ModelABC):
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
         return rf"$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {
             "amplitude": "y",
             "frequency": "x**(-1)",
@@ -1058,8 +961,8 @@ class OscillationModel(ModelABC):
             "offset": "y",
         }
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {
             "amplitude": "A",
             "frequency": "f",
@@ -1086,9 +989,8 @@ class OscillationModel(ModelABC):
 #                   Damped Oscillation Model                                                       #
 ####################################################################################################
 class DampedOscillationModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
+    def __init__(self, **kwargs):
         self.angular = kwargs.pop("angular", False)
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
         super().__init__(**kwargs)
 
     def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
@@ -1103,7 +1005,7 @@ class DampedOscillationModel(ModelABC):
             x, y
         )
 
-        return self._make_parameters(
+        return self._get_parameters_as_dict(
             amplitude=amplitude,
             frequency=frequency,
             phi=phi,
@@ -1139,13 +1041,13 @@ class DampedOscillationModel(ModelABC):
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
 
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
         return rf"$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {
             "amplitude": "y",
             "frequency": "x**(-1)",
@@ -1154,8 +1056,8 @@ class DampedOscillationModel(ModelABC):
             "offset": "y",
         }
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {
             "amplitude": "A",
             "frequency": "f",
@@ -1169,8 +1071,7 @@ class DampedOscillationModel(ModelABC):
 #                   Randomized Clifford Benchmark Model                                            #
 ####################################################################################################
 class RandomizedCliffordBenchmarkModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def func(self, x, amplitude=1.0, phase=0.0, offset=0.0):
@@ -1182,19 +1083,21 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
         amplitude = -y.min()
         phase = 0.99
         offset = y.min()
-        return self._make_parameters(amplitude=amplitude, phase=phase, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, phase=phase, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return rf"$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "phase": "", "offset": "y"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "phase": "φ", "offset": "c"}
 
 
@@ -1202,8 +1105,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
 #                   Exponential Decay Model                                                        #
 ####################################################################################################
 class ExponentialDecayModel(ModelABC):
-    def __init__(self, independent_vars=None, prefix="", **kwargs):
-        kwargs |= {"prefix": prefix, "independent_vars": independent_vars or ["x"]}
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def func(self, x, amplitude=1.0, decay=1.0, offset=0.0):
@@ -1225,17 +1127,19 @@ class ExponentialDecayModel(ModelABC):
         )  # Use the first 3 points to determine the amplitude
         decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
 
-        return self._make_parameters(amplitude=amplitude, decay=decay, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, decay=decay, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
-            params = self.param_symbols
+            params = self._display_name_list
         return rf"$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
 
-    @unit_wrapper
-    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+    @property
+    def units(self) -> dict[str, str]:
         return {"amplitude": "y", "decay": "x", "offset": "y"}
 
-    @symbol_wrapper
-    def symbols(self, **symbols: dict[str, str]) -> dict[str, str]:
+    @property
+    def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "decay": "τ", "offset": "c"}

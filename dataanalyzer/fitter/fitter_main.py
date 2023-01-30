@@ -38,13 +38,39 @@ class Fitter:
             ValueError: If the x and y values are not in the correct format
         """
         self.func = func
-        self.x = x
-        self.y = y
-        self.sy = sy
+        self.kwargs = kwargs
+        self.param_names = copy.deepcopy(func._full_name_list)
 
+        self._convert_xy_data_to_valueclass(x, y, sy)
+        self._ftt_xy_data()
+        self._scale_xy_data()
+
+        self.set_initial_values(self.kwargs.pop("intial_values", {}))
+        self._set_initial_fitting_options(cost_function, use_latex)
+
+    def _convert_xy_data_to_valueclass(self, x, y, sy):
+        self.x, self.y, self.sy = x, y, sy
         self._x: Valueclass = Valueclass.fromfloat(copy.copy(x), "x data")
         self._y: Valueclass = Valueclass.fromfloat(copy.copy(y), "y data")
 
+        if self._x.value is None:
+            raise ValueError("x data is None")
+        if self._y.value is None:
+            raise ValueError("y data is None")
+
+    def _scale_xy_data(self):
+        self._x.value, self._x_unit_prefix, self._x_cf = convert_array_with_unit(
+            self._x.value
+        )
+
+        self._y.value, self._y_unit_prefix, self._y_cf = convert_array_with_unit(
+            self._y.value
+        )
+
+        self._conversion_factors = self.func.get_units(x=self._x_cf, y=self._y_cf)
+        self._sy = self.sy * self._y_cf if self.sy is not None else None
+
+    def _ftt_xy_data(self):
         if self._y.fft_type == "fft_y" and self._x.fft_type != "fft_x":
             self._x = copy.deepcopy(self._x.fftfreq)
         elif self._y.fft_type == "fft_x" and self._x.fft_type != "fft_y":
@@ -54,28 +80,7 @@ class Fitter:
         elif self._x.fft_type == "fft_y" and self._y.fft_type != "fft_y":
             self._y = copy.deepcopy(self._y.fft)
 
-        self._x.value, self._x_unit_prefix, self._x_cf = convert_array_with_unit(
-            self._x.value
-        )
-
-        self._y.value, self._y_unit_prefix, self._y_cf = convert_array_with_unit(
-            self._y.value
-        )
-
-        self._conversion_factors = self.func.units(x=self._x_cf, y=self._y_cf)  # type: ignore
-        self._sy = self.sy * self._y_cf if self.sy is not None else None
-
-        if self._x.value is None:
-            raise ValueError("x data is None")
-        if self._y.value is None:
-            raise ValueError("y data is None")
-
-        self.kwargs = kwargs
-
-        self.param_names = copy.deepcopy(func.param_names)
-        self.intial_values = self.func.guess(x=self._x.value, y=self._y.value)
-        self.set_initial_values(self.kwargs.pop("intial_values", {}))
-
+    def _set_initial_fitting_options(self, cost_function, use_latex):
         self.weights = self.kwargs.pop("weights", None)
         self.bound = self.kwargs.pop("bound", None)
 
@@ -116,6 +121,9 @@ class Fitter:
         Raises:
             ValueError: If the initial values are not in the correct format
         """
+
+        if not hasattr(self, "initial_values"):
+            self.intial_values = self.func.guess(x=self._x.value, y=self._y.value)
 
         for key, value in initial_values.items():
             if isinstance(value, dict):
@@ -228,31 +236,25 @@ class Fitter:
         """
         self._do_fit()
 
-        return_dict = {}
+        return_list = []
 
         if kwargs.pop("return_fit_array", True):
-            return_dict["x_fit"], return_dict["y_fit"] = self.get_fit_array(
+            return_list += self.get_fit_array(
                 linspace_start, linspace_stop, linspace_steps
             )
 
         if kwargs.pop("return_params", True):
-            return_dict["params"] = self.get_params()
+            return_list.append(self.get_params())
 
         if kwargs.pop("return_report", True):
-            return_dict["report"] = self._report_string
+            return_list.append(self._report_string)
 
         if kwargs.pop("return_guess_array", False):
-            return_dict["guess_array"] = self.get_guess_array(
-                linspace_start, linspace_stop, linspace_steps
+            return_list.append(
+                self.get_guess_array(linspace_start, linspace_stop, linspace_steps)
             )
 
-        if kwargs.pop("return_guess_params", False):
-            return_dict["guess_params"] = self.get_guess_params()
-
-        if kwargs.pop("return_as_dict", True):
-            return return_dict.values()
-
-        return return_dict
+        return tuple(return_list)
 
     def _do_fit(self):
         self.set_minuit()
@@ -329,14 +331,13 @@ class Fitter:
 
         self._report_string += "Fit parameters:\n"
 
-        for i, ((key, val), err) in enumerate(zip(values, errors), start=1):
+        for i, ((key, val), err) in enumerate(zip(values, errors)):
             if key in self.param_names:
-
                 unit = f"$\mathrm{{{unit_names[key]}}}$" if unit_names else ""
-                name = f"${self.func._root2symbol[key]}$"
+                name = f"${self.func._display_name_list[i]}$"
                 self._add_parameter_string(unit, name, val, err)
 
-            if poly_degree is not None and i > poly_degree:
+            if poly_degree is not None and i > poly_degree - 1:
                 break
 
     def _add_parameter_string(self, unit, key, val, err):
@@ -353,7 +354,7 @@ class Fitter:
         x_unit = self._x_unit_prefix + self._x.unit
         y_unit = self._y_unit_prefix + self._y.unit
 
-        return self.func.units(x=x_unit, y=y_unit)  # type: ignore
+        return self.func.get_units(x=x_unit, y=y_unit)  # type: ignore
 
     def _update_iminuit_report_with_statistics(self):
         """Update the iminuit report with the probability and the chi2 value"""
@@ -413,5 +414,6 @@ class Fitter:
 
         return self.func.get_period(self.params)
 
-    def set_symbols(self, **symbols: dict[str, str]):
-        self.func.symbols(**symbols)
+    def set_symbols(self, **symbols: str):
+        for key, value in symbols.items():
+            setattr(self.func.symbols, key, value)

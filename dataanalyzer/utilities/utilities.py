@@ -93,3 +93,31 @@ def round_on_error(
         if power < 0
         else f"{value_rounded} ± {error_rounded}"
     )
+
+
+def convert_unit_to_str_or_float(
+    f: str, x: Union[float, str, None], y: Union[float, str, None]
+):
+    if type(f) != str:
+        raise ValueError(f"f must be a string, not {type(f)}: {f}")
+
+    if x is None or y is None:
+        raise ValueError("x and y must be defined")
+
+    if type(x) != type(y):
+        raise TypeError("x and y must be of the same type")
+
+    if isinstance(x, str) and isinstance(y, str):
+        f = f.replace("x", x).replace("y", y)
+        return f.replace("**", "^").replace("(", "{").replace(")", "}")
+
+    elif isinstance(x, (int, float)):
+        try:
+            evalue = eval(f)
+        except Exception as e:
+            return 1
+
+        if isinstance(evalue, (float, int)):
+            return evalue
+        else:
+            raise ValueError("f must evaluate to a number")

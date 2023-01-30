@@ -30,57 +30,82 @@ def unit_wrapper(func):
             else:
                 raise ValueError("f must evaluate to a number")
 
-    def make_units(
-        self, **kwargs: dict[str, float or str]
-    ) -> dict[str, Union[float, str]]:
-        units = {}
-        for name in self.param_names:
-            basename = name[len(self._prefix) :]
+    def update_parameters(self, **kwargs: dict[str, float or str]):
+        for i, parameter in enumerate(self.parameters):
+            if parameter.base_name in kwargs:
+                self.parameters[i].unit = kwargs[parameter.base_name]
 
-            # Updates unit from kwargs (no prefix)
-            if basename in kwargs:
-                units[name] = kwargs[basename]
+    # def make_units(
+    #     self, **kwargs: dict[str, float or str]
+    # ) -> dict[str, Union[float, str]]:
+    #     units = {}
+    #     for parameter in self.parameters:
 
-            # Updates unit from kwargs (with prefix)
-            if name in kwargs:
-                units[name] = kwargs[name]
+    #         # basename = name[len(self._prefix) :]
 
-            # if (
-            #     self._frequency_in_hz
-            #     and "frequency" in name
-            #     and isinstance(units[name], str)
-            # ):
-            #     units[name] = units[name].replace("s^{-1}", "Hz")
+    #         # # Updates unit from kwargs (no prefix)
+    #         # if basename in kwargs:
+    #         #     units[name] = kwargs[basename]
 
-        return units
+    #         # # Updates unit from kwargs (with prefix)
+    #         # if name in kwargs:
+    #         #     units[name] = kwargs[name]
+
+    #         # if (
+    #         #     self._frequency_in_hz
+    #         #     and "frequency" in name
+    #         #     and isinstance(units[name], str)
+    #         # ):
+    #         #     units[name] = units[name].replace("s^{-1}", "Hz")
+
+    #     return units
 
     def wrapper(self, *args, **kwargs) -> dict[str, Union[float, str]]:
-        fs = func(self, *args, **kwargs)
+        unit_dict = func(self, *args, **kwargs)
+        update_parameters(self, **unit_dict)
+
         x = args[0] if args else kwargs.get("x", None)
         y = args[1] if len(args) > 1 else kwargs.get("y", None)
 
         f_dict: dict[str, Union[float, str]] = {
-            k: convert_unit_to_str_or_float(f=f, x=x, y=y) for k, f in fs.items()
+            parameter.full_name: convert_unit_to_str_or_float(
+                f=parameter.unit, x=x, y=y
+            )
+            for parameter in self.parameters
         }  # type: ignore
-        return make_units(self, **f_dict)
+        return f_dict
 
     return wrapper
 
 
 def symbol_wrapper(func):
-    def wrapper(self, *args, **kwargs) -> dict[str, str]:
-        if not hasattr(self, "_root2symbol") or kwargs.pop("overwrite", False):
-            self._root2symbol = func(self, *args, **kwargs)
+    def wrapper(self, *args, **kwargs) -> None:
+        symbol_dict = func(self, *args, **kwargs)
 
-        for key, value in kwargs.items():
-            if key in self._root2symbol:
-                self._root2symbol[key] = value
-
-        self._full2symbol = {
-            k: self._root2symbol[k] for k in self._root2symbol if k in self.param_names
-        }
-
-        self._param_symbols = list(self._full2symbol.values())
-        return self._full2symbol
+        for key, value in self.parameters.items():
+            if key in symbol_dict:
+                value.symbol = symbol_dict[key]
 
     return wrapper
+
+
+if __name__ == "__main__":
+    from dataanalyzer.fitter.fitter_classsetup import Fitparam
+
+    class DommyModel:
+        def __init__(self):
+            self._prefix = "prefix_"
+            self._suffix = "_suffix"
+            self.parameters = [
+                Fitparam(base_name="a", model=self),
+                Fitparam(base_name="b", model=self),
+                Fitparam(base_name="c", model=self),
+            ]
+
+        @unit_wrapper
+        def get_units(self, x, y):
+            return {"a": "x", "b": "y", "c": "x**2"}
+
+    model = DommyModel()
+    print(model.get_units("test", "something"))
+    print(model.parameters[0])

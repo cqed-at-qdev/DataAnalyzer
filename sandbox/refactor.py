@@ -32,3 +32,36 @@ plot.plot(x=x_fit, y=y_fit, c="orange", label="fit1")
 # plot.plot(x=x_array, y=y_array, c="green", label="fit2")
 plot.add_metadata(report)
 plot.show()
+
+
+from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+
+x = y_data
+y = x_data
+
+#Find peaks
+cens, properties = find_peaks(x, prominence=0, width=0)
+
+amps = properties["prominences"]
+sigmas = properties["widths"] 
+
+sort_increasing = np.argsort(amps)
+cens = cens[sort_increasing]
+amps = amps[sort_increasing]
+sigmas = sigmas[sort_increasing]
+
+for i, (amp, sigma) in enumerate(zip(amps, sigmas)):
+    print(f"Peak {i+1}:")
+    print(f"Amplitude: {amp}")
+    print(f"Sigma: {sigma}")
+    print()
+
+plt.plot(x)
+plt.plot(peaks, x[peaks], "x")
+plt.vlines(x=peaks, ymin=x[peaks] - properties["prominences"],
+           ymax = x[peaks], color = "C1")
+plt.hlines(y=properties["width_heights"], xmin=properties["left_ips"],
+           xmax=properties["right_ips"], color = "C1")
+plt.show()
+

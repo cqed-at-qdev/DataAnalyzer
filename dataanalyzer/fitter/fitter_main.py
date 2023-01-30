@@ -318,8 +318,10 @@ class Fitter:
 
     def _update_iminuit_report_with_function(self):
         """Update the iminuit report with the function"""
-        funcname = self.func.funcname()
-        self._report_string = f"Function: \n{funcname}\n\n"
+        funcname_str = f"Function: \n{self.func.funcname()}\n\n"
+        if len(funcname_str) > 100:
+            funcname_str = f"Function: \n{self.func.funcname()[:75]}...\n\n"
+        self._report_string = funcname_str
 
     def _update_imuniut_report_with_parameters(self):
         """Update the iminuit report with the parameters"""

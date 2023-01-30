@@ -183,7 +183,7 @@ class Plotter:
             if flip_axis:
                 x_fit, y_fit = y_fit, x_fit
 
-            self.plot(x_fit, y_fit, ax=ax, label="Fit")
+            self.plot(x_fit, y_fit, ax=ax, label="Fit", c="orange")
 
         if kwargs.pop("plot_residuals", False):
             x_res = fit_obejct.x

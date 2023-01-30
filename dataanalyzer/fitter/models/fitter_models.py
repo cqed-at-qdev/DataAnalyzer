@@ -60,18 +60,29 @@ class ModelABC(ABC):
             **params: The parameters to update.
         """
         for param in self.parameters:
-            if param.base_name in params:
-                if isinstance(params[param.base_name], Fitparam):
-                    param.values = params[param.base_name].values
-                    param.errors = params[param.base_name].errors
-                    param.limits = params[param.base_name].limits
-                    param.fixed = params[param.base_name].fixed
+            if param.full_name in params:
+                self._update_parameter(params, param, name_type="full_name")
 
-                elif isinstance(params[param.base_name], (float, int)):
-                    param.values = params[param.base_name]
+            elif param.base_name in params:
+                self._update_parameter(params, param, name_type="base_name")
 
             if param.values in (None, np.inf, -np.inf, np.nan):
                 param.values = 0
+
+    def _update_parameter(self, params, param, name_type="full_name"):
+        if name_type == "full_name":
+            name = param.full_name
+        elif name_type == "base_name":
+            name = param.base_name
+
+        if isinstance(params[name], Fitparam):
+            param.values = params[name].values
+            param.errors = params[name].errors
+            param.limits = params[name].limits
+            param.fixed = params[name].fixed
+
+        elif isinstance(params[name], (float, int)):
+            param.values = params[name]
 
     def _get_parameters_as_dict(self, **params) -> dict[str, Fitparam]:
         """Returns a dict of the parameters.
@@ -215,14 +226,16 @@ class ModelABC(ABC):
         Returns:
             ModelABC: The product of self and other.
         """
-        if isinstance(other, int):
-            self_copy = copy.copy(self)
-            for _ in range(other - 1):
-                self_copy += copy.copy(self)
-            return self_copy  # type: ignore
-
-        else:
+        if not isinstance(other, int):
             raise TypeError("Can only multiply model with int")
+
+        if other == 1:
+            return SumModel(self)
+
+        self_copy = copy.copy(self)
+        for _ in range(other - 1):
+            self_copy += copy.copy(self)
+        return self_copy  # type: ignore
 
 
 ####################################################################################################
@@ -326,6 +339,7 @@ class SumModel(ModelABC):
 
         # Initialize a dictionary to store the guessed parameters
         guess = {}
+        import matplotlib.pyplot as plt
 
         # Iterate through all models
         for model in self.models:
@@ -340,6 +354,7 @@ class SumModel(ModelABC):
             guess_values = {v.base_name: v.values for k, v in model_guess.items()}
             y_guess = model.func(x, **guess_values)
             y -= y_guess
+
         return guess
 
     def funcname(self, *args, **kwargs):
@@ -582,7 +597,10 @@ class GaussianModel(ModelABC):
         return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2))
 
     def guess(
-        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+        self,
+        x: Union[float, Iterable],
+        y: Union[float, Iterable],
+        negative_peak=None,
     ) -> dict[str, Fitparam]:
         if negative_peak is None:
             negative_peak = self.negative_peak
@@ -753,27 +771,27 @@ class LorentzianPolynomialModel(ModelABC):
     ):
 
         super().__init__(**kwargs)
-        self.__model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
+        self._model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
             negative_peak=negative_peak, **kwargs
         )
 
-        self.__dict__.update(self.__model.__dict__)
+        self.__dict__.update(self._model.__dict__)
 
     def func(self, x, *args, **kwargs):
-        return self.__model.func(x, *args, **kwargs)
+        return self._model.func(x, *args, **kwargs)
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
-        return self.__model.guess(x, y)
+        return self._model.guess(x, y)
 
     def funcname(self, *params) -> str:
-        return self.__model.funcname(*params)
+        return self._model.funcname(*params)
 
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
-        return self.__model.units(x, y)
+        return self._model.units(x, y)
 
     @property
     def symbols(self) -> dict[str, str]:
-        return self.__model.symbols
+        return self._model.symbols
 
 
 ####################################################################################################
@@ -1143,3 +1161,118 @@ class ExponentialDecayModel(ModelABC):
     @property
     def symbols(self) -> dict[str, str]:
         return {"amplitude": "A", "decay": "τ", "offset": "c"}
+
+
+####################################################################################################
+#                   Gaussian Multiple Model                                                        #
+####################################################################################################
+class GaussianMultipleModel(ModelABC):
+    def __init__(self, n_peaks=2, negative_peak=False, **kwargs):
+        super().__init__(**kwargs)
+        self.n_peaks = n_peaks
+        self.negative_peak = negative_peak
+
+        self._model = GaussianModel(negative_peak=negative_peak, **kwargs) * n_peaks
+        self.__dict__.update(self._model.__dict__)
+
+    def func(self, x, *args, **kwargs):
+        return self._model.func(x, *args, **kwargs)
+
+    def guess(
+        self,
+        x: Union[float, Iterable],
+        y: Union[float, Iterable],
+        n_peaks=None,
+        negative_peak=None,
+    ) -> dict:
+        if n_peaks is None:
+            n_peaks = self.n_peaks
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+
+        guess = guess_from_multipeaks(y=y, x=x, n_peaks=n_peaks, negative=negative_peak)
+        return self._get_parameters_as_dict(**guess)
+
+    def funcname(self, *params) -> str:
+        return self._model.funcname(*params)
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return self._model.units(x, y)
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return self._model.symbols
+
+
+####################################################################################################
+#                   Lorentzian Multiple Model                                                      #
+####################################################################################################
+class LorentzianMultipleModel(ModelABC):
+    def __init__(self, n_peaks=2, negative_peak=False, **kwargs):
+        super().__init__(**kwargs)
+        self.n_peaks = n_peaks
+        self.negative_peak = negative_peak
+
+        self._model = LorentzianModel(negative_peak=negative_peak, **kwargs) * n_peaks
+        self.__dict__.update(self._model.__dict__)
+
+    def func(self, x, *args, **kwargs):
+        return self._model.func(x, *args, **kwargs)
+
+    def guess(
+        self,
+        x: Union[float, Iterable],
+        y: Union[float, Iterable],
+        n_peaks=None,
+        negative_peak=None,
+    ) -> dict:
+        if n_peaks is None:
+            n_peaks = self.n_peaks
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+
+        guess = guess_from_multipeaks(y=y, x=x, n_peaks=n_peaks, negative=negative_peak)
+        return self._get_parameters_as_dict(**guess)
+
+    def funcname(self, *params) -> str:
+        return self._model.funcname(*params)
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return self._model.units(x, y)
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return self._model.symbols
+
+
+####################################################################################################
+#                   Constant Model                                                                 #
+####################################################################################################
+class ConstantModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, offset=0.0):
+        return np.ones(len(x)) * offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        offset = np.mean(y)
+        return self._get_parameters_as_dict(offset=offset)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$\mathrm{{constant}}(x) = {params[0]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"offset": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {"offset": "c"}

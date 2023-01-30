@@ -92,7 +92,7 @@ class Fitparam:
         if value is None:
             self._unit = (
                 self.model.units[self.base_name]
-                if self.base_name in self.model.units
+                if hasattr(self.model, "units") and self.base_name in self.model.units
                 else ""
             )
         else:
@@ -177,6 +177,41 @@ def guess_from_peak(y, x, negative, ampscale=1.0, sigscale=1.0):
     sig = Fitparam(values=sig, limits=(0, np.inf))
 
     return amp, cen, sig
+
+
+def guess_from_multipeaks(y, x, negative, ampscale=1.0, sigscale=1.0, n_peaks=1):
+    from scipy.signal import find_peaks
+
+    sort_increasing = np.argsort(x)
+    x = x[sort_increasing]
+    y = y[sort_increasing]
+    deltax = x[1] - x[0]
+
+    if negative:
+        y = -y
+
+    # Find peaks
+
+    peaks, properties = find_peaks(y, prominence=0, width=0)
+
+    cens = x[peaks]
+    amps = properties["prominences"]
+    sigmas = properties["widths"]
+
+    # Sort peaks
+    sort_increasing = np.argsort(amps)
+    cens = cens[sort_increasing]
+    amps = amps[sort_increasing] * ampscale
+    sigmas = sigmas[sort_increasing] * deltax * sigscale
+
+    # Convert to Fitparam
+    guess = {}
+    for i in range(len(cens)):
+        index = "" if n_peaks == 1 else f"_{i + 1}"
+        guess[f"amplitude{index}"] = Fitparam(values=amps[i])
+        guess[f"center{index}"] = Fitparam(values=cens[i])
+        guess[f"sigma{index}"] = Fitparam(values=sigmas[i], limits=(0, np.inf))
+    return guess
 
 
 def not_zero(value):

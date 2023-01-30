@@ -7,12 +7,6 @@ import numpy as np
 
 from dataanalyzer.utilities.valueclass import Valueclass
 
-try:
-    import Labber
-except ImportError:
-    import dataanalyzer.local_labber as Labber
-
-
 ####################################################################################################
 #                   From Valueclass to Dict                                                        #
 ####################################################################################################
@@ -273,6 +267,8 @@ def _make_inital_Labber_file(path: str, logLog: list[dict], logStep: list[dict])
     Returns:
         str: The path to the Labber file.
     """
+    import Labber
+
     # Create the Labber file
     f = Labber.createLogFile_ForData(path, logLog, logStep)
 
@@ -301,6 +297,8 @@ def labber2valueclass(
     Returns:
         Tuple[list[Valueclass], list[Valueclass]]: The parameters and results.
     """
+    import Labber
+
     # Open Labber file
     f = Labber.LogFile(labber_path)
 
@@ -371,7 +369,7 @@ def _get_vna_data(step_channels, channels) -> list[Valueclass]:
     return []
 
 
-def _get_parameters(logfile: Labber.LogFile) -> list[Valueclass]:
+def _get_parameters(logfile: "Labber.LogFile") -> list[Valueclass]:
     """Get the parameters from the Labber file.
 
     Args:
@@ -396,7 +394,7 @@ def _get_parameters(logfile: Labber.LogFile) -> list[Valueclass]:
     return parameters
 
 
-def _get_results(logfile: Labber.LogFile) -> list[Valueclass]:
+def _get_results(logfile: "Labber.LogFile") -> list[Valueclass]:
     """Get the results from the Labber file.
 
     Args:

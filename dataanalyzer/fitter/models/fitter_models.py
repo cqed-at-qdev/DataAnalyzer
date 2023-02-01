@@ -35,84 +35,7 @@ class ModelABC(ABC):
             )
         ]
 
-    @property
-    def parameters(self):
-        if not hasattr(self, "_parameters"):
-            self._make_inital_parameters()
-        return self._parameters
-
-    @property
-    def _base_name_list(self):
-        return [param.base_name for param in self.parameters]
-
-    @property
-    def _full_name_list(self):
-        return [param.full_name for param in self.parameters]
-
-    @property
-    def _display_name_list(self):
-        return [param.display_name for param in self.parameters]
-
-    def update_parameters(self, **params):
-        """Updates the parameters of the model.
-
-        Args:
-            **params: The parameters to update.
-        """
-        for param in self.parameters:
-            if param.full_name in params:
-                self._update_parameter(params, param, name_type="full_name")
-
-            elif param.base_name in params:
-                self._update_parameter(params, param, name_type="base_name")
-
-            if param.values in (None, np.inf, -np.inf, np.nan):
-                param.values = 0
-
-    def _update_parameter(self, params, param, name_type="full_name"):
-        if name_type == "full_name":
-            name = param.full_name
-        elif name_type == "base_name":
-            name = param.base_name
-
-        if isinstance(params[name], Fitparam):
-            param.values = params[name].values
-            param.errors = params[name].errors
-            param.limits = params[name].limits
-            param.fixed = params[name].fixed
-
-        elif isinstance(params[name], (float, int)):
-            param.values = params[name]
-
-    def _get_parameters_as_dict(self, **params) -> dict[str, Fitparam]:
-        """Returns a dict of the parameters.
-
-        Args:
-            **params: The parameters to update.
-
-        Returns:
-            list[Fitparam]: A list of the parameters.
-        """
-        self.update_parameters(**params)
-        return {param.full_name: param for param in self.parameters}
-
-    def get_units(self, x, y) -> dict[str, Union[float, str]]:
-        """Returns a dict of the units of the parameters.
-
-        Args:
-            x (Union[float, Iterable]): The independent variable.
-            y (Union[float, Iterable]): The dependent variable.
-
-        Returns:
-            dict[str, Union[float, str]]: A dict of the units of the parameters.
-        """
-        return {
-            parameter.full_name: convert_unit_to_str_or_float(
-                f=parameter.unit, x=x, y=y
-            )
-            for parameter in self.parameters
-        }  # type: ignore
-
+    ############# Abstract Methods #################################################################
     @abstractmethod
     def func(self, *args, **kwargs):
         """Function to be fitted. Must be implemented in subclass.
@@ -164,7 +87,7 @@ class ModelABC(ABC):
 
     @property
     @abstractmethod
-    def symbols(self, **symbols: str) -> dict[str, str]:
+    def symbols(self) -> dict[str, str]:
         """Returns the symbols of the parameters. Must be implemented in subclass.
 
         Returns:
@@ -172,11 +95,121 @@ class ModelABC(ABC):
         """
         pass
 
-    @symbols.setter
-    def symbols(self, **symbols: str):
-        for symbol, param in zip(symbols, self.parameters):
-            if param.base_name == symbol:
-                param.symbol = symbols[symbol]
+    ############# Properties #######################################################################
+    @property
+    def parameters(self):
+        if not hasattr(self, "_parameters"):
+            self._make_inital_parameters()
+        return self._parameters
+
+    @property
+    def _base_name_list(self):
+        return [param.base_name for param in self.parameters]
+
+    @property
+    def _full_name_list(self):
+        return [param.full_name for param in self.parameters]
+
+    @property
+    def _display_name_list(self):
+        return [param.display_name for param in self.parameters]
+
+    ############# Get and Set Methods ##############################################################
+    def _set_genereal_method(self, value_type: str, **new_params):
+        """Updates the parameters of the model.
+
+        Args:
+            method (str): The method to use for updating the parameters.
+            **params: The parameters to update.
+        """
+        for new_param in new_params:
+            if new_param in self._full_name_list:
+                setattr(
+                    self.parameters[self._full_name_list.index(new_param)],
+                    value_type,
+                    new_params[new_param],
+                )
+
+            elif new_param in self._base_name_list:
+                setattr(
+                    self.parameters[self._base_name_list.index(new_param)],
+                    value_type,
+                    new_params[new_param],
+                )
+
+            else:
+                raise ValueError(
+                    f"Parameter {new_param} not found. Available parameters are {self._full_name_list}"
+                )
+
+    def set_symbols(self, **symbols: str):
+        """Sets the symbols of the parameters.
+
+        Args:
+            **symbols: The symbols to set.
+        """
+        self._set_genereal_method("symbol", **symbols)
+
+    def set_units(self, **units: Union[str, float, int]):
+        """Sets the units of the parameters.
+
+        Args:
+            **units: The units to set.
+        """
+        self._set_genereal_method("unit", **units)
+
+    def set_parameters(self, **values: Union[Fitparam, dict, float, int]):
+        """Sets the values of the parameters.
+
+        Args:
+            **values: The values to set.
+        """
+        for v, k in values.items():
+            if isinstance(k, Fitparam):
+                for value_type in ["values", "errors", "limits", "fixed"]:
+                    self._set_genereal_method(value_type, **{v: getattr(k, value_type)})
+            elif isinstance(k, dict):
+                for value_type in ["values", "errors", "limits", "fixed"]:
+                    self._set_genereal_method(value_type, **{v: k[value_type]})
+            elif isinstance(k, (float, int)):
+                self._set_genereal_method("values", **{v: k})
+            else:
+                raise TypeError(
+                    f"Type [{type(k)}] not supported. Use Fitparam, dict or float. Supported types are [{Fitparam, dict, float}]"
+                )
+
+        for param in self.parameters:
+            if param.values in (None, np.inf, -np.inf, np.nan):
+                param.values = 0
+
+    def _get_parameters_as_dict(self, **params) -> dict[str, Fitparam]:
+        """Returns a dict of the parameters.
+
+        Args:
+            **params: The parameters to update.
+
+        Returns:
+            list[Fitparam]: A list of the parameters.
+        """
+        self.set_parameters(**params)
+        return {param.full_name: param for param in self.parameters}
+
+    def get_units(self, x, y) -> dict[str, Union[float, str]]:
+        """Returns a dict of the units of the parameters.
+
+        Args:
+            x (Union[float, Iterable]): The independent variable.
+            y (Union[float, Iterable]): The dependent variable.
+
+        Returns:
+            dict[str, Union[float, str]]: A dict of the units of the parameters.
+        """
+        return {
+            parameter.full_name: convert_unit_to_str_or_float(
+                f=parameter.unit, x=x, y=y
+            )
+            for parameter in self.parameters
+        }  # type: ignore
 
     def get_extrema(self, params: dict) -> dict:
         """Returns the extrema of the model.
@@ -206,6 +239,7 @@ class ModelABC(ABC):
         """
         raise NotImplementedError("get_period not implemented for this model")
 
+    ############# Methods ##########################################################################
     def __add__(self, other) -> "SumModel":
         """Adds two models.
 
@@ -229,13 +263,11 @@ class ModelABC(ABC):
         if not isinstance(other, int):
             raise TypeError("Can only multiply model with int")
 
-        if other == 1:
-            return SumModel(self)
-
         self_copy = copy.copy(self)
         for _ in range(other - 1):
+            print(f"Times {_}")
             self_copy += copy.copy(self)
-        return self_copy  # type: ignore
+        return SumModel(self_copy)  # type: ignore
 
 
 ####################################################################################################
@@ -275,7 +307,7 @@ class SumModel(ModelABC):
                 flattened_models += self._flatten_models(model.models)
 
             elif isinstance(model, ModelABC):
-                flattened_models.append(model)
+                flattened_models += [model]
 
             else:
                 raise TypeError(f"Model {model} is not a ModelABC or SumModel.")
@@ -339,8 +371,6 @@ class SumModel(ModelABC):
 
         # Initialize a dictionary to store the guessed parameters
         guess = {}
-        import matplotlib.pyplot as plt
-
         # Iterate through all models
         for model in self.models:
             # Get the guessed parameters of the model
@@ -401,7 +431,7 @@ class SumModel(ModelABC):
         return units
 
     @property
-    def symbols(self, **symbols: str) -> dict[str, str]:
+    def symbols(self) -> dict[str, str]:
         """Returns the symbols of the model.
 
         Returns:
@@ -589,8 +619,9 @@ class ProportionalModel(ModelABC):
 ####################################################################################################
 class GaussianModel(ModelABC):
     def __init__(self, negative_peak=False, **kwargs):
-        self.negative_peak = negative_peak
         super().__init__(**kwargs)
+
+        self.negative_peak = negative_peak
 
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0):
         x = np.array(x)
@@ -850,8 +881,6 @@ class SplitLorentzianModel(ModelABC):
 class PolynomialModel(ModelABC):
     def __init__(self, degree: int = 3, **kwargs):
         self.poly_degree = degree
-        kwargs["_param_names"] = [f"c{i}" for i in range(degree + 1)]
-
         super().__init__(**kwargs)
 
     def func(self, x, c0=0.0, c1=0.0, c2=0.0, c3=0.0, c4=0.0, c5=0.0, c6=0.0, c7=0.0):

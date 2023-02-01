@@ -16,7 +16,9 @@ from dataanalyzer.utilities import (
     convert_array_with_unit,
 )
 
-
+####################################################################################################
+#                   Plotter Class                                                                  #
+####################################################################################################
 class Plotter:
     def __init__(
         self,
@@ -48,6 +50,7 @@ class Plotter:
 
         self.metadata = ""
 
+    ############# Main Functions ###################################################################
     def _setup_fig_and_ax(self, subplots: tuple) -> None:
         """Setup the figure and axes. If a figure is provided in the keyword arguments,
         it will be used. Otherwise, a new figure will be created.
@@ -142,6 +145,7 @@ class Plotter:
                 "default_settings must be either a dict, a string or a boolean"
             )
 
+    ############# 1D Plotting Functions ############################################################
     def plot_fit(self, fit_obejct: Fitter, ax: tuple = (), **kwargs):
         """Plots a fit object. This function is a wrapper for matplotlib.pyplot.plot
 
@@ -291,6 +295,7 @@ class Plotter:
             self.ax.errorbar(x=x.value, y=y.value.T, yerr=yerr.T, xerr=xerr, **kwargs)
             print("Warning: x and y have different shapes. Transposing y.")
 
+    ############# 2D Plotting Functions ############################################################
     @matplotlib_decorator
     def _2d_genereal_plot(
         self,
@@ -451,6 +456,7 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="tripcolor", x=x, y=y, z=z, ax=ax, **kwargs)
 
+    ############# Other Plotting Functions #########################################################
     def axhline(
         self,
         y: Union[Valueclass, tuple, list, float, np.ndarray],
@@ -591,6 +597,7 @@ class Plotter:
             )
             self.xres.set_ylabel(ylabel)
 
+    ############# Metadata Functions ###############################################################
     def add_metadata(
         self,
         *metadata: Union[
@@ -618,7 +625,7 @@ class Plotter:
             "transform": self.ax_anotate.transAxes,
             "fontdict": {"family": "monospace"},
         }
-        kwargs = default_kwargs | kwargs
+        kwargs = default_kwargs | kwargs  # type: ignore
         algin = kwargs.pop("algin", True)
 
         kwargs_metadata = {
@@ -677,6 +684,7 @@ class Plotter:
         self.metadata = ""
         self.ax_anotate.texts.clear()
 
+    ############# Other Functions ##################################################################
     def _get_default_transform(self):
         axarg = np.where(self.axs == self.ax)[0][0]
         right_axs = self.axs[axarg, np.size(self.axs, axis=1) - 1]

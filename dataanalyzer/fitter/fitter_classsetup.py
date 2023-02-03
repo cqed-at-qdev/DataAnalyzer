@@ -49,9 +49,7 @@ class Fitparam:
     def full_name(self, value):
         if value is None:
             if self.model:
-                self._full_name = (
-                    self.model._prefix + self.base_name + self.model._suffix
-                )
+                self._full_name = self.model._prefix + self.base_name + self.model._suffix
             else:
                 self._full_name = self.base_name
         else:
@@ -72,9 +70,7 @@ class Fitparam:
     def display_name(self, value):
         if value is None:
             if self.model:
-                self._display_name = (
-                    self.model._prefix + self.symbol + self.model._suffix
-                )
+                self._display_name = self.model._prefix + self.symbol + self.model._suffix
             else:
                 self._display_name = self.symbol
         else:
@@ -110,8 +106,7 @@ class Fitparam:
         if value is None:
             self._symbol = (
                 self.model.symbols[self.base_name]
-                if hasattr(self.model, "symbols")
-                and self.base_name in self.model.symbols
+                if hasattr(self.model, "symbols") and self.base_name in self.model.symbols
                 else self.base_name
             )
         else:
@@ -206,7 +201,10 @@ def guess_from_multipeaks(y, x, negative, ampscale=1.0, sigscale=1.0, n_peaks=1)
 
     # Convert to Fitparam
     guess = {}
-    for i in range(len(cens)):
+    for i in range(n_peaks):
+        if i >= len(cens):
+            break
+
         index = "" if n_peaks == 1 else f"_{i + 1}"
         guess[f"amplitude{index}"] = Fitparam(values=amps[i])
         guess[f"center{index}"] = Fitparam(values=cens[i])

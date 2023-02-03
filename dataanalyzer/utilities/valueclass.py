@@ -43,9 +43,7 @@ class Valueclass:
             str : String representation of the Valueclass object.
         """
         error = np.nan if np.isnan(self.error).all() else self.error
-        return (
-            f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
-        )
+        return f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
 
     def __getitem__(self, key) -> "Valueclass":
         """Returns a slice of the Valueclass object.
@@ -137,9 +135,7 @@ class Valueclass:
         else:
             return Valueclass(
                 self.value * other.value,
-                np.sqrt(
-                    (self.error * other.value) ** 2 + (self.value * other.error) ** 2
-                ),
+                np.sqrt((self.error * other.value) ** 2 + (self.value * other.error) ** 2),
                 self.name,
                 self.unit,
             )
@@ -156,10 +152,7 @@ class Valueclass:
         else:
             return Valueclass(
                 self.value / other.value,
-                np.sqrt(
-                    (self.error / other.value) ** 2
-                    + (self.value * other.error / other.value**2) ** 2
-                ),
+                np.sqrt((self.error / other.value) ** 2 + (self.value * other.error / other.value**2) ** 2),
                 self.name,
                 self.unit,
             )
@@ -168,9 +161,7 @@ class Valueclass:
         if "Valueclass" not in str(type(other)):
             return Valueclass(
                 self.value**other,
-                self.error
-                * other
-                * self.value ** (other - 1),  # TODO: make correct error propagation
+                self.error * other * self.value ** (other - 1),  # TODO: make correct error propagation
                 self.name,
                 self.unit,
             )
@@ -179,8 +170,7 @@ class Valueclass:
                 self.value**other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value**other.value * other.error * np.log(self.value))
-                    ** 2
+                    + (self.value**other.value * other.error * np.log(self.value)) ** 2
                 ),
                 self.name,
                 self.unit,
@@ -259,11 +249,7 @@ class Valueclass:
             error (Union[float, list, tuple, np.ndarray]): Error to set.
         """
         if not hasattr(self, "_error"):
-            self._error = (
-                np.full(np.shape(self.value), np.nan)
-                if self.value.size
-                else np.empty(0)
-            )
+            self._error = np.full(np.shape(self.value), np.nan) if self.value.size else np.empty(0)
 
         if np.iscomplexobj(error):
             self._error.__setattr__("dtype", np.complex128)
@@ -372,9 +358,7 @@ class Valueclass:
 
     @property
     def T(self):
-        return Valueclass(
-            self.value.T, self.error.T, self.name, self.unit, self.fft_type
-        )
+        return Valueclass(self.value.T, self.error.T, self.name, self.unit, self.fft_type)
 
     @property
     def sprt(self):
@@ -452,12 +436,8 @@ class Valueclass:
         if not e_max:
             e_max = np.max(self.error)
 
-        value = (
-            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
-        )
-        error = (
-            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
-        )
+        value = np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        error = np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
 
         return Valueclass(
             value,
@@ -474,45 +454,44 @@ class Valueclass:
         self,
         baseline_type="modpoly",
         return_baseline=False,
-        average_axis=False,
+        average=False,
         axis=0,
         **kwargs,
     ) -> "Valueclass":
 
         if self.value.ndim == 1:
             x = kwargs.pop("x", np.arange(len(self.value)))
-            bkg = self._remove_single_baseline(
-                x=x, y=self.value, baseline_type=baseline_type, **kwargs
-            )
+            bkg = self._remove_single_baseline(x=x, y=self.value, baseline_type=baseline_type, **kwargs)
 
         else:
-            x = kwargs.pop("x", np.arange(self.value.shape[axis]))
-            y = self.value.T if axis == 0 else self.value
+            y = self.value.T if axis == 1 else self.value
+            x = kwargs.pop("x", np.arange(y.shape[0]))
 
-            if average_axis:
+            if average:
                 bkg_one = self._remove_single_baseline(
-                    x=x, y=np.mean(y, axis=0), baseline_type=baseline_type, **kwargs
+                    x=x, y=np.mean(y, axis=1), baseline_type=baseline_type, **kwargs
                 )
-                bkg = np.vstack([bkg_one] * y.shape[0])
+                bkg = np.vstack([bkg_one] * y.shape[1]).T
             else:
                 bkg = np.zeros(y.shape)
                 for i in range(y.shape[1]):
-                    bkg[:, i] = self._remove_single_baseline(
-                        x=x, y=y[:, i], baseline_type=baseline_type, **kwargs
-                    )
+                    bkg[:, i] = self._remove_single_baseline(x=x, y=y[:, i], baseline_type=baseline_type, **kwargs)
 
-            if axis == 0:
+            if axis == 1:
                 bkg = bkg.T
 
-        print(bkg)
+        if return_baseline:
+            return Valueclass(
+                value=bkg,
+                name=f"{baseline_type} baseline",
+                unit=self.unit,
+                fft_type=self.fft_type,
+            )
+
         return Valueclass(
-            bkg[0] if return_baseline else self.value - bkg,
-            () if return_baseline else self.error,
-            (
-                f"{self.name} - {baseline_type} baseline"
-                if return_baseline
-                else self.name
-            ),
+            self.value - bkg,
+            self.error,
+            self.name,
             self.unit,
             self.fft_type,
         )
@@ -529,9 +508,7 @@ class Valueclass:
         elif baseline_type == "snip":
             bkg = baseline_fitter.snip(y, **kwargs)
         else:
-            raise ValueError(
-                "Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'."
-            )
+            raise ValueError("Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'.")
 
         return bkg[0]
 
@@ -575,9 +552,7 @@ class Valueclass:
 
     @property
     def substract_mean(self):
-        return Valueclass(
-            self.value - np.mean(self.value), self.error, self.name, self.unit
-        )
+        return Valueclass(self.value - np.mean(self.value), self.error, self.name, self.unit)
 
     @property
     def ddx(self):  # TODO: fix this
@@ -603,8 +578,7 @@ class Valueclass:
         return Valueclass(
             (self.value - np.min(self.value, axis=axis))
             / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
-            self.error
-            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.error / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
             self.name,
             self.unit,
             self.fft_type,
@@ -861,18 +835,12 @@ class Valueclass:
         def _getstr(self, scale_values: bool = True):
             value, unit_prefix, conversion_factor = self.value, "", 1
             if scale_values and self.has_unit:
-                value, unit_prefix, conversion_factor = convert_array_with_unit(
-                    self.value
-                )
+                value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
 
             if self.value.size > 1:
                 return f"{self.name}: {self.value.size}; {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
 
-            value = (
-                value[0]
-                if np.isnan(self.error)
-                else round_on_error(value[0], self.error[0] * conversion_factor)
-            )
+            value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
             return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
 
         def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
@@ -1010,35 +978,3 @@ class Valueclass:
 
         self._value = np.append(self.value, other.value, axis=axis)
         self._error = np.append(self.error, other.error, axis=axis)
-
-
-if __name__ == "__main__":
-    # make random signal with noise and a gaussian peak and polynomial background
-    signal = (
-        0.1 * np.random.rand(1000)
-        + 0.5 * np.exp(-(((np.arange(1000) - 500) / 100) ** 2))
-        + 0.0001 * np.arange(1000) ** 2
-    )
-
-    def f(x):
-        y = 0
-        result = []
-        for _ in x:
-            result.append(y)
-            y += np.random.normal(scale=1)
-        return np.array(result)
-
-    test = Valueclass(name="test", unit="V", value=f(signal))
-    test.remove_baseline(baseline_type="mor", return_baseline=False).plot()
-    test.plot()
-
-    # make a matrix of random values to test remove baseline with peak
-    matrix = (
-        np.zeros((100, 1000))
-        + 0.1 * np.random.rand(100, 1000)
-        + 0.5 * np.exp(-(((np.arange(1000) - 500) / 100) ** 2))
-    )
-    matrix = Valueclass(name="test", unit="V", value=matrix)
-    matrix.plot()
-    bkg = matrix.remove_baseline(axis=0, average_axis=True, return_baseline=True)
-    bkg.plot()

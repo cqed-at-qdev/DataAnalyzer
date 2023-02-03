@@ -45,7 +45,7 @@ def convert_array_with_unit(
         m, e = deci, 0
 
     # Calculate the conversion factor
-    conversion_factor = float(m) / max_value
+    conversion_factor = float(m) / max_value if max_value != 0 else 1
 
     # Convert the array
     converted_array = np.array(array) * conversion_factor

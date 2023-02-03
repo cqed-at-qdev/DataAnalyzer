@@ -44,35 +44,34 @@ class Fitter:
         self.kwargs = kwargs
         self.param_names = copy.deepcopy(func._full_name_list)
 
-        self._convert_xy_data_to_valueclass(x, y, sy)
-        self._ftt_xy_data()
-        self._scale_xy_data()
+        self._convert_and_scale_xy_data(x, y, sy)
 
         self.set_initial_values(self.kwargs.pop("intial_values", {}))
         self._set_initial_fitting_options(cost_function, use_latex)
 
     ############# Main Functions ###################################################################
-    def _convert_xy_data_to_valueclass(self, x, y, sy):
-        self.x, self.y, self.sy = x, y, sy
-        self._x: Valueclass = Valueclass.fromfloat(copy.copy(x), "x data")
-        self._y: Valueclass = Valueclass.fromfloat(copy.copy(y), "y data")
+    def _convert_data(self, x, y):
+        for data_name, data in zip(["x", "y"], [x, y]):
+            if not data:
+                raise ValueError(f"{data_name} data is None")
 
-        if self._x.value is None:
-            raise ValueError("x data is None")
-        if self._y.value is None:
-            raise ValueError("y data is None")
+            setattr(self, data_name, data)
+            setattr(self, f"_{data_name}", Valueclass.fromfloat(copy.copy(data), f"{data_name} data"))
 
-    def _scale_xy_data(self):
-        self._x.value, self._x_unit_prefix, self._x_cf = convert_array_with_unit(
-            self._x.value
-        )
+    def _scale_data(self):
+        for data_name in ["x", "y"]:
+            scaled_data, unit_prefix, conversion_factor = convert_array_with_unit(getattr(self, f"_{data_name}").value)
+            getattr(self, f"_{data_name}").value = scaled_data
+            setattr(self, f"_{data_name}_unit_prefix", unit_prefix)
+            setattr(self, f"_{data_name}_cf", conversion_factor)
 
-        self._y.value, self._y_unit_prefix, self._y_cf = convert_array_with_unit(
-            self._y.value
-        )
+    def _convert_and_scale_xy_data(self, x, y, sy=None):
+        self._convert_data(x, y)
+        self._ftt_xy_data()
+        self._scale_data()
 
+        self._sy = sy * self._y_cf if sy is not None else None
         self._conversion_factors = self.func.get_units(x=self._x_cf, y=self._y_cf)
-        self._sy = self.sy * self._y_cf if self.sy is not None else None
 
     def _ftt_xy_data(self):
         if self._y.fft_type == "fft_y" and self._x.fft_type != "fft_x":
@@ -116,9 +115,7 @@ class Fitter:
         return_list = []
 
         if kwargs.pop("return_fit_array", True):
-            return_list += self.get_fit_array(
-                linspace_start, linspace_stop, linspace_steps
-            )
+            return_list += self.get_fit_array(linspace_start, linspace_stop, linspace_steps)
 
         if kwargs.pop("return_params", True):
             return_list.append(self.get_params())
@@ -127,9 +124,7 @@ class Fitter:
             return_list.append(self._report_string)
 
         if kwargs.pop("return_guess_array", False):
-            return_list.append(
-                self.get_guess_array(linspace_start, linspace_stop, linspace_steps)
-            )
+            return_list.append(self.get_guess_array(linspace_start, linspace_stop, linspace_steps))
 
         return tuple(return_list)
 
@@ -197,9 +192,7 @@ class Fitter:
             self._report_string += "\nFit statistics:\n"
 
         if self.chi2 is not None:
-            self._report_string += (
-                f"Chi²: {np.format_float_scientific(self.chi2, precision=4)}\n"
-            )
+            self._report_string += f"Chi²: {np.format_float_scientific(self.chi2, precision=4)}\n"
 
         if self.ndof is not None:
             self._report_string += f"Degree of freedom: {self.ndof}\n"
@@ -211,32 +204,24 @@ class Fitter:
 
     ############# Get Methods ######################################################################
     def get_residuals(self):
-        residuals = self._y.value - self.func.func(
-            x=self._x.value, **self.minuit.values.to_dict()
-        )
+        residuals = self._y.value - self.func.func(x=self._x.value, **self.minuit.values.to_dict())
         return Valueclass(value=residuals, name=self._y.name, unit=self._y.unit)
 
-    def get_fit_array(
-        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
-    ):
+    def get_fit_array(self, linspace_start=None, linspace_stop=None, linspace_steps=1000):
         x_fit = self._get_linspace_of_x(linspace_start, linspace_stop, linspace_steps)
         y_fit = np.array(self.func.func(x=x_fit, **self.minuit.values.to_dict()))
 
         x_fit, y_fit = self._convert_x_and_y_to_valueclass(x_fit, y_fit)
         return x_fit, y_fit
 
-    def get_guess_array(
-        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
-    ):
+    def get_guess_array(self, linspace_start=None, linspace_stop=None, linspace_steps=1000):
         x_guess = self._get_linspace_of_x(linspace_start, linspace_stop, linspace_steps)
         y_guess = np.array(self.func.func(x=x_guess, **self.initial_guess))
 
         x_guess, y_guess = self._convert_x_and_y_to_valueclass(x_guess, y_guess)
         return x_guess, y_guess
 
-    def _get_linspace_of_x(
-        self, linspace_start=None, linspace_stop=None, linspace_steps=1000
-    ):
+    def _get_linspace_of_x(self, linspace_start=None, linspace_stop=None, linspace_steps=1000):
         linspace_start = linspace_start or np.min(self._x.value)
         linspace_stop = linspace_stop or np.max(self._x.value)
 
@@ -364,9 +349,7 @@ class Fitter:
     def _set_intial_values_only_from_inital_values(self):
         """Set the initial values of the fit parameters in the correct format for minuit"""
         self._initial_values_only: dict[str, Union[float, None]] = {
-            key: value.values
-            for key, value in self.intial_values.items()
-            if key in self.param_names
+            key: value.values for key, value in self.intial_values.items() if key in self.param_names
         }
 
     def _set_minuit_with_values_limits_and_fixed(self):

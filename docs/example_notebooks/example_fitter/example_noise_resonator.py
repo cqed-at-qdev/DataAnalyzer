@@ -6,10 +6,10 @@ import numpy as np
 ####################################################################################################
 # Set random seed
 r = np.random
-r.seed(2)
+r.seed(41)
 
 # Create dommy resonator data
-n_points = 1000
+n_points = 200
 noise_factor = 0.0
 
 # Create x-axis
@@ -21,7 +21,7 @@ x = np.linspace(x_start, x_stop, n_points)
 ####################################################################################################
 #                      Create resonator data with noise                                            #
 ####################################################################################################
-n_resonators = 1
+n_resonators = 7
 n_negative_resonators = 1
 
 # Create resonator function
@@ -64,7 +64,7 @@ x_data = Valueclass(value=x, name="x-axis", unit="s")
 #                      Fit data                                                                    #
 ####################################################################################################
 # Fit data
-func = fitmodels.PolynomialModel(poly_order)
+func = fitmodels.GaussianMultipleModel(n_resonators + 1)  # + fitmodels.PolynomialModel(poly_order)
 # func =  fitmodels.GaussianMultipleModel(n_resonators)
 func.parameters
 

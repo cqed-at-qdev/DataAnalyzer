@@ -663,7 +663,7 @@ class Plotter:
                 metadata_str += f"{param}\n"
 
             elif isinstance(param, Valueclass):
-                metadata_str += f"{param.tostr(algin=algin, name_width=name_width, size_width=size_width, **kwargs)}\n"
+                metadata_str += f"{param.tostr(algin=algin, name_width=name_width, size_width=size_width, scale_values=param.has_unit, **kwargs)}\n"
 
             elif isinstance(param, (list, tuple)):
                 for par in param:

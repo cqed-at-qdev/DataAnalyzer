@@ -345,6 +345,10 @@ class Valueclass:
     def angle(self):
         return self.phase
 
+    @property  # TODO: Hej Malthe, denne funktion er rar at have, hvis du har et godt sted til den kan du godt flytte den. mvh Jacob
+    def has_unit(self):
+        return self.unit != ""
+
     ####################################################################################################
     #                   Property Functions                                                             #
     ####################################################################################################
@@ -769,26 +773,31 @@ class Valueclass:
         return valuedict
 
     def tostr(
-        self, algin: bool = True, scale_values: bool = True, name_width=40, size_width=7
+        self,
+        algin: bool = True,
+        scale_values: bool = True,
+        name_width=40,
+        size_width=7,
+        decimals=2,
     ):
         """Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values."""
 
         def _getstr(self, scale_values: bool = True):
             value, unit_prefix, conversion_factor = self.value, "", 1
-            if scale_values:
+            if scale_values and self.has_unit:
                 value, unit_prefix, conversion_factor = convert_array_with_unit(
                     self.value
                 )
 
             if self.value.size > 1:
-                return f"{self.name}: {self.value.size}; {np.min(value)} - {np.max(value)} {unit_prefix}{self.unit}"
+                return f"{self.name}: {self.value.size}; {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
 
             value = (
                 value[0]
                 if np.isnan(self.error)
                 else round_on_error(value[0], self.error[0] * conversion_factor)
             )
-            return f"{self.name}: {value} {unit_prefix}{self.unit}"
+            return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
 
         def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
             if not algin:
@@ -891,13 +900,13 @@ class Valueclass:
 
         if kwargs.get("value", None):
             newdict["value"] = kwargs["value"]
-        
+
         if kwargs.get("error", None):
             newdict["error"] = kwargs["error"]
-        
+
         if kwargs.get("fft_type", None):
             newdict["fft_type"] = kwargs["fft_type"]
-        
+
         if kwargs.get("sweep_idx", None):
             newdict["sweep_idx"] = kwargs["sweep_idx"]
 

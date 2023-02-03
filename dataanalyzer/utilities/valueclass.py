@@ -7,9 +7,11 @@ It uses some of the same functionality as seen in the Labber GUI (See .traces() 
 
 from dataclasses import asdict, dataclass
 from typing import Optional, Union
+from pybaselines import Baseline
 
 import matplotlib.pyplot as plt
 import numpy as np
+from copy import deepcopy
 
 from dataanalyzer.utilities.utilities import convert_array_with_unit, round_on_error
 
@@ -468,6 +470,71 @@ class Valueclass:
     ####################################################################################################
     #                   Math (Advanced) Functions                                                      #
     ####################################################################################################
+    def remove_baseline(
+        self,
+        baseline_type="modpoly",
+        return_baseline=False,
+        average_axis=False,
+        axis=0,
+        **kwargs,
+    ) -> "Valueclass":
+
+        if self.value.ndim == 1:
+            x = kwargs.pop("x", np.arange(len(self.value)))
+            bkg = self._remove_single_baseline(
+                x=x, y=self.value, baseline_type=baseline_type, **kwargs
+            )
+
+        else:
+            x = kwargs.pop("x", np.arange(self.value.shape[axis]))
+            y = self.value.T if axis == 0 else self.value
+
+            if average_axis:
+                bkg_one = self._remove_single_baseline(
+                    x=x, y=np.mean(y, axis=0), baseline_type=baseline_type, **kwargs
+                )
+                bkg = np.vstack([bkg_one] * y.shape[0])
+            else:
+                bkg = np.zeros(y.shape)
+                for i in range(y.shape[1]):
+                    bkg[:, i] = self._remove_single_baseline(
+                        x=x, y=y[:, i], baseline_type=baseline_type, **kwargs
+                    )
+
+            if axis == 0:
+                bkg = bkg.T
+
+        print(bkg)
+        return Valueclass(
+            bkg[0] if return_baseline else self.value - bkg,
+            () if return_baseline else self.error,
+            (
+                f"{self.name} - {baseline_type} baseline"
+                if return_baseline
+                else self.name
+            ),
+            self.unit,
+            self.fft_type,
+        )
+
+    def _remove_single_baseline(self, x, y, baseline_type, **kwargs):
+        baseline_fitter = Baseline(x_data=x)
+
+        if baseline_type == "modpoly":
+            bkg = baseline_fitter.modpoly(y, **kwargs)
+        elif baseline_type == "asls":
+            bkg = baseline_fitter.asls(y, **kwargs)
+        elif baseline_type == "mor":
+            bkg = baseline_fitter.mor(y, **kwargs)
+        elif baseline_type == "snip":
+            bkg = baseline_fitter.snip(y, **kwargs)
+        else:
+            raise ValueError(
+                "Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'."
+            )
+
+        return bkg[0]
+
     @property
     def db(self):
         return Valueclass(
@@ -665,18 +732,14 @@ class Valueclass:
 
         if np.iscomplexobj(self.value):
             self._plot_complex(x, x_label, title, fmt, *args, **kwargs)
+        elif np.ndim(self.value) == 2:
+            self._plot_2d(x, x_label, title, *args, **kwargs)
         else:
             self._plot_1d(x, x_label, title, fmt, *args, **kwargs)
 
     def _plot_1d(self, x, x_label, title, fmt, *args, **kwargs):
-        x = kwargs.pop("x", np.arange(len(self.value)))
-        x_label = kwargs.pop("x_label", "index")
-
         y = kwargs.pop("y", self.value.real)
         y_label = kwargs.pop("y_label", self.name)
-
-        title = kwargs.pop("title", None)
-        fmt = kwargs.pop("fmt", ".")
 
         plt.errorbar(x, y, yerr=self.error, fmt=fmt, *args, **kwargs)
         plt.plot(x, y, *args, **kwargs)
@@ -689,10 +752,23 @@ class Valueclass:
 
         plt.show()
 
-    def _plot_complex(self, x, x_label, title, fmt, *args, **kwargs):
-        x = kwargs.pop("x", np.arange(len(self.value)))
-        x_label = kwargs.pop("x_label", "index")
+    def _plot_2d(self, x, x_label, title, *args, **kwargs):
+        y = kwargs.pop("y", np.arange(len(self.value[1])))
+        y_label = kwargs.pop("y_label", "index 1")
 
+        fig, ax = plt.subplots()
+        ax.grid(False)
+        ax.pcolormesh(y, x, self.value, *args, **kwargs)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.grid(False)
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    def _plot_complex(self, x, x_label, title, fmt, *args, **kwargs):
         y = kwargs.pop("y", self.value)
         y_label = kwargs.pop("y_label", self.name)
         y_real_label, y_imag_label = f"{y_label} real", f"{y_label} imag"
@@ -878,7 +954,10 @@ class Valueclass:
 
     @staticmethod
     def fromlisttoone(
-        newlist: list[dict], name: str = None, unit: str = None, **kwargs
+        newlist: list[dict],
+        name: Optional[str] = None,
+        unit: Optional[str] = None,
+        **kwargs,
     ) -> "Valueclass":
         """Converts a list of dictionaries to a Valueclass object.
 
@@ -931,3 +1010,35 @@ class Valueclass:
 
         self._value = np.append(self.value, other.value, axis=axis)
         self._error = np.append(self.error, other.error, axis=axis)
+
+
+if __name__ == "__main__":
+    # make random signal with noise and a gaussian peak and polynomial background
+    signal = (
+        0.1 * np.random.rand(1000)
+        + 0.5 * np.exp(-(((np.arange(1000) - 500) / 100) ** 2))
+        + 0.0001 * np.arange(1000) ** 2
+    )
+
+    def f(x):
+        y = 0
+        result = []
+        for _ in x:
+            result.append(y)
+            y += np.random.normal(scale=1)
+        return np.array(result)
+
+    test = Valueclass(name="test", unit="V", value=f(signal))
+    test.remove_baseline(baseline_type="mor", return_baseline=False).plot()
+    test.plot()
+
+    # make a matrix of random values to test remove baseline with peak
+    matrix = (
+        np.zeros((100, 1000))
+        + 0.1 * np.random.rand(100, 1000)
+        + 0.5 * np.exp(-(((np.arange(1000) - 500) / 100) ** 2))
+    )
+    matrix = Valueclass(name="test", unit="V", value=matrix)
+    matrix.plot()
+    bkg = matrix.remove_baseline(axis=0, average_axis=True, return_baseline=True)
+    bkg.plot()

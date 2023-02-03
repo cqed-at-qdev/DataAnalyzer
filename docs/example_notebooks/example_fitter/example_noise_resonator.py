@@ -21,7 +21,7 @@ x = np.linspace(x_start, x_stop, n_points)
 ####################################################################################################
 #                      Create resonator data with noise                                            #
 ####################################################################################################
-n_resonators = 7
+n_resonators = 1
 n_negative_resonators = 1
 
 # Create resonator function
@@ -56,7 +56,9 @@ for i in range(n_resonators):
 
 # Create resonator data
 y_res = func_res.func(x, **resonator_params)
-y_data = Valueclass(value=y_pol + y_res + y_noise, name="Simulated data", unit="V")
+y_data = Valueclass(value=y_pol + y_res + y_noise, name="Simulated data", unit="V").remove_baseline(
+    baseline_type="mor"
+)
 x_data = Valueclass(value=x, name="x-axis", unit="s")
 
 
@@ -64,7 +66,7 @@ x_data = Valueclass(value=x, name="x-axis", unit="s")
 #                      Fit data                                                                    #
 ####################################################################################################
 # Fit data
-func = fitmodels.GaussianMultipleModel(n_resonators + 1)  # + fitmodels.PolynomialModel(poly_order)
+func = fitmodels.PolynomialModel(poly_order)
 # func =  fitmodels.GaussianMultipleModel(n_resonators)
 func.parameters
 

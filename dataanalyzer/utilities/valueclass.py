@@ -450,6 +450,17 @@ class Valueclass:
     ####################################################################################################
     #                   Math (Advanced) Functions                                                      #
     ####################################################################################################
+    def remove_outliers(self, sigma=3, axis=None, return_mask=False, converge=True):
+        mask = np.abs(self.value - np.mean(self.value, axis=axis)) < sigma * np.std(self.value, axis=axis)
+
+        if converge:
+            mask_temp = np.ones_like(mask)
+            while not np.all(mask == mask_temp):
+                mask_temp = mask
+                mask = np.abs(self.value - np.mean(self.value[mask])) < sigma * np.std(self.value[mask])
+
+        return mask if return_mask else self[mask]
+
     def remove_baseline(
         self,
         baseline_type="modpoly",
@@ -959,6 +970,9 @@ class Valueclass:
 
         return Valueclass.fromdict(newdict)
 
+    def copy(self):
+        return deepcopy(self)
+
     ####################################################################################################
     #                   Conversion Functions                                                           #
     ####################################################################################################
@@ -978,3 +992,18 @@ class Valueclass:
 
         self._value = np.append(self.value, other.value, axis=axis)
         self._error = np.append(self.error, other.error, axis=axis)
+
+
+if __name__ == "__main__":
+    # make random data with outliers
+    x = np.linspace(0, 10, 100)
+    y = np.ones_like(x) + np.random.normal(0, 0.1, x.size)
+    y[20] = 2.5
+    y[50] = -1.5
+    y[80] = 1.5
+    y[90] = -2.5
+
+    
+    test = Valueclass(name="test", unit="V", value=y)
+    test.plot()
+    test.remove_outliers(repeat_until_no_outliers=True).plot()

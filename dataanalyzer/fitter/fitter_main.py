@@ -205,7 +205,7 @@ class Fitter:
     ############# Get Methods ######################################################################
     def get_residuals(self):
         residuals = (self._y.value - self.func.func(x=self._x.value, **self.minuit.values.to_dict())) / self._y_cf
-        return Valueclass(value=residuals, name=self._y.name, unit=self._y.unit)
+        return Valueclass(value=residuals, name=self._y.name, unit=self._y.unit, fft_type=self._y.fft_type)
 
     def get_fit_array(self, linspace_start=None, linspace_stop=None, linspace_steps=1000):
         x_fit = self._get_linspace_of_x(linspace_start, linspace_stop, linspace_steps)

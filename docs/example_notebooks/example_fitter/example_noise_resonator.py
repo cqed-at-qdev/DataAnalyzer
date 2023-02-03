@@ -56,7 +56,9 @@ for i in range(n_resonators):
 
 # Create resonator data
 y_res = func_res.func(x, **resonator_params)
-y_data = Valueclass(value=y_pol + y_res + y_noise, name="Simulated data", unit="V")  # .remove_baseline()
+y_data = Valueclass(value=y_pol + y_res + y_noise, name="Simulated data", unit="V").remove_baseline(
+    baseline_type="snip"
+)
 x_data = Valueclass(value=x, name="x-axis", unit="s")
 
 
@@ -68,6 +70,8 @@ x_data = Valueclass(value=x, name="x-axis", unit="s")
 func = fitmodels.GaussianMultipleModel(n_resonators + 2)
 
 fit = Fitter(x=x_data, y=y_data, func=func)
+fit.do_fit()
+fit.get_residuals()
 
 func.parameters
 plot = Plotter()

@@ -134,3 +134,16 @@ def group_by_attr(params: list, attr: str):
         else:
             param_groups[-1].append(param)
     return param_groups
+
+
+def split_by_attr(parms: list, attr: str, value=None):
+    """Splits a list of Valueclasses into two groups by wether a given attribute equals value."""
+    group_with = []
+    group_without = []
+
+    for param in parms:
+        if getattr(param, attr) == value:
+            group_with.append(param)
+        else:
+            group_without.append(param)
+    return group_with, group_without

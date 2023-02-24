@@ -121,3 +121,16 @@ def convert_unit_to_str_or_float(
             return evalue
         else:
             raise ValueError("f must evaluate to a number")
+
+
+def group_by_attr(params: list, attr: str):
+    """Sorts a list of Valueclasses into groups by a given attribute."""
+    params_sorted = sorted(params, key=lambda x: getattr(x, attr))
+    sort_attr = [getattr(param, attr) for param in params_sorted]
+    param_groups = []
+    for i, param in enumerate(params_sorted):
+        if i == 0 or sort_attr[i] != sort_attr[i - 1]:
+            param_groups.append([param])
+        else:
+            param_groups[-1].append(param)
+    return param_groups

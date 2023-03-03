@@ -147,3 +147,16 @@ def split_by_attr(parms: list, attr: str, value=None):
         else:
             group_without.append(param)
     return group_with, group_without
+
+
+def split_by_condition(params: list, condition: object):
+    """Splits a list of Valueclasses into two groups by wether a given condition is true."""
+    group_with = []
+    group_without = []
+
+    for param in params:
+        if condition(param):
+            group_with.append(param)
+        else:
+            group_without.append(param)
+    return group_with, group_without

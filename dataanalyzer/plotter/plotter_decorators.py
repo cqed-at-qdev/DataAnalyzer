@@ -60,7 +60,7 @@ def matplotlib_decorator(
         # Convert the data to a Valueclass instance
         data = Valueclass.fromfloat(data_float, f"{data_name} data")
         # Set the default label for the data
-        default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
+        default_label = f"{data.name} ({data.unit})" if data.unit else data.name
         # Pop the label from the keyword arguments, if not found use the default label
         label = kwargs.pop(f"{data_name}label", default_label)
 

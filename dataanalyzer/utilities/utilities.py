@@ -90,7 +90,9 @@ def convert_array_with_unit(
     return converted_array, unit_prefix, conversion_factor
 
 
-def round_on_error(value: Union[float, int], error: Union[float, int], n_digits: int = 1) -> str:
+def round_on_error(
+    value: Union[float, int], error: Union[float, int], n_digits: int = 1
+) -> str:
     """Rounds a value and its error to a given number of significant digits.
 
     Args:
@@ -119,10 +121,16 @@ def round_on_error(value: Union[float, int], error: Union[float, int], n_digits:
     value_rounded = round(value, power_round)
 
     # Return the rounded value and error as a string
-    return f"{value:.{power_round}f} ± {error:.{power_round}f}" if power < 0 else f"{value_rounded} ± {error_rounded}"
+    return (
+        f"{value:.{power_round}f} ± {error:.{power_round}f}"
+        if power < 0
+        else f"{value_rounded} ± {error_rounded}"
+    )
 
 
-def convert_unit_to_str_or_float(f: str, x: Union[float, str, None], y: Union[float, str, None]):
+def convert_unit_to_str_or_float(
+    f: str, x: Union[float, str, None], y: Union[float, str, None]
+):
     if type(f) != str:
         raise ValueError(f"f must be a string, not {type(f)}: {f}")
 
@@ -146,19 +154,3 @@ def convert_unit_to_str_or_float(f: str, x: Union[float, str, None], y: Union[fl
             return evalue
         else:
             raise ValueError("f must evaluate to a number")
-
-
-def get_variable_name(var) -> str:
-    """Returns the name of a variable as a string.
-
-    Args:
-        var (str): The variable.
-
-    Returns:
-        str: The name of the variable.
-    """
-    return f"{var=}".split("=")[0]
-
-
-def varname(var):
-    return filter(lambda x: globals()[x] is var, globals().keys())

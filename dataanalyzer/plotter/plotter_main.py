@@ -109,7 +109,7 @@ class Plotter:
         """
         # If the user wants to use the default settings, load the default settings
         # from the quantum_calibrator.mplstyle file
-        if default_settings is True or default_settings == "quantum_calibrator":
+        if default_settings == "quantum_calibrator":
             dirname = os.path.dirname(__file__)
             plt.style.use(
                 os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle")
@@ -117,7 +117,7 @@ class Plotter:
 
         # If the user wants to use the presentation settings, load the presentation
         # settings from the presentation.mplstyle file
-        elif default_settings == "presentation":
+        elif default_settings is True or default_settings == "presentation":
             dirname = os.path.dirname(__file__)
             plt.style.use(os.path.join(dirname, r"plot_styles/presentation.mplstyle"))
 
@@ -139,28 +139,6 @@ class Plotter:
             raise ValueError(
                 "default_settings must be either a dict, a string or a boolean"
             )
-
-    @staticmethod
-    def set_mpl_style():
-        # set default colormap for plotting
-        plt.rcParams["image.cmap"] = "RdYlBu_r"
-
-        # set default colors for plotting
-        plt.style.use("seaborn-v0_8-deep")
-
-    ############# 0D Plotting Functions ############################################################
-    @matplotlib_decorator
-    def hist(self, x: Valueclass, bins=None, ax: tuple = (), **kwargs):
-        """Plots a histogram. This function is a wrapper for matplotlib.pyplot.hist
-
-        Args:
-            x (Valueclass): The data to plot.
-            bins (int, optional): The number of bins. Defaults to None.
-        """
-        if bins is None:
-            bins = int(np.sqrt(len(x)))
-
-        return self.ax.hist(x.value, bins=bins, **kwargs)
 
     ############# 1D Plotting Functions ############################################################
     def plot_fit(
@@ -680,8 +658,8 @@ class Plotter:
         add_parameter_header: bool = True,
         **kwargs,
     ) -> str:
-        name_width = kwargs.pop("tostr_name_width", 40)
-        size_width = kwargs.pop("tostr_size_width", 7)
+        name_width = kwargs.pop("tostr_name_width", 25)
+        size_width = kwargs.pop("tostr_size_width", 6)
 
         # parameter_header = f"{Mesuerment parameters : <{name_width}}" TODO: add parameter header
         # {"N points" : <{size_width}}Values"
@@ -817,7 +795,8 @@ class Plotter:
         Returns:
             fig: The figure object
         """
-        self._final_formatting()
+
+        self._final_formatting()  # TODO: How to use custom tick labels e.g. ["0", "π/2", "π"]?
 
         if not return_fig:
             return plt.show()

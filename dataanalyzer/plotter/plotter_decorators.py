@@ -9,7 +9,9 @@ import pandas as pd
 from dataanalyzer.utilities import Valueclass
 
 
-def matplotlib_decorator(func: Callable[..., Any]):
+def matplotlib_decorator(
+    func: Callable[..., Any]
+):  # TODO: don't overwrite axis labels if they are already set and new data don't have name/units
     """Decorator for matplotlib functions to make them return a Valueclass object.
 
     Args:

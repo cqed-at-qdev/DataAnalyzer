@@ -1,10 +1,12 @@
 # Author: Malthe Asmus Marciniak Nielsen
 # figure size settings
-font.size: 16
-figure.figsize: 14, 6
+font.size: 14
+figure.figsize: 12, 7
 
 # axes settings
-axes.labelsize: 17
+axes.labelsize: 22
+ytick.labelsize: 22
+xtick.labelsize: 22
 # axes.titlesize: 14
 
 

@@ -8,6 +8,39 @@ dataanalyzer package.
 from typing import Tuple, Union
 import numpy as np
 import decimal
+import inspect
+
+
+class DataScaler:
+    def __init__(self, copy=True):
+        self.copy = copy
+        self.fitted = False
+
+    def check_fitted(self):
+        if not self.fitted:
+            raise ValueError("DataScaler has not been fitted yet.")
+
+    def fit(self, X) -> np.ndarray:
+        if X is None:
+            raise ValueError("X must be defined.")
+
+        x_array, self.unit_prefix, self.scale = convert_array_with_unit(X)
+        self.fitted = True
+        return x_array
+
+    def transform(self, X) -> np.ndarray:
+        if X is None:
+            return X
+
+        self.check_fitted()
+        return X * self.scale
+
+    def inverse_transform(self, X) -> np.ndarray:
+        if X is None:
+            return X
+
+        self.check_fitted()
+        return X / self.scale
 
 
 def convert_array_with_unit(
@@ -51,15 +84,13 @@ def convert_array_with_unit(
     converted_array = np.array(array) * conversion_factor
 
     # Determine the unit prefix (if e is 8 the prefix is empty)
-    unit_prefix = f"{prefix[int(e) // 3]}" if int(e) != 8 else ""
+    unit_prefix = f"{prefix[int(e) // 3]}".replace(" ", "")
 
     # Return the converted array, the unit prefix and the conversion factor
     return converted_array, unit_prefix, conversion_factor
 
 
-def round_on_error(
-    value: Union[float, int], error: Union[float, int], n_digits: int = 1
-) -> str:
+def round_on_error(value: Union[float, int], error: Union[float, int], n_digits: int = 1) -> str:
     """Rounds a value and its error to a given number of significant digits.
 
     Args:
@@ -88,16 +119,10 @@ def round_on_error(
     value_rounded = round(value, power_round)
 
     # Return the rounded value and error as a string
-    return (
-        f"{value:.{power_round}f} ± {error:.{power_round}f}"
-        if power < 0
-        else f"{value_rounded} ± {error_rounded}"
-    )
+    return f"{value:.{power_round}f} ± {error:.{power_round}f}" if power < 0 else f"{value_rounded} ± {error_rounded}"
 
 
-def convert_unit_to_str_or_float(
-    f: str, x: Union[float, str, None], y: Union[float, str, None]
-):
+def convert_unit_to_str_or_float(f: str, x: Union[float, str, None], y: Union[float, str, None]):
     if type(f) != str:
         raise ValueError(f"f must be a string, not {type(f)}: {f}")
 
@@ -121,3 +146,19 @@ def convert_unit_to_str_or_float(
             return evalue
         else:
             raise ValueError("f must evaluate to a number")
+
+
+def get_variable_name(var) -> str:
+    """Returns the name of a variable as a string.
+
+    Args:
+        var (str): The variable.
+
+    Returns:
+        str: The name of the variable.
+    """
+    return f"{var=}".split("=")[0]
+
+
+def varname(var):
+    return filter(lambda x: globals()[x] is var, globals().keys())

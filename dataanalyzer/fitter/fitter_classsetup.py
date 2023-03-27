@@ -1,5 +1,5 @@
 # Author: Malthe Asmus Marciniak Nielsen
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 from dataclasses import dataclass
 import numpy as np
 
@@ -40,6 +40,17 @@ class Fitparam:
         return repr_str
 
     @property
+    def values(self):
+        return self._values
+
+    @values.setter
+    def values(self, value):
+        if value is None:
+            self._values = None
+        else:
+            self._values = value
+
+    @property
     def full_name(self):
         self.full_name = None
 
@@ -49,7 +60,9 @@ class Fitparam:
     def full_name(self, value):
         if value is None:
             if self.model:
-                self._full_name = self.model._prefix + self.base_name + self.model._suffix
+                self._full_name = (
+                    self.model._prefix + self.base_name + self.model._suffix
+                )
             else:
                 self._full_name = self.base_name
         else:
@@ -70,7 +83,9 @@ class Fitparam:
     def display_name(self, value):
         if value is None:
             if self.model:
-                self._display_name = self.model._prefix + self.symbol + self.model._suffix
+                self._display_name = (
+                    self.model._prefix + self.symbol + self.model._suffix
+                )
             else:
                 self._display_name = self.symbol
         else:
@@ -106,7 +121,8 @@ class Fitparam:
         if value is None:
             self._symbol = (
                 self.model.symbols[self.base_name]
-                if hasattr(self.model, "symbols") and self.base_name in self.model.symbols
+                if hasattr(self.model, "symbols")
+                and self.base_name in self.model.symbols
                 else self.base_name
             )
         else:
@@ -174,7 +190,9 @@ def guess_from_peak(y, x, negative, ampscale=1.0, sigscale=1.0):
     return amp, cen, sig
 
 
-def guess_from_multipeaks(y, x, negative, ampscale=1.0, sigscale=1.0, n_peaks=1):
+def guess_from_multipeaks(
+    y, x, negative, ampscale=1.0, sigscale=1.0, n_peaks: Union[str, int] = "auto"
+):
     from scipy.signal import find_peaks
 
     sort_increasing = np.argsort(x)
@@ -199,9 +217,13 @@ def guess_from_multipeaks(y, x, negative, ampscale=1.0, sigscale=1.0, n_peaks=1)
     amps = amps[sort_increasing] * ampscale
     sigmas = sigmas[sort_increasing] * deltax * sigscale
 
+    # Determine number of peaks
+    if not isinstance(n_peaks, (int, float)):
+        n_peaks = len(cens)
+
     # Convert to Fitparam
     guess = {}
-    for i in range(n_peaks):
+    for i in range(int(n_peaks)):
         if i >= len(cens):
             break
 

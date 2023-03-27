@@ -29,7 +29,10 @@ class ModelABC(ABC):
         self._parameters = [
             Fitparam(base_name=arg_name, values=arg_value.default, model=self)
             for arg_name, arg_value in inspect.signature(self.func).parameters.items()
-            if (arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD and arg_value.default != arg_value.empty)
+            if (
+                arg_value.kind == arg_value.POSITIONAL_OR_KEYWORD
+                and arg_value.default != arg_value.empty
+            )
         ]
 
     ############# Abstract Methods #################################################################
@@ -44,7 +47,9 @@ class ModelABC(ABC):
         pass
 
     @abstractmethod
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs) -> dict[str, Fitparam]:
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ) -> dict[str, Fitparam]:
         """Guesses initial parameters for the fit. Must be implemented in subclass.
 
         Args:
@@ -133,7 +138,9 @@ class ModelABC(ABC):
                 )
 
             else:
-                raise ValueError(f"Parameter {new_param} not found. Available parameters are {self._full_name_list}")
+                raise ValueError(
+                    f"Parameter {new_param} not found. Available parameters are {self._full_name_list}"
+                )
 
     def set_symbols(self, **symbols: str):
         """Sets the symbols of the parameters.
@@ -198,7 +205,9 @@ class ModelABC(ABC):
             dict[str, Union[float, str]]: A dict of the units of the parameters.
         """
         return {
-            parameter.full_name: convert_unit_to_str_or_float(f=parameter.unit, x=x, y=y)
+            parameter.full_name: convert_unit_to_str_or_float(
+                f=parameter.unit, x=x, y=y
+            )
             for parameter in self.parameters
         }  # type: ignore
 
@@ -280,7 +289,9 @@ class SumModel(ModelABC):
         self.models = self._flatten_models(models)
         self._add_sufixes()
 
-    def _flatten_models(self, models: Union[tuple[ModelABC], list[ModelABC]]) -> list[ModelABC]:
+    def _flatten_models(
+        self, models: Union[tuple[ModelABC], list[ModelABC]]
+    ) -> list[ModelABC]:
         """Flattens the models.
 
         Args:
@@ -302,7 +313,9 @@ class SumModel(ModelABC):
         return flattened_models
 
     def _add_sufixes(self):
-        if duplicats_list := [x for x in self._base_name_list if self._base_name_list.count(x) > 1]:
+        if duplicats_list := [
+            x for x in self._base_name_list if self._base_name_list.count(x) > 1
+        ]:
             for i, model in enumerate(self.models, start=1):
                 if all(item in duplicats_list for item in model._base_name_list):
                     model._suffix = f"_{i}"
@@ -340,7 +353,9 @@ class SumModel(ModelABC):
 
         return func_sum
 
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs):
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], *args, **kwargs
+    ):
         """Returns the guessed parameters of the model.
 
         Args:
@@ -383,7 +398,9 @@ class SumModel(ModelABC):
         # Loop over the models
         for model in self.models:
             # Get the function name and the function string
-            func_name, func_str = model.funcname(*args, **kwargs).replace("$", "").split(" = ")
+            func_name, func_str = (
+                model.funcname(*args, **kwargs).replace("$", "").split(" = ")
+            )
 
             # Add the function name to the function names
             func_names += f"{func_name} +"
@@ -445,7 +462,11 @@ class SumModel(ModelABC):
             p = model._suffix
 
             # Create a dictionary of the keyword arguments for the model
-            model_params = {k.replace(p, ""): v for k, v in params.items() if k in model._full_name_list}
+            model_params = {
+                k.replace(p, ""): v
+                for k, v in params.items()
+                if k in model._full_name_list
+            }
 
             # Get the extrema of the model
             model_name = f"{model.__class__.__name__}{p}"
@@ -617,7 +638,9 @@ class GaussianModel(ModelABC):
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
 
-        return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -648,14 +671,18 @@ class GaussianConstantModel(ModelABC):
         x = np.array(x)
         return amplitude * np.exp(-(((x - center) / max(tiny, sigma)) ** 2)) + offset
 
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) -> dict:
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -> dict:
         if negative_peak is None:
             negative_peak = self.negative_peak
 
         x, y = np.array(x), np.array(y)
         offset = np.mean(y)
         amplitude, center, sigma = guess_from_peak(y - offset, x, negative_peak)
-        return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -686,13 +713,17 @@ class LorentzianModel(ModelABC):
         x = np.array(x)
         return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
 
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) -> dict:
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -> dict:
         if negative_peak is None:
             negative_peak = self.negative_peak
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -722,16 +753,23 @@ class LorentzianConstantModel(ModelABC):
 
     def func(self, x, amplitude=1.0, center=0.0, sigma=1.0, offset=0.0):
         x = np.array(x)
-        return amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2) + offset
+        return (
+            amplitude * sigma**2 / (max(tiny, sigma) ** 2 + (x - center) ** 2)
+            + offset
+        )
 
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) -> dict:
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -> dict:
         if negative_peak is None:
             negative_peak = self.negative_peak
 
         x, y = np.array(x), np.array(y)
         offset = np.mean(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -763,7 +801,9 @@ class LorentzianPolynomialModel(ModelABC):
     ):
 
         super().__init__(**kwargs)
-        self._model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(negative_peak=negative_peak, **kwargs)
+        self._model = PolynomialModel(degree=degree, **kwargs) + LorentzianModel(
+            negative_peak=negative_peak, **kwargs
+        )
 
         self.__dict__.update(self._model.__dict__)
 
@@ -802,13 +842,17 @@ class SplitLorentzianModel(ModelABC):
         amp = 2 * amplitude / (np.pi * (s + r))
         return amp * (ss * (x < center) / (ss + xc2) + rr * (x >= center) / (rr + xc2))
 
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None) -> dict:
+    def guess(
+        self, x: Union[float, Iterable], y: Union[float, Iterable], negative_peak=None
+    ) -> dict:
         if negative_peak is None:
             negative_peak = self.negative_peak
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak, ampscale=1.25)
-        return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, center=center, sigma=sigma, sigma_r=sigma
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -883,7 +927,9 @@ class PolynomialModel(ModelABC):
             return self._find_mulitpolinomial_minima(params)
 
     def _find_mulitpolinomial_minima(self, params: dict):
-        param_values = [p["value"] for p in params.values()][: self.poly_degree + 1][::-1]
+        param_values = [p["value"] for p in params.values()][: self.poly_degree + 1][
+            ::-1
+        ]
 
         np_poly = np.poly1d(param_values)  # Note: polynomials are opposite order
 
@@ -940,7 +986,9 @@ class OscillationModel(ModelABC):
         indices_per_period = np.pi * 2 / w / dx
         std_window = round(indices_per_period)
 
-        phi = np.angle(sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2))))
+        phi = np.angle(
+            sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2)))
+        )
 
         return [a, f, phi, c]
 
@@ -971,7 +1019,11 @@ class OscillationModel(ModelABC):
     def get_period(self, params: dict) -> dict[str, float]:
         if self.angular:
             period = 1 / (2 * np.pi * params["frequency"]["value"])
-            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2 / (2 * np.pi)
+            error = (
+                params["frequency"]["error"]
+                / params["frequency"]["value"] ** 2
+                / (2 * np.pi)
+            )
         else:
             period = 1 / params["frequency"]["value"]
             error = params["frequency"]["error"] / params["frequency"]["value"] ** 2
@@ -995,7 +1047,9 @@ class DampedOscillationModel(ModelABC):
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
-        [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(x, y)
+        [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(
+            x, y
+        )
 
         return self._get_parameters_as_dict(
             amplitude=amplitude,
@@ -1027,7 +1081,12 @@ class DampedOscillationModel(ModelABC):
             if std < (initial_std - noise_level) * np.exp(-1):
                 T = x[i]
                 break
+
+        # print(f"y[0]: {y[0]}, c: {c}, a: {a}, f: {f}, T: {T}")
         p = np.arcsin((y[0] - c) / a)
+
+        if np.isnan(p):
+            p = 0
 
         return [a, T, f, p, c]
 
@@ -1044,7 +1103,7 @@ class DampedOscillationModel(ModelABC):
             "amplitude": "y",
             "frequency": "x**(-1)",
             "phi": "rad",
-            "decay": "x**(-1)",
+            "decay": "x",
             "offset": "y",
         }
 
@@ -1075,7 +1134,9 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
         amplitude = -y.min()
         phase = 0.99
         offset = y.min()
-        return self._get_parameters_as_dict(amplitude=amplitude, phase=phase, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, phase=phase, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -1109,11 +1170,17 @@ class ExponentialDecayModel(ModelABC):
         # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
         # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
 
-        offset = np.mean(y[round(len(y) * 0.9) :])  # Use the last 10% of the data to determine the offset
-        amplitude = np.mean(y[:3]) - offset  # Use the first 3 points to determine the amplitude
+        offset = np.mean(
+            y[round(len(y) * 0.9) :]
+        )  # Use the last 10% of the data to determine the offset
+        amplitude = (
+            np.mean(y[:3]) - offset
+        )  # Use the first 3 points to determine the amplitude
         decay = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
 
-        return self._get_parameters_as_dict(amplitude=amplitude, decay=decay, offset=offset)
+        return self._get_parameters_as_dict(
+            amplitude=amplitude, decay=decay, offset=offset
+        )
 
     def funcname(self, *params) -> str:
         if not params:
@@ -1133,13 +1200,22 @@ class ExponentialDecayModel(ModelABC):
 #                   Gaussian Multiple Model                                                        #
 ####################################################################################################
 class GaussianMultipleModel(ModelABC):
-    def __init__(self, n_peaks=2, negative_peak=False, **kwargs):
+    def __init__(
+        self, n_peaks: Union[str, int] = "auto", negative_peak=False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.n_peaks = n_peaks
         self.negative_peak = negative_peak
+        self._kwargs = kwargs
 
-        self._model = GaussianModel(negative_peak=negative_peak, **kwargs) * n_peaks
-        self.__dict__.update(self._model.__dict__)
+        if isinstance(n_peaks, int):
+            self._model = GaussianModel(negative_peak=negative_peak, **kwargs) * n_peaks
+            self.__dict__.update(self._model.__dict__)
+        else:
+            print(
+                "Warning: n_peaks is not set, using default value 'auto'.",
+                "The function 'guess' must be called before fitting, to set the number of peaks.",
+            )
 
     def func(self, x, *args, **kwargs):
         return self._model.func(x, *args, **kwargs)
@@ -1148,7 +1224,7 @@ class GaussianMultipleModel(ModelABC):
         self,
         x: Union[float, Iterable],
         y: Union[float, Iterable],
-        n_peaks=None,
+        n_peaks: Union[str, int, None] = None,
         negative_peak=None,
     ) -> dict:
         if n_peaks is None:
@@ -1159,6 +1235,15 @@ class GaussianMultipleModel(ModelABC):
         x, y = np.array(x), np.array(y)
 
         guess = guess_from_multipeaks(y=y, x=x, n_peaks=n_peaks, negative=negative_peak)
+
+        if n_peaks == "auto":
+            self.n_peaks = len(guess)
+            self._model = (
+                GaussianModel(negative_peak=negative_peak, **self._kwargs)
+                * self.n_peaks
+            )
+            self.__dict__.update(self._model.__dict__)
+
         return self._get_parameters_as_dict(**guess)
 
     def funcname(self, *params) -> str:
@@ -1176,13 +1261,24 @@ class GaussianMultipleModel(ModelABC):
 #                   Lorentzian Multiple Model                                                      #
 ####################################################################################################
 class LorentzianMultipleModel(ModelABC):
-    def __init__(self, n_peaks=2, negative_peak=False, **kwargs):
+    def __init__(
+        self, n_peaks: Union[str, int] = "auto", negative_peak=False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.n_peaks = n_peaks
         self.negative_peak = negative_peak
+        self._kwargs = kwargs
 
-        self._model = LorentzianModel(negative_peak=negative_peak, **kwargs) * n_peaks
-        self.__dict__.update(self._model.__dict__)
+        if isinstance(n_peaks, int):
+            self._model = (
+                LorentzianModel(negative_peak=negative_peak, **kwargs) * n_peaks
+            )
+            self.__dict__.update(self._model.__dict__)
+        else:
+            print(
+                "Warning: n_peaks is not set, using default value 'auto'.",
+                "The function 'guess' must be called before fitting, to set the number of peaks.",
+            )
 
     def func(self, x, *args, **kwargs):
         return self._model.func(x, *args, **kwargs)
@@ -1191,7 +1287,7 @@ class LorentzianMultipleModel(ModelABC):
         self,
         x: Union[float, Iterable],
         y: Union[float, Iterable],
-        n_peaks=None,
+        n_peaks: Union[str, int, None] = None,
         negative_peak=None,
     ) -> dict:
         if n_peaks is None:
@@ -1202,6 +1298,15 @@ class LorentzianMultipleModel(ModelABC):
         x, y = np.array(x), np.array(y)
 
         guess = guess_from_multipeaks(y=y, x=x, n_peaks=n_peaks, negative=negative_peak)
+
+        if n_peaks == "auto":
+            self.n_peaks = len(guess)
+            self._model = (
+                LorentzianModel(negative_peak=negative_peak, **self._kwargs)
+                * self.n_peaks
+            )
+            self.__dict__.update(self._model.__dict__)
+
         return self._get_parameters_as_dict(**guess)
 
     def funcname(self, *params) -> str:

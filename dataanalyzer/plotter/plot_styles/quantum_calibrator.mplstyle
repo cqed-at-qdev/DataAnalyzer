@@ -1,6 +1,6 @@
 # Author: Malthe Asmus Marciniak Nielsen
 # figure size settings
-font.size: 10
+font.size: 16
 figure.figsize: 14, 8
 
 # gridlines settings
@@ -18,3 +18,9 @@ text.usetex: False
 
 # savefig settings
 savefig.dpi: 400
+
+# color settings
+axes.prop_cycle: cycler('color', ['189BC4', 'FD8719', '762D34', '30A975', '021F52', 'D4002A', '70C6DD', 'FEBF7F', '9A5F65', '81CFAF', '5D7698', 'ED879D'])
+image.cmap: RdYlBu_r
+
+

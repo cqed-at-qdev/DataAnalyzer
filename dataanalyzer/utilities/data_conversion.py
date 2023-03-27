@@ -10,9 +10,7 @@ from dataanalyzer.utilities.valueclass import Valueclass
 ####################################################################################################
 #                   From Valueclass to Dict                                                        #
 ####################################################################################################
-def valueclass2dict(
-    *value: Union[Valueclass, list, tuple, dict], split_complex=True
-) -> dict:
+def valueclass2dict(*value: Union[Valueclass, list, tuple, dict], split_complex=True) -> dict:
     """Converts a Valueclass object to a dict.
 
     Args:
@@ -149,14 +147,12 @@ def valueclass2json(
 ####################################################################################################
 #                   From Json to Valueclass                                                        #
 ####################################################################################################
-def json2valueclass(
-    json_path: str, insepct: bool = False
-) -> Tuple[list[Valueclass], list[Valueclass]]:
+def json2valueclass(json_path: str, inspect: bool = False) -> Tuple[list[Valueclass], list[Valueclass]]:
     """Converts a json file to a Valueclass object.
 
     Args:
         json_path (str): The path to the json file.
-        insepct (bool, optional): If True, the parameters and results are printed. Defaults to False.
+        inspect (bool, optional): If True, the parameters and results are printed. Defaults to False.
 
     Returns:
         Tuple[list[Valueclass], list[Valueclass]]: _description_
@@ -169,10 +165,8 @@ def json2valueclass(
     # Get the parameters and results
     parameters, results = _get_parameters_and_results_from_dict(data_dict)
 
-    # Inspect the results if insepct is True
-    _print_parameters_and_results(
-        parameters, results, insepct=insepct, file_type="Json"
-    )
+    # Inspect the results if inspect is True
+    _print_parameters_and_results(parameters, results, inspect=inspect, file_type="Json")
     return parameters, results
 
 
@@ -188,23 +182,16 @@ def _get_parameters_and_results_from_dict(
         Tuple[list[Valueclass], list[Valueclass]]: The parameters and results.
     """
     # Get the parameters from the data_dict
-    parameters = [
-        Valueclass.fromdict(value)
-        for value in data_dict["experiment_settings"].values()
-    ]
+    parameters = [Valueclass.fromdict(value) for value in data_dict["experiment_settings"].values()]
     # Get the results from the data_dict
-    results = [
-        Valueclass.fromdict(value) for value in data_dict["experiment_results"].values()
-    ]
+    results = [Valueclass.fromdict(value) for value in data_dict["experiment_results"].values()]
     return parameters, results
 
 
 ####################################################################################################
 #                   From Valueclass to Labber                                                      #
 ####################################################################################################
-def valueclass2labber(
-    parameters: list[Valueclass], results: list[Valueclass], output_path: str
-) -> str:
+def valueclass2labber(parameters: list[Valueclass], results: list[Valueclass], output_path: str) -> str:
     """Converts a Valueclass object to a Labber file.
 
     Args:
@@ -222,9 +209,7 @@ def valueclass2labber(
     return _make_inital_Labber_file(output_path, logLog, logStep)
 
 
-def _make_labber_dict(
-    parameters: list[Valueclass], results: list[Valueclass]
-) -> Tuple[list[dict], list[dict]]:
+def _make_labber_dict(parameters: list[Valueclass], results: list[Valueclass]) -> Tuple[list[dict], list[dict]]:
     """Make Labber logStep and logLog dictionaries.
 
     Args:
@@ -235,10 +220,7 @@ def _make_labber_dict(
         Tuple[list[dict], list[dict]]: Labber logStep and logLog dictionaries.
     """
     # Create a list of dictionaries for the step data
-    logStep = [
-        dict(name=data.name, unit=data.unit, values=data.value.tolist())
-        for data in parameters
-    ]
+    logStep = [dict(name=data.name, unit=data.unit, values=data.value.tolist()) for data in parameters]
 
     # Create a list of dictionaries for the log data
     logLog = [
@@ -285,14 +267,12 @@ def _make_inital_Labber_file(path: str, logLog: list[dict], logStep: list[dict])
 ####################################################################################################
 #                   From Labber to Valueclass                                                      #
 ####################################################################################################
-def labber2valueclass(
-    labber_path: str, insepct: bool = False
-) -> Tuple[list[Valueclass], list[Valueclass]]:
+def labber2valueclass(labber_path: str, inspect: bool = False) -> Tuple[list[Valueclass], list[Valueclass]]:
     """Converts a Labber file to a Valueclass object.
 
     Args:
         labber_path (str): The path to the Labber file.
-        insepct (bool, optional): If True, the parameters and results are printed. Defaults to False.
+        inspect (bool, optional): If True, the parameters and results are printed. Defaults to False.
 
     Returns:
         Tuple[list[Valueclass], list[Valueclass]]: The parameters and results.
@@ -306,10 +286,8 @@ def labber2valueclass(
     parameters = _get_parameters(f)
     results = _get_results(f)
 
-    # Inspect the results if insepct is True
-    _print_parameters_and_results(
-        parameters, results, insepct=insepct, file_type="Labber"
-    )
+    # Inspect the results if inspect is True
+    _print_parameters_and_results(parameters, results, inspect=inspect, file_type="Labber")
 
     return parameters, results
 
@@ -479,7 +457,7 @@ def labber2json(labber_path: str, output_path: Optional[str] = None) -> str:
 def _print_parameters_and_results(
     parameters: list[Valueclass],
     results: list[Valueclass],
-    insepct: bool,
+    inspect: bool,
     file_type: str,
 ) -> None:
     """Prints the parameters and results to the console.
@@ -487,12 +465,12 @@ def _print_parameters_and_results(
     Args:
         parameters (list[Valueclass]): list of Valueclass objects containing the parameters
         results (list[Valueclass]): list of Valueclass objects containing the results
-        insepct (bool): If True, the parameters and results are printed to the console
+        inspect (bool): If True, the parameters and results are printed to the console
         file_type (str): The type of file, e.g. Labber or Json
     """
-    if insepct:
+    if inspect:
         # Print the parameters and results to the console
-        print(f"Insepcting {file_type} File...")
+        print(f"inspecting {file_type} File...")
         print_values_from_list("parameters", parameters)
         print_values_from_list("results", results)
 

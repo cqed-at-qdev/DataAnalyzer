@@ -8,7 +8,7 @@ import warnings
 
 
 def format_value(value, decimals):
-    """ 
+    """
     Checks the type of a variable and formats it accordingly.
     Floats has 'decimals' number of decimals.
     """
@@ -22,9 +22,9 @@ def format_value(value, decimals):
 
 
 def values_to_string(values, decimals):
-    """ 
+    """
     Loops over all elements of 'values' and returns list of strings
-    with proper formating according to the function 'format_value'. 
+    with proper formating according to the function 'format_value'.
     """
 
     res = []
@@ -38,16 +38,16 @@ def values_to_string(values, decimals):
 
 
 def len_of_longest_string(s):
-    """ Returns the length of the longest string in a list of strings """
+    """Returns the length of the longest string in a list of strings"""
     return len(max(s, key=len))
 
 
 def nice_string_output(d, extra_spacing=5, decimals=3):
-    """ 
+    """
     Takes a dictionary d consisting of names and values to be properly formatted.
     Makes sure that the distance between the names and the values in the printed
     output has a minimum distance of 'extra_spacing'. One can change the number
-    of decimals using the 'decimals' keyword.  
+    of decimals using the 'decimals' keyword.
     """
 
     names = d.keys()
@@ -59,14 +59,12 @@ def nice_string_output(d, extra_spacing=5, decimals=3):
     string = ""
     for name, value in zip(names, values):
         spacing = extra_spacing + max_values + max_names - len(name) - 1
-        string += "{name:s} {value:>{spacing}} \n".format(
-            name=name, value=value, spacing=spacing
-        )
+        string += "{name:s} {value:>{spacing}} \n".format(name=name, value=value, spacing=spacing)
     return string[:-2]
 
 
 def add_text_to_ax(x_coord, y_coord, string, ax, fontsize=12, color="k"):
-    """ Shortcut to add text to an ax with proper font. Relative coords."""
+    """Shortcut to add text to an ax with proper font. Relative coords."""
     ax.text(
         x_coord,
         y_coord,
@@ -90,6 +88,13 @@ from iminuit import describe  # , Minuit,
 
 def set_var_if_None(var, x):
     return np.array(var) if var is not None else np.ones_like(x)
+
+
+def set_sy_if_None(sy, y):
+    if sy is not None:
+        return np.array(sy)
+    print("Warning: No error given. Using 1 as error.")
+    return np.ones_like(y)
 
 
 def compute_f(f, x, *par):
@@ -116,7 +121,7 @@ class Chi2Regression:  # override the class with a better one
         self.x = np.array(x)
         self.y = np.array(y)
 
-        self.sy = set_var_if_None(sy, self.x)
+        self.sy = set_sy_if_None(sy, self.y)
         self.weights = set_var_if_None(weights, self.x)
         self.func_code = make_func_code(describe(self.f)[1:])
 
@@ -125,7 +130,7 @@ class Chi2Regression:  # override the class with a better one
         # compute the function value
         f = compute_f(self.f, self.x, *par)
 
-        return np.sum(self.weights * (self.y - f) ** 2 / self.sy ** 2)
+        return np.sum(self.weights * (self.y - f) ** 2 / self.sy**2)
 
     def default_errordef(self):
         return 1.0
@@ -136,15 +141,7 @@ def simpson38(f, edges, bw, *arg):
     left38 = f((2.0 * edges[1:] + edges[:-1]) / 3.0, *arg)
     right38 = f((edges[1:] + 2.0 * edges[:-1]) / 3.0, *arg)
 
-    return (
-        bw
-        / 8.0
-        * (
-            np.sum(yedges) * 2.0
-            + np.sum(left38 + right38) * 3.0
-            - (yedges[0] + yedges[-1])
-        )
-    )  # simpson3/8
+    return bw / 8.0 * (np.sum(yedges) * 2.0 + np.sum(left38 + right38) * 3.0 - (yedges[0] + yedges[-1]))  # simpson3/8
 
 
 def integrate1d(f, bound, nint, *arg):
@@ -201,9 +198,7 @@ class UnbinnedLH:  # override the class with a better one
         mask_f_positive = f > 0
 
         # calculate the log of f everyhere where f is positive
-        logf[mask_f_positive] = (
-            np.log(f[mask_f_positive]) * self.weights[mask_f_positive]
-        )
+        logf[mask_f_positive] = np.log(f[mask_f_positive]) * self.weights[mask_f_positive]
 
         # set everywhere else to badvalue
         logf[~mask_f_positive] = self.bad_value
@@ -212,9 +207,7 @@ class UnbinnedLH:  # override the class with a better one
         llh = -np.sum(logf)
 
         if self.extended:
-            extended_term = integrate1d(
-                self.f, self.extended_bound, self.extended_nint, *par
-            )
+            extended_term = integrate1d(self.f, self.extended_bound, self.extended_nint, *par)
             llh += extended_term
 
         return llh
@@ -268,11 +261,9 @@ class BinnedLH:  # override the class with a better one
             self.w2, _ = np.histogram(data, bins, range=bound, weights=None)
 
         elif weighterrors is None:
-            self.w2, _ = np.histogram(data, bins, range=bound, weights=weights ** 2)
+            self.w2, _ = np.histogram(data, bins, range=bound, weights=weights**2)
         else:
-            self.w2, _ = np.histogram(
-                data, bins, range=bound, weights=weighterrors ** 2
-            )
+            self.w2, _ = np.histogram(data, bins, range=bound, weights=weighterrors**2)
         self.badvalue = badvalue
         self.nint_subdiv = nint_subdiv
 

@@ -1,8 +1,10 @@
 # Author: Malthe Asmus Marciniak Nielsen
 from typing import Any, Callable, Optional, Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 import copy
+import pandas as pd
 
 from dataanalyzer.utilities import Valueclass
 
@@ -19,7 +21,14 @@ def matplotlib_decorator(func: Callable[..., Any]):
     ) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
         """Wrapper for matplotlib functions to make them return a Valueclass object."""
 
-        self.ax = self.axs[ax] if ax else self.ax
+        if "cycle_color" in kwargs:
+            mpl_cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+            kwargs["color"] = mpl_cycle[kwargs.pop("cycle_color") % len(mpl_cycle)]
+
+        if isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
 
         x, y, z, xlabel, ylabel, title = _set_all_data(kwargs)
 
@@ -30,6 +39,7 @@ def matplotlib_decorator(func: Callable[..., Any]):
             self.ax.set_prop_cycle(None)
 
         self.ax.set_xlabel(xlabel)
+
         self.ax.set_ylabel(ylabel)
 
         self.metadata += kwargs.pop("metadata", "")
@@ -43,23 +53,24 @@ def matplotlib_decorator(func: Callable[..., Any]):
 
         x, y = _check_and_update_fft(x, y)
 
-        title = kwargs.pop("title", f"{y.name} vs {x.name}")
+        title = kwargs.pop("title", f"{ylabel} vs {x.name}")
 
         return x, y, z, xlabel, ylabel, title
 
     def _set_data(data_name: str, kwargs: dict[str, Any]) -> tuple[Valueclass, str]:
-        # Pop the data from the keyword arguments
         data_float: Union[list, tuple, np.ndarray] = kwargs.pop(data_name, None)
 
-        # If no data was provided, raise an error
-        if data_float is None:
-            raise ValueError(f"{data_name} data must be specified.")
-
         # Convert the data to a Valueclass instance
-        data = Valueclass.fromfloat(data_float, f"{data_name} data")
-        # Set the default label for the data
-        default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
-        # Pop the label from the keyword arguments, if not found use the default label
+        if data_float is not None:
+            if isinstance(data_float, pd.Series):
+                data_float = data_float.values
+            data = Valueclass.fromfloat(data_float, f"{data_name} data")
+            default_label = f"{data.name} [{data.unit}]" if data.unit else data.name
+        else:
+            data = None
+            default_label = ""
+
+        # Set the data label
         label = kwargs.pop(f"{data_name}label", default_label)
 
         # Return the data and the label
@@ -87,6 +98,9 @@ def matplotlib_decorator(func: Callable[..., Any]):
         Returns:
             tuple[Valueclass, Valueclass]: The updated x and y data.
         """
+        if not x or not y:
+            return x, y
+
         if not x.fft_type and not y.fft_type:
             return x, y
 
@@ -120,9 +134,9 @@ def matplotlib_decorator(func: Callable[..., Any]):
     def wrapper(
         self,
         x: Union[Valueclass, list, tuple, np.ndarray],
-        y: Union[Valueclass, list, tuple, np.ndarray],
+        y: Optional[Union[Valueclass, list, tuple, np.ndarray]] = None,
         z: Optional[Union[Valueclass, list, tuple, np.ndarray]] = None,
-        ax: tuple = (),
+        ax: Union[tuple, int] = (),
         *args,
         **kwargs,
     ):
@@ -136,8 +150,10 @@ def matplotlib_decorator(func: Callable[..., Any]):
         """
         x, y, z, kwargs = _matplotlib_general(self, x=x, y=y, z=z, ax=ax, **kwargs)
 
-        if x is None or y is None:
-            raise ValueError("x and y data must be specified.")
+        if not y:
+            func(self, x=x, ax=ax, *args, **kwargs)
+            _plot_legends(self)
+            return
 
         if z:
             self.ax.grid(False)

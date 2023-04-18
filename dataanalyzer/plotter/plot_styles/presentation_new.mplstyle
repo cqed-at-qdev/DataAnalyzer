@@ -1,0 +1,37 @@
+# MATPLOTLIB STYLE FILE
+# AUTHOR: Malthe Asmus Marciniak Nielsen, 2023
+
+# HOW TO USE: 
+# plt.style.use('path/to/this/file.mplstyle')
+
+### FIGURE
+figure.figsize: 4, 4  
+
+### LINES
+lines.linewidth: 2    
+lines.markersize: 4  
+
+### LEGEND
+legend.fontsize: 12
+
+### FONTS
+font.size: 15
+
+### AXES
+axes.grid: True
+axes.linewidth: 1
+
+# Uses costum color cycle. Colors can be selected by color="C#", 
+# where '#' is the number of the color in the cycle, e.g. 
+# color="C0" for the first color in the cycle.
+
+axes.prop_cycle: cycler('color', ['189BC4', 'FD8719', '762D34', '30A975', '021F52', 'D4002A', '70C6DD', 'FEBF7F', '9A5F65', '81CFAF', '5D7698', 'ED879D']) 
+
+### GRID
+grid.linewidth: 1
+grid.linestyle: :
+grid.color: k
+
+### OTHER
+savefig.dpi: 400
+image.cmap: RdYlBu_r

@@ -39,6 +39,7 @@ pol_params = {
     "c4": r.uniform(-number, number),
 }
 
+
 pol_func = fitmodels.PolynomialModel(poly_order)
 
 # Create background polynomial with noise
@@ -56,6 +57,7 @@ for i in range(n_resonators):
 
 
 # Create resonator data
+
 y_res = func_res.func(x, **resonator_params)
 y_data = Valueclass(value=y_pol + y_res, name="Simulated data", unit="V")  # .remove_baseline()
 

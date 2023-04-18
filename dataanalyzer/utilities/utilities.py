@@ -90,9 +90,7 @@ def convert_array_with_unit(
     return converted_array, unit_prefix, conversion_factor
 
 
-def round_on_error(
-    value: Union[float, int], error: Union[float, int], n_digits: int = 1
-) -> str:
+def round_on_error(value: Union[float, int], error: Union[float, int], n_digits: int = 1) -> str:
     """Rounds a value and its error to a given number of significant digits.
 
     Args:
@@ -121,16 +119,10 @@ def round_on_error(
     value_rounded = round(value, power_round)
 
     # Return the rounded value and error as a string
-    return (
-        f"{value:.{power_round}f} ± {error:.{power_round}f}"
-        if power < 0
-        else f"{value_rounded} ± {error_rounded}"
-    )
+    return f"{value:.{power_round}f} ± {error:.{power_round}f}" if power < 0 else f"{value_rounded} ± {error_rounded}"
 
 
-def convert_unit_to_str_or_float(
-    f: str, x: Union[float, str, None], y: Union[float, str, None]
-):
+def convert_unit_to_str_or_float(f: str, x: Union[float, str, None], y: Union[float, str, None]):
     if type(f) != str:
         raise ValueError(f"f must be a string, not {type(f)}: {f}")
 
@@ -154,3 +146,42 @@ def convert_unit_to_str_or_float(
             return evalue
         else:
             raise ValueError("f must evaluate to a number")
+
+
+def group_by_attr(params: list, attr: str):
+    """Sorts a list of Valueclasses into groups by a given attribute."""
+    params_sorted = sorted(params, key=lambda x: getattr(x, attr))
+    sort_attr = [getattr(param, attr) for param in params_sorted]
+    param_groups = []
+    for i, param in enumerate(params_sorted):
+        if i == 0 or sort_attr[i] != sort_attr[i - 1]:
+            param_groups.append([param])
+        else:
+            param_groups[-1].append(param)
+    return param_groups
+
+
+def split_by_attr(parms: list, attr: str, value=None):
+    """Splits a list of Valueclasses into two groups by wether a given attribute equals value."""
+    group_with = []
+    group_without = []
+
+    for param in parms:
+        if getattr(param, attr) == value:
+            group_with.append(param)
+        else:
+            group_without.append(param)
+    return group_with, group_without
+
+
+def split_by_condition(params: list, condition: object):
+    """Splits a list of Valueclasses into two groups by wether a given condition is true."""
+    group_with = []
+    group_without = []
+
+    for param in params:
+        if condition(param):
+            group_with.append(param)
+        else:
+            group_without.append(param)
+    return group_with, group_without

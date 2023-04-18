@@ -164,7 +164,8 @@ class Plotter:
             if flip_axis:
                 x, y = y, x
 
-            self.scatter(x, y, ax=ax, label="Data")
+            self.scatter(x, y, ax=ax, label="Data", **kwargs.pop("kwargs_data", {}))
+            #self.errorbar(x, y, ax=ax, label="Data", **kwargs.pop("kwargs_data", {}), ls="", marker=".") TODO
 
         if kwargs.pop("plot_guess", True):
             x_guess, y_guess = fit_obejct.get_guess_array(ls_start, ls_stop, ls_steps)
@@ -276,7 +277,7 @@ class Plotter:
             y (Valueclass): y data to plot. This data is converted to a Valueclass object if it is not already one.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        kwargs.setdefault("fmt", ".")
+        # kwargs.setdefault("fmt", ".") # TODO: fmt is deprecated, Malthe is there a reason for using this?
         kwargs.setdefault("elinewidth", 2)
         kwargs.setdefault("capsize", 3)
 
@@ -319,7 +320,7 @@ class Plotter:
             ValueError: If plot_type is not a valid option.
         """
         keep_colorbar = kwargs.pop("keep_colorbar", False)
-        kwargs.setdefault("cmap", "RdBu")
+        kwargs.setdefault("cmap", "RdBu_r")
         kwargs.setdefault("vmin", np.min(z.value))
         kwargs.setdefault("vmax", np.max(z.value))
 

@@ -44,9 +44,7 @@ class Valueclass:
             str : String representation of the Valueclass object.
         """
         error = np.nan if np.isnan(self.error).all() else self.error
-        return (
-            f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
-        )
+        return f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
 
     def __getitem__(self, key) -> "Valueclass":
         """Returns a slice of the Valueclass object.
@@ -85,21 +83,13 @@ class Valueclass:
         Returns:
             Valueclass: Sum of the two objects.
         """
+        selfcopy = self.copy()
         if "Valueclass" not in str(type(other)):
-            return Valueclass(
-                self.value + other,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            selfcopy.value += other
         else:
-            return Valueclass(
-                self.value + other.value,
-                np.sqrt(self.error**2 + other.error**2),
-                self.name,
-                self.unit,
-            )
+            selfcopy.value += other.value
+            selfcopy.error = np.sqrt(self.error**2 + other.error**2)
+        return selfcopy
 
     def __sub__(self, other) -> "Valueclass":
         """Subtracts two Valueclass objects or a Valueclass object and a float.
@@ -110,68 +100,48 @@ class Valueclass:
         Returns:
             Valueclass: Difference of the two objects.
         """
+        selfcopy = self.copy()
         if "Valueclass" not in str(type(other)):
-            return Valueclass(
-                self.value - other,
-                self.error,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            selfcopy.value -= other
         else:
-            return Valueclass(
-                self.value - other.value,
-                np.sqrt(self.error**2 + other.error**2),
-                self.name,
-                self.unit,
-            )
+            selfcopy.value -= other.value
+            selfcopy.error = np.sqrt(self.error**2 + other.error**2)
+        return selfcopy
 
     def __mul__(self, other) -> "Valueclass":
+        selfcopy = self.copy()
         if "Valueclass" not in str(type(other)):
-            return Valueclass(
-                self.value * other,
-                self.error * other,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            selfcopy.value *= other
+            selfcopy.error *= other
         else:
             return Valueclass(
                 self.value * other.value,
-                np.sqrt(
-                    (self.error * other.value) ** 2 + (self.value * other.error) ** 2
-                ),
+                np.sqrt((self.error * other.value) ** 2 + (self.value * other.error) ** 2),
                 self.name,
                 self.unit,
             )
+        return selfcopy
 
     def __truediv__(self, other) -> "Valueclass":
+        selfcopy = self.copy()
         if "Valueclass" not in str(type(other)):
-            return Valueclass(
-                self.value / other,
-                self.error / other,
-                self.name,
-                self.unit,
-                self.fft_type,
-            )
+            selfcopy.value /= other
+            selfcopy.error /= other
         else:
             return Valueclass(
                 self.value / other.value,
-                np.sqrt(
-                    (self.error / other.value) ** 2
-                    + (self.value * other.error / other.value**2) ** 2
-                ),
+                np.sqrt((self.error / other.value) ** 2 + (self.value * other.error / other.value**2) ** 2),
                 self.name,
                 self.unit,
             )
+        return selfcopy
 
     def __pow__(self, other) -> "Valueclass":
+        selfcopy = self.copy()
         if "Valueclass" not in str(type(other)):
             return Valueclass(
                 self.value**other,
-                self.error
-                * other
-                * self.value ** (other - 1),  # TODO: make correct error propagation
+                self.error * other * self.value ** (other - 1),  # TODO: make correct error propagation
                 self.name,
                 self.unit,
             )
@@ -180,12 +150,12 @@ class Valueclass:
                 self.value**other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value**other.value * other.error * np.log(self.value))
-                    ** 2
+                    + (self.value**other.value * other.error * np.log(self.value)) ** 2
                 ),
                 self.name,
                 self.unit,
             )
+        return selfcopy
 
     def __radd__(self, other) -> "Valueclass":
         return self + other
@@ -197,22 +167,10 @@ class Valueclass:
         return self * other
 
     def __rtruediv__(self, other) -> "Valueclass":
-        return Valueclass(
-            other / self.value,
-            other * self.error / self.value**2,
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        return self / other
 
     def __rpow__(self, other) -> "Valueclass":
-        return Valueclass(
-            other**self.value,
-            other**self.value * self.error * np.log(other),
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        return self**other
 
     def __len__(self):
         return len(self.value)
@@ -260,11 +218,7 @@ class Valueclass:
             error (Union[float, list, tuple, np.ndarray]): Error to set.
         """
         if not hasattr(self, "_error") or self._error.shape != np.shape(self.value):
-            self._error = (
-                np.full(np.shape(self.value), np.nan)
-                if self.value.size
-                else np.empty(0)
-            )
+            self._error = np.full(np.shape(self.value), np.nan) if self.value.size else np.empty(0)
 
         if np.iscomplexobj(error):
             self._error.__setattr__("dtype", np.complex128)
@@ -373,9 +327,7 @@ class Valueclass:
 
     @property
     def T(self):
-        return Valueclass(
-            self.value.T, self.error.T, self.name, self.unit, self.fft_type
-        )
+        return Valueclass(self.value.T, self.error.T, self.name, self.unit, self.fft_type)
 
     @property
     def sprt(self):
@@ -390,17 +342,21 @@ class Valueclass:
     ####################################################################################################
     #                   Math (Simple) Functions                                                        #
     ####################################################################################################
-    def mean(self, axis=None) -> "Valueclass":
-        copy = self.copy()
-        copy.value = np.mean(self.value, axis=axis)
-        copy.error = np.mean(self.error, axis=axis)
-        return copy
+    def mean(self, axis=None):  # TODO: this doesn't work for complex values + error of mean is wrong
+        return Valueclass(
+            np.mean(self.value, axis=axis),
+            np.mean(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
 
-    def std(self, axis=None) -> "Valueclass":
-        copy = self.copy()
-        copy.value = np.std(self.value, axis=axis)
-        copy.error = np.std(self.error, axis=axis)
-        return copy
+    def std(self, axis=None):  # TODO: Error on standard deviation is not correct
+        return Valueclass(
+            np.std(self.value, axis=axis),
+            np.std(self.error, axis=axis),
+            self.name,
+            self.unit,
+        )
 
     def min(self, axis=None) -> np.ndarray:
         return np.min(self.value, axis=axis)
@@ -443,17 +399,20 @@ class Valueclass:
         clip_value=True,
         clip_error=True,
     ) -> "Valueclass":
-
         v_max = v_max or np.max(self.value)
         e_max = e_max or np.max(self.error)
 
-        copy = self.copy()
-        copy.value = (
-            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        value = np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        error = np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+
+        return Valueclass(
+            value,
+            error,
+            self.name,
+            self.unit,
+            self.fft_type,
         )
-        copy.error = (
-            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
-        )
+        copy.error = np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
         return copy
 
     def round(self, decimals=0, out_value=None, out_error=None) -> "Valueclass":
@@ -462,19 +421,13 @@ class Valueclass:
         copy.error = np.round(self.error, decimals, out_error)
         return copy
 
-    def sort(
-        self, axis=-1, sort_by="value", kind=None, order=None, reverse=False
-    ) -> "Valueclass":
+    def sort(self, axis=-1, sort_by="value", kind=None, order=None, reverse=False) -> "Valueclass":
         sign = -1 if reverse else 1
 
         if sort_by == "value":
-            return self[
-                np.argsort(sign * self.value, axis=axis, kind=kind, order=order)
-            ]
+            return self[np.argsort(sign * self.value, axis=axis, kind=kind, order=order)]
         elif sort_by == "error":
-            return self[
-                np.argsort(sign * self.error, axis=axis, kind=kind, order=order)
-            ]
+            return self[np.argsort(sign * self.error, axis=axis, kind=kind, order=order)]
         else:
             raise ValueError("sort_by must be either 'value' or 'error'")
 
@@ -485,24 +438,87 @@ class Valueclass:
         return copy
 
     ####################################################################################################
-    #                   Math (Advanced) Functions                                                      #
+    #                   Filter Functions                                                               #
     ####################################################################################################
-    def remove_outliers(
-        self, sigma: Union[float, int] = 3, axis=None, return_mask=True, converge=True
-    ) -> "Valueclass":
-        mask = np.abs(self.value - np.mean(self.value, axis=axis)) < sigma * np.std(
-            self.value, axis=axis
+    def savgol(
+        self,
+        x=None,
+        peak_width=None,
+        N=3,
+        return_baseline=False,
+        average=False,
+        axis=0,
+        **kwargs,
+    ):
+        if isinstance(x, Valueclass):
+            x = x.value
+
+        x = np.arange(self.value.size) if x is None else np.array(x)
+
+        if peak_width is None:
+            peak_width = (np.max(x) - np.min(x)) / 15
+
+        sigma_factor = kwargs.pop("sigma_factor", 10)
+        sigma = kwargs.pop("sigma", peak_width * sigma_factor)
+
+        filter_func = self._savgol_filter_1d
+        return self._genereal_filer_remover(
+            filter_func=filter_func,
+            x=x,
+            sigma=sigma,
+            N=N,
+            axis=axis,
+            return_baseline=return_baseline,
+            average=average,
+            **kwargs,
         )
 
-        if converge:
-            mask_temp = np.ones_like(mask)
-            while not np.all(mask == mask_temp):
-                mask_temp = mask
-                mask = np.abs(self.value - np.mean(self.value[mask])) < sigma * np.std(
-                    self.value[mask]
-                )
+    def _savgol_filter_1d(self, x, y, sigma, N, x_output=None):
+        """Applies a Savitzky–Golay filter [1] to the input data, fitting a weighted degree-N
+        polynomial [2] with a Gaussian weighing function with standard deviation sigma around each point.
+        If x_out is specified the data is interpolated to the points of x_out.
+        [1] https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter
+        [2] https://en.wikipedia.org/wiki/Weighted_least_squares
+        """
 
-        return mask if return_mask else self[mask]
+        def _gaussian_filter(x, sigma):
+            return np.exp(-(x**2) / (2 * sigma**2))
+
+        if x_output is None:
+            x_output = x
+
+        xdiff_list = [x - x_out_i for x_out_i in x_output]
+        X_list = [np.vander(xdiff, N=N, increasing=True) for xdiff in xdiff_list]
+        w_list = [_gaussian_filter(x, sigma=sigma) for x in xdiff_list]
+        Xp_list = [np.diag(w) @ X for w, X in zip(w_list, X_list)]
+        yp_list = [w * y for w in w_list]
+        Xp_inv_list = [np.linalg.pinv(Xp) for Xp in Xp_list]
+        return np.array([Xp_inv_list[i][0] @ yp_list[i] for i in range(len(yp_list))])
+
+    def savgol_removed_outliers(self, x, x_output=None, **kwargs):
+        """Removes outliers from the data using a Savitzky–Golay filter"""
+        max_iterations = kwargs.pop("max_iterations", 10)
+        if isinstance(x, Valueclass):
+            x = x.value
+        if x_output is None:
+            x_output = x
+        dx = x[1] - x[0]
+        width = dx / 4
+
+        converged = False
+        mask = np.ones_like(x, dtype=bool)
+        iteration = 0
+        while not (converged and iteration < max_iterations):
+            iteration += 1
+            filtered = self[mask].savgol(x[mask], peak_width=width, return_baseline=True, x_output=x)
+            baseline_removed = self - filtered
+            new_mask = baseline_removed.remove_outliers(return_mask=True)
+            if np.all(new_mask == mask):
+                converged = True
+            mask = new_mask
+
+        filtered_output = self[mask].savgol(x[mask], peak_width=width, return_baseline=True, x_output=x_output)
+        return filtered_output, mask
 
     def remove_baseline(
         self,
@@ -512,44 +528,19 @@ class Valueclass:
         axis=0,
         **kwargs,
     ) -> "Valueclass":
+        kwargs.setdefault("axis_name", "(Baseline)")
+        filter_func = self._remove_baseline_1d
 
-        if self.value.ndim == 1:
-            x = kwargs.pop("x", np.arange(len(self.value)))
-            bkg = self._remove_single_baseline(
-                x=x, y=self.value, baseline_type=baseline_type, **kwargs
-            )
+        return self._genereal_filer_remover(
+            filter_func,
+            baseline_type=baseline_type,
+            return_baseline=return_baseline,
+            average=average,
+            axis=axis,
+            **kwargs,
+        )
 
-        else:
-            y = self.value.T if axis == 1 else self.value
-            x = kwargs.pop("x", np.arange(y.shape[0]))
-
-            if average:
-                bkg_one = self._remove_single_baseline(
-                    x=x, y=np.mean(y, axis=1), baseline_type=baseline_type, **kwargs
-                )
-                bkg = np.vstack([bkg_one] * y.shape[1]).T
-            else:
-                bkg = np.zeros(y.shape)
-                for i in range(y.shape[1]):
-                    bkg[:, i] = self._remove_single_baseline(
-                        x=x, y=y[:, i], baseline_type=baseline_type, **kwargs
-                    )
-
-            if axis == 1:
-                bkg = bkg.T
-
-        copy = self.copy()
-
-        if return_baseline:
-            copy.value = bkg
-            copy.name = f"{baseline_type} baseline"
-            return copy
-
-        copy.value = self.value - bkg  # type: ignore
-        copy.name = f"{self.name} - {baseline_type} baseline"
-        return copy
-
-    def _remove_single_baseline(self, x, y, baseline_type, **kwargs) -> np.ndarray:
+    def _remove_baseline_1d(self, x, y, baseline_type, **kwargs):
         baseline_fitter = Baseline(x_data=x)
 
         if baseline_type == "modpoly":
@@ -561,12 +552,62 @@ class Valueclass:
         elif baseline_type == "snip":
             bkg = baseline_fitter.snip(y, **kwargs)
         else:
-            raise ValueError(
-                "Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'."
-            )
+            raise ValueError("Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'.")
 
         return bkg[0]
 
+    def _genereal_filer_remover(
+        self,
+        filter_func,
+        x=None,
+        axis=0,
+        return_baseline=False,
+        average=False,
+        **kwargs,
+    ) -> "Valueclass":
+        axis_name = kwargs.pop("axis_name", "(Filtered)")
+
+        if self.value.ndim == 1:
+            x = np.arange(len(self.value)) if x is None else x
+            bkg = filter_func(x=x, y=self.value, **kwargs)
+
+        else:
+            y = self.value.T if axis == 1 else self.value
+            x = kwargs.pop("x", np.arange(y.shape[0]))
+
+            if average:
+                bkg_one = filter_func(x=x, y=np.mean(y, axis=1), **kwargs)
+                bkg = np.vstack([bkg_one] * y.shape[1]).T
+            else:
+                bkg = np.zeros(y.shape)
+                for i in range(y.shape[1]):
+                    bkg[:, i] = filter_func(x=x, y=y[:, i], **kwargs)
+
+            if axis == 1:
+                bkg = bkg.T
+
+        self_copy = self.copy()
+
+        if return_baseline:
+            return Valueclass(bkg, name=self.name + f" {axis_name}", unit=self.unit)
+
+        self_copy.value -= bkg
+        return self_copy
+
+    def remove_outliers(self, sigma=3, axis=None, return_mask=False, converge=True):
+        mask = np.abs(self.value - np.mean(self.value, axis=axis)) < sigma * np.std(self.value, axis=axis)
+
+        if converge:
+            mask_temp = np.ones_like(mask)
+            while not np.all(mask == mask_temp):
+                mask_temp = mask
+                mask = np.abs(self.value - np.mean(self.value[mask])) < sigma * np.std(self.value[mask])
+
+        return mask if return_mask else self[mask]
+
+    ####################################################################################################
+    #                   Math (Advanced) Functions                                                      #
+    ####################################################################################################
     @property
     def db(self) -> "Valueclass":
         copy = self.copy()
@@ -606,11 +647,8 @@ class Valueclass:
         return copy
 
     @property
-    def substract_mean(self) -> "Valueclass":
-        copy = self.copy()
-        copy.value = self.value - np.mean(self.value)
-        copy.error = self.error
-        return copy
+    def substract_mean(self):
+        return Valueclass(self.value - np.mean(self.value), self.error, self.name, self.unit)
 
     @property
     def ddx(self) -> "Valueclass":  # TODO: Chack if this is correct
@@ -623,8 +661,15 @@ class Valueclass:
     def ddxx(self) -> "Valueclass":
         return self.ddx.ddx
 
-    def norm_zero_to_one(self, axis=None) -> "Valueclass":
-        scale = np.max(self.value, axis=axis) - np.min(self.value, axis=axis)
+    def norm_zero_to_one(self, axis=None):
+        return Valueclass(
+            (self.value - np.min(self.value, axis=axis))
+            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.error / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
+            self.name,
+            self.unit,
+            self.fft_type,
+        )
 
         copy = self.copy()
         copy.value = (self.value - np.min(self.value, axis=axis)) / scale
@@ -658,20 +703,12 @@ class Valueclass:
             copy.value = value
 
         elif operation == "average":
-            copy.value = np.tile(
-                np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)
-            )
-            copy.error = np.tile(
-                np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)
-            )
+            copy.value = np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1))
+            copy.error = np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1))
 
         elif operation == "standard deviation":
-            copy.value = np.tile(
-                np.std(self.value, axis=0), (np.shape(self.value)[0], 1)
-            )
-            copy.error = np.tile(
-                np.std(self.error, axis=0), (np.shape(self.value)[0], 1)
-            )
+            copy.value = np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1))
+            copy.error = np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1))
 
         else:
             raise ValueError(
@@ -824,27 +861,25 @@ class Valueclass:
         self,
         algin: bool = True,
         scale_values: bool = True,
-        name_width=40,
+        name_width=30,
         size_width=7,
         decimals=2,
-    ) -> str:
+        string_type="metadata",
+    ):
         """Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values."""
 
-        def _getstr(self, scale_values: bool = True):
+        def _getstr(self, scale_values: bool = True, decimals: int = 2):
+            if self.value.dtype == int:
+                decimals = 0
+
             value, unit_prefix, conversion_factor = self.value, "", 1
             if scale_values and self.has_unit:
-                value, unit_prefix, conversion_factor = convert_array_with_unit(
-                    self.value
-                )
+                value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
 
             if self.value.size > 1:
-                return f"{self.name}: {self.value.size}; {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
+                return f"{self.name}: ({self.value.size}); {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
 
-            value = (
-                value[0]
-                if np.isnan(self.error)
-                else round_on_error(value[0], self.error[0] * conversion_factor)
-            )
+            value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
             return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
 
         def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
@@ -854,10 +889,21 @@ class Valueclass:
             (name_str, vstr) = vstr.split(":") if ":" in vstr else ("", vstr)
             (size_str, vstr) = vstr.split(";") if ";" in vstr else ("", vstr)
 
-            return f"{name_str : <{name_width}}{size_str : <{size_width}}{vstr}"
+            return f"{name_str : <{name_width}}{vstr}{size_str : <{size_width}}"
 
-        vstr = _getstr(self, scale_values=scale_values)
-        return _alginstr(vstr, algin, name_width, size_width)
+        def _getstr_value(self, scale_values: bool = True, decimals: int = 2):
+            # string for printing only the value of the parameter
+            value, unit_prefix, conversion_factor = self.value, "", 1
+            if scale_values and self.has_unit:
+                value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
+            value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
+            return f"{value:.{decimals}f} {unit_prefix}{self.unit}"
+
+        if string_type == "metadata":
+            vstr = _getstr(self, scale_values=scale_values, decimals=decimals)
+            return _alginstr(vstr, algin, name_width, size_width)
+        elif string_type == "value":
+            return _getstr_value(self, scale_values=scale_values, decimals=decimals)
 
     @staticmethod
     def fromdict(newdict: dict) -> "Valueclass":
@@ -983,14 +1029,8 @@ class Valueclass:
             Valueclass: The converted dataframe.
         """
         if isinstance(df, pd.DataFrame):
-            value = (
-                df[value_col].to_numpy() if value_col in df.columns else df.to_numpy()
-            )
-            error = (
-                df[error_col].to_numpy()
-                if error_col in df.columns
-                else np.zeros_like(value)
-            )
+            value = df[value_col].to_numpy() if value_col in df.columns else df.to_numpy()
+            error = df[error_col].to_numpy() if error_col in df.columns else np.zeros_like(value)
 
         elif isinstance(df, pd.Series):
             value = df.to_numpy()
@@ -1006,6 +1046,10 @@ class Valueclass:
 
     def copy(self) -> "Valueclass":
         return deepcopy(self)
+
+    def astype(self, dtype, **kwargs):
+        self.value = self.value.astype(dtype, **kwargs)
+        return self
 
     ####################################################################################################
     #                   Conversion Functions                                                           #
@@ -1034,16 +1078,8 @@ if __name__ == "__main__":
     # Test the Valueclass class. (Mean fucntion)
     import numpy as np
 
-    # Create a Valueclass object.
-    v = Valueclass(
-        name="Test",
-        unit="V",
-        value=np.array([1, 2, 3, 4, 5]),
-        error=np.array([0.1, 0.2, 0.3, 0.4, 0.5]),
-    )
+    test = Valueclass(name="test", unit="V", value=y)
+    test.plot()
+    test.remove_outliers(sigma=3, converge=True).plot()
 
-    # Print the Valueclass object.
-    print(v)
-
-    # Print the mean of the Valueclass object.
-    print(v.mean())
+    test = Valueclass(name="test", unit="V", value=y)

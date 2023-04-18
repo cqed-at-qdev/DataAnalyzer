@@ -1424,7 +1424,9 @@ class SincModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"f(x) = {params[0]} \cdot \sinc(\frac{{\pi(x - {params[1]})}}{{{params[2]}}}) + {params[3]}"
+        return (
+            rf"$f(x) = {params[0]} \cdot \mathrm{{sinc}}(\frac{{\pi(x - {params[1]})}}{{{params[2]}}}) + {params[3]}$"
+        )
 
     @property
     def units(self) -> dict[str, str]:

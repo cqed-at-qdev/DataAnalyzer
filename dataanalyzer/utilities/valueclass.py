@@ -345,7 +345,7 @@ class Valueclass:
     def mean(self, axis=None):  # TODO: this doesn't work for complex values + error of mean is wrong
         return Valueclass(
             np.mean(self.value, axis=axis),
-            np.mean(self.error, axis=axis),
+            np.std(self.value, axis=axis) / np.sqrt(self.value.shape[axis]),
             self.name,
             self.unit,
         )

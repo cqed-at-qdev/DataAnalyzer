@@ -342,21 +342,17 @@ class Valueclass:
     ####################################################################################################
     #                   Math (Simple) Functions                                                        #
     ####################################################################################################
-    def mean(self, axis=None):  # TODO: this doesn't work for complex values + error of mean is wrong
-        return Valueclass(
-            np.mean(self.value, axis=axis),
-            np.std(self.value, axis=axis) / np.sqrt(self.value.shape[axis]),
-            self.name,
-            self.unit,
-        )
+    def mean(self, axis=None) -> "Valueclass":
+        copy = self.copy()
+        copy.value = np.mean(self.value, axis=axis)
+        copy.error = np.std(self.value, axis=axis)
+        return copy
 
-    def std(self, axis=None):  # TODO: Error on standard deviation is not correct
-        return Valueclass(
-            np.std(self.value, axis=axis),
-            np.std(self.error, axis=axis),
-            self.name,
-            self.unit,
-        )
+    def std(self, axis=None) -> "Valueclass":
+        copy = self.copy()
+        copy.value = np.std(self.value, axis=axis)
+        copy.error = np.std(self.error, axis=axis)
+        return copy
 
     def min(self, axis=None) -> np.ndarray:
         return np.min(self.value, axis=axis)

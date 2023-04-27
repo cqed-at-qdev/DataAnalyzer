@@ -185,3 +185,8 @@ def split_by_condition(params: list, condition: object):
         else:
             group_without.append(param)
     return group_with, group_without
+
+
+def list_to_dict(params: list):
+    """Converts a list of Valueclasses into a dictionary with Valueclass names as keys."""
+    return {param.name: param for param in params}

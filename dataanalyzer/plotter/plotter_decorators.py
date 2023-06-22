@@ -18,16 +18,17 @@ def matplotlib_decorator(
         func: The function to be decorated.
     """
 
-    def _matplotlib_general(
-        self, ax=None, **kwargs
-    ) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
+    def _matplotlib_general(self, ax=None, **kwargs) -> tuple[Valueclass, Valueclass, Optional[Valueclass], dict]:
         """Wrapper for matplotlib functions to make them return a Valueclass object."""
 
         if "cycle_color" in kwargs:
             mpl_cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
             kwargs["color"] = mpl_cycle[kwargs.pop("cycle_color") % len(mpl_cycle)]
 
-        if isinstance(ax, int):
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
             self.ax = self.axs.flatten()[ax]
         else:
             self.ax = self.axs[ax] if ax else self.ax
@@ -55,7 +56,7 @@ def matplotlib_decorator(
 
         x, y = _check_and_update_fft(x, y)
 
-        title = kwargs.pop("title", f"{ylabel} vs {x.name}")
+        title = kwargs.pop("title", "")
 
         return x, y, z, xlabel, ylabel, title
 
@@ -85,9 +86,7 @@ def matplotlib_decorator(
             return Valueclass.fromfloat(data_float, f"{data_name} data")
         return None
 
-    def _check_and_update_fft(
-        x: Valueclass, y: Valueclass
-    ) -> tuple[Valueclass, Valueclass]:
+    def _check_and_update_fft(x: Valueclass, y: Valueclass) -> tuple[Valueclass, Valueclass]:
         """Checks if the x and y data are fft or fftfreq data and updates them accordingly.
 
         Args:
@@ -107,31 +106,25 @@ def matplotlib_decorator(
             return x, y
 
         if x.fft_type == y.fft_type:
-            raise ValueError(
-                f"The x and y data cannot both be same fft_type ({x.fft_type})."
-            )
+            raise ValueError(f"The x and y data cannot both be same fft_type ({x.fft_type}).")
 
         if not x.fft_type:
-            x = (
-                copy.deepcopy(x.fftfreq)
-                if y.fft_type == "fft_y"
-                else copy.deepcopy(x.fft)
-            )
+            x = copy.deepcopy(x.fftfreq) if y.fft_type == "fft_y" else copy.deepcopy(x.fft)
 
         elif not y.fft_type:
-            y = (
-                copy.deepcopy(y.fftfreq)
-                if x.fft_type == "fft_y"
-                else copy.deepcopy(y.fft)
-            )
+            y = copy.deepcopy(y.fftfreq) if x.fft_type == "fft_y" else copy.deepcopy(y.fft)
 
         return x, y
 
     def _plot_legends(self):
         """Adds legends to the plot if the user has specified them."""
         for ax in self.axs.flatten():
-            if ax.get_legend_handles_labels() != ([], []):
-                ax.legend()
+            if ax.get_legend_handles_labels() != ([], []) and not hasattr(ax, "bloch"):
+                ax.legend()  # bbox_to_anchor=(1.04, 1), loc="upper left"
+
+            if hasattr(ax, "subax"):
+                if ax.subax.get_legend_handles_labels() != ([], []):
+                    ax.subax.legend()  # bbox_to_anchor=(1.04, 1), loc="upper left"
 
     def wrapper(
         self,

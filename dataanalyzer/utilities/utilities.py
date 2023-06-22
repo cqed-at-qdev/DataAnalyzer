@@ -187,6 +187,7 @@ def split_by_condition(params: list, condition: object):
     return group_with, group_without
 
 
-def list_to_dict(params: list):
-    """Converts a list of Valueclasses into a dictionary with Valueclass names as keys."""
-    return {param.name: param for param in params}
+def sort_by(params: list, attr: str):
+    """Sorts a list of Valueclasses by a given attribute."""
+    idx_max = max(0 if getattr(param, attr) == None else getattr(param, attr) for param in params)
+    return sorted(params, key=lambda x: idx_max + 1 if getattr(x, attr) == None else getattr(x, attr))

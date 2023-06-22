@@ -4,6 +4,7 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Iterable, Union
 import numpy as np
+import scipy
 
 from dataanalyzer.fitter.fitter_classsetup import *
 from dataanalyzer.utilities.utilities import convert_unit_to_str_or_float
@@ -675,7 +676,7 @@ class GaussianConstantModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}"
+        return rf"$f(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2) + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -961,12 +962,13 @@ class OscillationModel(ModelABC):
         c = y.mean()
         yhat = fftpack.rfft(y - y.mean())
         idx = (yhat**2).argmax()
-        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        dx = np.diff(x).mean()
+        freqs = fftpack.rfftfreq(len(x), d=dx / (2 * np.pi))
         w = freqs[idx]
         f = w if self.angular else w / (2 * np.pi)
 
-        dx = x[1] - x[0]
         indices_per_period = np.pi * 2 / w / dx
+
         std_window = round(indices_per_period)
 
         phi = np.angle(sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2))))
@@ -1043,10 +1045,11 @@ class DampedOscillationModel(ModelABC):
         T = x[round(len(x) / 2)]
         yhat = fftpack.rfft(y - y.mean())
         idx = (yhat**2).argmax()
-        freqs = fftpack.rfftfreq(len(x), d=(x[1] - x[0]) / (2 * np.pi))
+        dx = np.diff(x).mean()
+        freqs = fftpack.rfftfreq(len(x), d=dx / (2 * np.pi))
         w = freqs[idx]
         f = w if self.angular else w / (2 * np.pi)
-        dx = x[1] - x[0]
+
         indices_per_period = np.pi * 2 / w / dx
         std_window = round(indices_per_period)
         initial_std = np.std(y[:std_window])
@@ -1248,6 +1251,43 @@ class ExponentialDecayModel(ModelABC):
 
 
 ####################################################################################################
+#                   RB Decay Model                                                                 #
+####################################################################################################
+class RBDecayModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.name = "RB Decay"
+
+    def func(self, x, amplitude=1.0, p=1.0, offset=0.0):
+        x = np.array(x)
+        p = not_zero(p)
+        return amplitude * p**x + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+
+        offset = np.mean(y[round(len(y) * 0.9) :])  # Use the last 10% of the data to determine the offset
+        amplitude = np.mean(y[:3]) - offset  # Use the first 3 points to determine the amplitude
+        p = x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+        p = 1 - 1 / p
+
+        return self._get_parameters_as_dict(amplitude=amplitude, p=p, offset=offset)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$\mathrm{{f(x)}} = {params[0]} {params[1]}^x + {params[2]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"amplitude": "y", "p": "x", "offset": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {"amplitude": "A", "p": "p", "offset": "c"}
+
+
+####################################################################################################
 #                   Gaussian Multiple Model                                                        #
 ####################################################################################################
 class GaussianMultipleModel(ModelABC):
@@ -1402,21 +1442,22 @@ class SincModel(ModelABC):
 
     def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
         x, y = np.array(x), np.array(y)
-
         offset = np.mean(y)
-        x0 = 0.1 * (np.max(x) - np.min(x))
 
         if self.negative_peak:
-            amplitude = np.min(y) - np.mean(y)
-            xb = x[np.argmin(y)]
+            amplitude = np.min(y) - offset
+            center = x[np.argmin(y)]
         else:
             amplitude = np.max(y) - offset
-            xb = x[np.argmax(y)]
+            center = x[np.argmax(y)]
+
+        # Get peak width from the first derivative
+        _, _, sigma = guess_from_peak(y, x, self.negative_peak)
 
         return self._get_parameters_as_dict(
             amplitude=amplitude,
-            xb=xb,
-            x0=x0,
+            xb=center,
+            x0=sigma.values * 4,
             offset=offset,
         )
 
@@ -1438,3 +1479,124 @@ class SincModel(ModelABC):
 
     def get_extrema(self, params: dict) -> dict[str, float]:
         return params["xb"]
+
+
+####################################################################################################
+#                   Frequency Spectrum Model                                                       #
+####################################################################################################
+class FreqSpectrumModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, v_per_phi0=1, flux_offset=0, max_freq=1, Ec=1, d=0.5):
+        """Function to fit the frequency spectrum of a qubit.
+
+        Args:
+            x (array): Input data (in V).
+            v_per_phi0 (float): Period of frequency spectrum (in V)
+            flux_offset (float): Flux offset (in units of Phi_0)
+            max_freq (float): Maximum frequency
+            Ec (float): Charging energy
+            d (float): Asymmetry parameter
+
+        Returns:
+            array: f(x)
+        """
+        x = np.array(x)
+        return (max_freq + Ec) * (
+            d**2 + (1 - d**2) * (np.cos(np.pi * (x / v_per_phi0 + flux_offset))) ** 2
+        ) ** 0.25 - Ec
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict[str, Fitparam]:
+        x, y = np.array(x), np.array(y)
+
+        max_freq = np.max(y)
+        v_per_phi0 = 500
+        flux_offset = -150 / v_per_phi0
+        Ec = -0.274
+        d = 0.1
+
+        return self._get_parameters_as_dict(
+            v_per_phi0=v_per_phi0, flux_offset=flux_offset, max_freq=max_freq, Ec=Ec, d=d
+        )
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$f(x) = ({params[2]} + {params[3]}) \cdot ({params[4]}^2 + (1 - {params[4]}^2) \cdot (\cos(\pi \cdot (\frac{{x}}{{{params[0]}}} + {params[1]})))^2)^{{1/4}} - {params[4]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"v_per_phi0": "x", "max_freq": "y", "flux_offset": "", "Ec": "y", "d": ""}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "v_per_phi0": "V_{\Phi_0}",
+            "max_freq": "f_{max}",
+            "flux_offset": "\Phi_{offset}",
+            "Ec": "E_C",
+            "d": "d",
+        }
+
+    def get_extrema(self, params: dict) -> dict[str, float]:
+        return -params["flux_offset"] * params["v_per_phi0"]
+
+
+####################################################################################################
+#                   Frequency Spectrum Model V2                                                    #
+####################################################################################################
+class FreqSpectrumModelv2(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, v_per_phi0=1, flux_offset=0):
+        """Function to fit the frequency spectrum of a qubit.
+
+        Args:
+            x (array): Input data (in V).
+            v_per_phi0 (float): Period of frequency spectrum (in V)
+            flux_offset (float): Flux offset (in units of Phi_0)
+            max_freq (float): Maximum frequency
+            Ec (float): Charging energy
+            d (float): Asymmetry parameter
+
+        Returns:
+            array: f(x)
+        """
+
+        max_freq = 5.985
+        Ec = -0.274
+        d = 0
+
+        x = np.array(x)
+        return (max_freq + Ec) * (
+            d**2 + (1 - d**2) * (np.cos(np.pi * (x / v_per_phi0 + flux_offset))) ** 2
+        ) ** 0.25 - Ec
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict[str, Fitparam]:
+        x, y = np.array(x), np.array(y)
+
+        # max_freq = np.max(y)
+        v_per_phi0 = 800
+        flux_offset = -150 / v_per_phi0
+        # Ec = -0.300
+        # d = 0.3
+
+        return self._get_parameters_as_dict(v_per_phi0=v_per_phi0, flux_offset=flux_offset)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$f(x) = ...$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"v_per_phi0": "x", "max_freq": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {"v_per_phi0": "V_{\Phi_0}", "flux_offset": "\Phi_{offset}"}
+
+    def get_extrema(self, params: dict) -> dict[str, float]:
+        return -params["flux_offset"] * params["v_per_phi0"]

@@ -8,13 +8,14 @@ import numpy as np
 from matplotlib import gridspec, ticker
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib import rc
 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from dataanalyzer.fitter import Fitter
 from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
-from dataanalyzer.utilities import (
-    Valueclass,
-    convert_array_with_unit,
-)
+from dataanalyzer.utilities import Valueclass, convert_array_with_unit
+
+import qutip as qt
 
 
 ####################################################################################################
@@ -36,6 +37,8 @@ class Plotter:
         Raises:
             ValueError: If the default settings are not a valid type.
         """
+
+        self.fig: Figure = kwargs.pop("fig", None)
 
         # Enable interactive mode
         if interactive:
@@ -60,7 +63,6 @@ class Plotter:
             subplots (tuple): The shape of the subplots.
         """
         # Set the number of columns to be one more than the number of subplots
-        self.fig: Figure = self.kwargs.pop("fig", None)
         subplots_plus_col = (subplots[0], subplots[1] + 1)
 
         # If the figure doesn't exist, create it
@@ -100,7 +102,8 @@ class Plotter:
         # Set a flag to remove the axis on the next update
         self._remove_ax_anotate = True
 
-    def set_default_settings(self, default_settings: Union[dict, str, bool] = True) -> None:
+    @staticmethod
+    def set_default_settings(default_settings: Union[dict, str, bool] = True) -> None:
         """Sets the default settings for the plotter. This function is a wrapper for matplotlib.pyplot.style.use
 
         Args:
@@ -135,8 +138,12 @@ class Plotter:
         else:
             raise ValueError("default_settings must be either a dict, a string or a boolean")
 
+    @staticmethod
+    def set_style(style) -> None:
+        Plotter.set_default_settings(style)
+
     ############# 1D Plotting Functions ############################################################
-    def plot_fit(self, fit_obejct: Fitter, ax: tuple = (), **kwargs):  # TODO: Residual placement of multiple subplots
+    def plot_fit(self, fit_obejct: Fitter, ax: tuple = (), **kwargs):
         """Plots a fit object. This function is a wrapper for matplotlib.pyplot.plot
 
         Args:
@@ -148,19 +155,26 @@ class Plotter:
         ls_stop = kwargs.pop("linspace_stop", None)
         ls_steps = kwargs.pop("linspace_steps", 1000)
 
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
         if kwargs.pop("force_fit", False) or not fit_obejct._fitted:
             fit_obejct.do_fit()
 
         if kwargs.pop("plot_data", True):
-            x, y = fit_obejct.x_scaled, fit_obejct.y
-
-            print(fit_obejct.y)
+            x, y = fit_obejct.x_scaled, fit_obejct.y_scaled
+            y.error = fit_obejct.yerr_scaled.value
 
             if flip_axis:
                 x, y = y, x
 
             # self.scatter(x, y, ax=ax, label="Data", **kwargs.pop("kwargs_data", {}))
-            self.errorbar(x, y, ax=ax, label="Data", **kwargs.pop("kwargs_data", {}), ls="", marker=".")
+            self.errorbar(x, y, label="Data", **kwargs.pop("kwargs_data", {}), ls="", marker=".")
 
         if kwargs.pop("plot_guess", True):
             x_guess, y_guess = fit_obejct.get_guess_array(ls_start, ls_stop, ls_steps)
@@ -170,7 +184,7 @@ class Plotter:
             if flip_axis:
                 x_guess, y_guess = y_guess, x_guess
 
-            self.plot(x_guess, y_guess, ax=ax, ls="--", color="grey", label="Guess")
+            self.plot(x_guess, y_guess, ls="--", color="grey", label="Guess")
 
         if kwargs.pop("plot_fit", True):
             x_fit, y_fit = fit_obejct.get_fit_array(ls_start, ls_stop, ls_steps)
@@ -181,28 +195,22 @@ class Plotter:
             if flip_axis:
                 x_fit, y_fit = y_fit, x_fit
 
-            self.plot(x_fit, y_fit, ax=ax, label="Fit", c="orange")
+            self.plot(x_fit, y_fit, label="Fit", c="orange")
 
         if kwargs.pop("plot_residuals", True):
             x_res, y_res = fit_obejct.get_residuals()
 
             if flip_axis:
                 x_res, y_res = y_res, x_res
-                self.add_yresiuals(x_res, y_res, ax=ax)
+                self.add_yresiuals(x_res, y_res)
             else:
-                self.add_xresiuals(x_res, y_res, ax=ax)
+                self.add_xresiuals(x_res, y_res)
 
         if kwargs.pop("plot_metadata", True):
-            self.add_metadata(fit_obejct.get_report(), ax=ax)  # fit_obejct._report_string
+            self.add_metadata(fit_obejct.get_report())  # fit_obejct._report_string
 
     @matplotlib_decorator
-    def plot(
-        self,
-        x: Valueclass,
-        y: Valueclass,
-        ax: tuple = (),
-        **kwargs,
-    ):
+    def plot(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.plot
 
         Args:
@@ -218,7 +226,14 @@ class Plotter:
             print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
-    def scatter(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
+    def scatter(
+        self,
+        x: Valueclass,
+        y: Valueclass,
+        z: Valueclass = None,
+        ax: tuple = (),
+        **kwargs,
+    ):
         """plotting function for 1d data. This function is a wrapper for matplotlib.pyplot.scatter
 
         Args:
@@ -229,8 +244,15 @@ class Plotter:
         # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 15)
 
+        if z is not None:
+            kwargs.setdefault("c", z.value)
+            kwargs.setdefault("cmap", "viridis")
+
         try:
-            self.ax.scatter(x.value, y.value, **kwargs)
+            cax = self.ax.scatter(x.value, y.value, **kwargs)
+            if z is not None:
+                self._add_colorbar(cax, z, False)
+
         except ValueError:
             try:
                 [self.ax.scatter(x.value, y.value[i], **kwargs) for i in range(y.value.shape[0])]
@@ -266,6 +288,8 @@ class Plotter:
         """
         kwargs.setdefault("elinewidth", 2)
         kwargs.setdefault("capsize", 3)
+        kwargs.setdefault("ls", "")
+        kwargs.setdefault("marker", ".")
 
         yerr = kwargs.pop("yerr", y.error)
         xerr = kwargs.pop("xerr", x.error)
@@ -295,6 +319,10 @@ class Plotter:
 
         self.ax.errorbar(x=x.value, y=y.value, yerr=yerr, xerr=xerr, **kwargs)
 
+    @matplotlib_decorator
+    def violinplot(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
+        self.ax.violinplot(y.value, x.value, **kwargs)
+
     ############# 2D Plotting Functions ############################################################
     @matplotlib_decorator
     def _2d_genereal_plot(
@@ -321,8 +349,8 @@ class Plotter:
         """
         keep_colorbar = kwargs.pop("keep_colorbar", False)
         kwargs.setdefault("cmap", "RdBu_r")
-        kwargs.setdefault("vmin", np.min(z.value))
-        kwargs.setdefault("vmax", np.max(z.value))
+        kwargs.setdefault("vmin", np.nanmin(z.value))
+        kwargs.setdefault("vmax", np.nanmax(z.value))
 
         if plot_type == "pcolormesh":
             c = self.ax.pcolormesh(x.value, y.value, z.value, **kwargs)
@@ -356,7 +384,18 @@ class Plotter:
                 colorbar.remove()
 
         label = f"{z.name} [{z.unit}]" if z.unit else f"{z.name}"
-        colorbar = self.fig.colorbar(c, ax=self.ax, label=label)
+
+        if c is None:
+            # Make a dummy plot with min and max values to get the colorbar
+            axdummy = self.fig.add_subplot(111)
+            c = axdummy.scatter(x=[0, 1], y=[0, 1], c=[z.value.min(), z.value.max()])
+            axdummy.remove()
+
+        cbar_ax = self.ax.inset_axes([0.7, 1.05, 0.3, 0.05], transform=self.ax.transAxes)
+        colorbar = self.fig.colorbar(c, ax=self.ax, cax=cbar_ax, orientation="horizontal")
+        colorbar.ax.xaxis.set_ticks_position("top")
+        colorbar.ax.set_ylabel(label)
+        colorbar.ax.yaxis.label.set(rotation="horizontal", ha="right", va="center")
 
         for ax in self.axs.flatten():
             if ax == self.ax:
@@ -528,27 +567,17 @@ class Plotter:
         # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 15)
 
-        ax_shape = np.shape(self.axs)
-        axarg = np.where(self.axs.flatten() == self.ax)[0][0]
+        if not hasattr(self.ax, "yres"):
+            divider = make_axes_locatable(self.ax)
+            self.ax.yres = divider.append_axes("right", size="20%", pad=0)
+            self.ax.yres.axvline(x=0, linestyle=":", color="red")
+            self.ax.yres.sharey(self.ax)
 
-        gs = gridspec.GridSpec(
-            ax_shape[0],
-            2 * ax_shape[1] + 2,
-            width_ratios=[4, 1] * (ax_shape[1] + 1),
-            wspace=0.00,
-        )
+            xlabel = kwargs.pop("xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals")
+            self.ax.yres.set_xlabel(xlabel)
 
-        self.ax.set_subplotspec(gs[axarg])
-        self.yres = self.fig.add_subplot(gs[axarg + 1])
-
-        self.yres.scatter(x.value, y.value, **kwargs)
-        self.yres.axvline(x=0, linestyle=":", color="red")
-
-        self.yres.sharey(self.ax)
-        self.yres.label_outer()  # type: ignore
-
-        xlabel = kwargs.pop("xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals")
-        self.yres.set_xlabel(xlabel)
+        self.ax.yres.scatter(x.value, y.value, **kwargs)
+        self.ax.yres.yaxis.set_tick_params(labelleft=False)  # hide the yticklabels
 
     @matplotlib_decorator
     def add_xresiuals(self, x: Valueclass, y: Valueclass, ax: tuple = (), **kwargs):
@@ -563,29 +592,54 @@ class Plotter:
         # kwargs.setdefault("marker", "x")
         kwargs.setdefault("s", 15)
 
-        ax_shape = np.shape(self.axs)
-        axarg = np.where(self.axs.flatten() == self.ax)[0][0]
+        if not hasattr(self.ax, "xres"):
+            divider = make_axes_locatable(self.ax)
+            self.ax.xres = divider.append_axes("bottom", size="20%", pad=0)
+            self.ax.xres.axhline(y=0, linestyle=":", color="red")
 
-        gs = gridspec.GridSpec(
-            2 * ax_shape[0],
-            ax_shape[1] + 1,
-            height_ratios=[4, 1] * (ax_shape[0]),
-            hspace=0.00,
-        )
+            if self.ax._sharex is None or self.ax.xres is self.ax._sharex:
+                self.ax.sharex(self.ax.xres)
+                self.ax.xres.set_xlabel(self.ax.get_xlabel())
+                self.ax.label_outer()  # type: ignore
 
-        self.ax.set_subplotspec(gs[axarg])
-        self.xres = self.fig.add_subplot(gs[1 + ax_shape[0]])
+                ylabel = kwargs.pop("ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals")
+                self.ax.xres.set_ylabel(ylabel)
 
-        self.xres.scatter(x.value, y.value, **kwargs)
-        self.xres.axhline(y=0, linestyle=":", color="red")
+        self.ax.xres.scatter(x.value, y.value, **kwargs)
 
-        if self.ax._sharex is None or self.xres is self.ax._sharex:
-            self.ax.sharex(self.xres)
-            self.xres.set_xlabel(self.ax.get_xlabel())
-            self.ax.label_outer()  # type: ignore
+    def devide_ax(
+        self,
+        ax: tuple = (),
+        position="bottom",
+        size="100%",
+        pad=0,
+        share_ax=True,
+        **kwargs,
+    ):
+        """Devide the ax into subplots."""
 
-            ylabel = kwargs.pop("ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals")
-            self.xres.set_ylabel(ylabel)
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
+        divider = make_axes_locatable(self.ax)
+        self.ax.subax = divider.append_axes(position, size=size, pad=pad, **kwargs)
+
+        if share_ax:
+            if position == "bottom":
+                self.ax.sharex(self.ax.subax)
+                self.ax.subax.set_xlabel(self.ax.get_xlabel())
+                self.ax.set_xlabel("")
+                self.ax.xaxis.set_tick_params(labelbottom=False)  # hide the xticklabels
+
+            elif position == "left":
+                self.ax.sharey(self.ax.subax)
+                self.ax.subax.set_ylabel(self.ax.get_ylabel())
+                self.ax.label_outer()
 
     ############# Metadata Functions ###############################################################
     def add_metadata(
@@ -664,6 +718,145 @@ class Plotter:
         self.metadata = ""
         self.ax_anotate.texts.clear()
 
+    ############# Quantum Plotting Functions #######################################################
+    def add_3D_plot(self, ax: tuple = (), **kwargs):
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
+        ax_idx = np.where(self.axs.flatten() == self.ax)[0][0]
+        ax_insert = np.where(self.axs == self.ax)
+        ax_insert = (ax_insert[0][0], ax_insert[1][0])
+
+        row, col = self.axs.shape
+
+        ax_idx += ax_idx // col
+
+        # Convert ax to 3D if it is 2D
+        ax_temp = self.ax
+        self.ax = self.fig.add_subplot(row, col + 1, ax_idx + 1, projection="3d")
+        ax_temp.remove()
+
+        # Insert ax back into axs
+        self.axs[ax_insert] = self.ax
+
+    def add_bloch_sphere(self, ax: tuple = (), **kwargs):
+        """Adds a bloch sphere to the plot.
+
+        Args:
+            ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
+        """
+
+        font_size = kwargs.pop("font_size", 14)
+        point_size = kwargs.pop("point_size", [55, 62, 65, 75])  # [7,7,7,7] for many points
+        view = kwargs.pop("view", [-60, 30])
+
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
+        ax_idx = np.where(self.axs.flatten() == self.ax)[0][0]
+        ax_insert = np.where(self.axs == self.ax)
+        ax_insert = (ax_insert[0][0], ax_insert[1][0])
+
+        row, col = self.axs.shape
+
+        ax_idx_temp = ax_idx + ax_idx // col
+
+        # Convert ax to 3D if it is 2D
+        ax_temp = self.ax
+        self.ax = self.fig.add_subplot(row, col + 1, ax_idx_temp + 1, projection="3d")
+        ax_temp.remove()
+
+        # Insert ax back into axs
+        self.axs[ax_insert] = self.ax
+
+        # Add bloch sphere (if it doesn't exist)
+        if not hasattr(self.ax, "bloch"):
+            self.ax.bloch = qt.Bloch(fig=self.fig, axes=self.ax, **kwargs)
+            self.ax.bloch.font_size = font_size
+            self.ax.bloch.point_size = point_size
+            # self.ax.bloch.view = view
+            self.ax.bloch.render()
+
+    def add_bloch_vector(self, vector: np.ndarray, ax: tuple = (), **kwargs):
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
+        view = kwargs.pop("view", [-60, 30])
+
+        # Check if bloch sphere exists
+        if not hasattr(self.ax, "bloch"):
+            self.add_bloch_sphere(ax=ax, view=view)
+
+        # Add vector
+        self.ax.bloch.add_states(vector, **kwargs)
+        self.ax.bloch.render()
+
+    def add_bloch_point(self, vector: np.ndarray, z=None, ax: tuple = (), **kwargs):
+        keep_colorbar = kwargs.pop("keep_colorbar", False)
+        cmap = kwargs.pop("cmap", "viridis")
+        font_size = kwargs.pop("font_size", 14)
+        point_size = kwargs.pop(
+            "point_size", [55, 62, 65, 75] if np.shape(vector)[1] < 10 else [7, 7, 7, 7]
+        )  # [7,7,7,7] for many points
+        point_color = kwargs.pop("point_color", None)
+
+        if isinstance(ax, plt.Axes):
+            self.ax = ax
+
+        elif isinstance(ax, int):
+            self.ax = self.axs.flatten()[ax]
+        else:
+            self.ax = self.axs[ax] if ax else self.ax
+
+        view = kwargs.pop("view", [-60, 30])
+
+        # Check if bloch sphere exists
+        if not hasattr(self.ax, "bloch"):
+            self.add_bloch_sphere(ax=ax, font_size=font_size, point_size=point_size, view=view)
+
+        if point_color is not None:
+            if len(np.array(point_color)) == 1:
+                point_color = [point_color for _ in range(len(vector))]
+            self.ax.bloch.point_color = point_color
+
+            [point_color for _ in range(len(vector))]
+            kwargs.update({"meth": "m"})
+
+        # Change color of point if z is not None
+        elif z is not None:
+            # Create dommy plot to get c
+            c = plt.imshow(np.array([[z.min(), z.max()]]), cmap=cmap)
+            c.set_visible(False)
+
+            # Get list of colors
+            colors = c.to_rgba(z.value)
+
+            self.ax.bloch.point_color = colors
+            kwargs.update({"meth": "m"})
+
+        # Add vector
+        self.ax.bloch.add_points(vector, **kwargs)
+        self.ax.bloch.render()
+
+        # Add colorbar if c is not None
+        if point_color is None and z is not None:
+            self._add_colorbar(c=c, z=z, keep_colorbar=keep_colorbar)
+
     ############# Other Functions ##################################################################
     def _get_default_transform(self):
         axarg = np.where(self.axs == self.ax)[0][0]
@@ -687,15 +880,20 @@ class Plotter:
 
             if hasattr(ax, "colorbar"):
                 for colorbar in ax.colorbar:
-                    self._get_set_ticks("y")(self, colorbar)
-                    self._get_set_ticks("x")(self, colorbar)
+                    self._get_set_ticks("y", "x")(self, colorbar)
+                    self._get_set_ticks("x", "y")(self, colorbar)
 
-        if hasattr(self, "yres"):
-            self._get_set_ticks("x")(self, self.yres)
+            if hasattr(ax, "xres"):
+                self._get_set_ticks("x")(self, ax.xres)
+                self._get_set_ticks("y")(self, ax.xres)
 
-        if hasattr(self, "xres"):
-            self._get_set_ticks("x")(self, self.xres)
-            self._get_set_ticks("y")(self, self.xres)
+            if hasattr(ax, "yres"):
+                self._get_set_ticks("x")(self, ax.yres)
+                self._get_set_ticks("y")(self, ax.yres)
+
+            if hasattr(ax, "subax"):
+                self._get_set_ticks("x")(self, ax.subax)
+                self._get_set_ticks("y")(self, ax.subax)
 
     def _set_ticks(self, axis, ticks):
         _, unit_prefix, scale = convert_array_with_unit(ticks)
@@ -703,13 +901,16 @@ class Plotter:
         axis.set_major_formatter(ticks)
         return unit_prefix
 
-    def _get_set_ticks(self, axis: str = "x"):
+    def _get_set_ticks(self, axis: str = "x", label_axis=None):
         if axis not in ["x", "y"]:
             raise ValueError(f"Unknown axis: {axis}")
 
-        orig_label = f"original_{axis}label"
+        if label_axis is None:
+            label_axis = axis
+
+        orig_label = f"original_{label_axis}label"
         get_ticks = f"get_{axis}ticks"
-        get_label = f"get_{axis}label"
+        get_label = f"get_{label_axis}label"
 
         def _set_ticks(self, ax):
             if not hasattr(ax, get_ticks):
@@ -725,10 +926,13 @@ class Plotter:
 
             updated_label = self._label_with_unit_prefix(original_label, unit_prefix)
 
-            if axis == "x":
+            if label_axis == "x":
                 ax.set_xlabel(updated_label)
             else:
                 ax.set_ylabel(updated_label)
+
+            if label_axis != axis:
+                ax.yaxis.label.set(rotation="horizontal", ha="right", va="center")
 
         def _get_original_label(ax):
             if not hasattr(ax, orig_label):
@@ -741,7 +945,40 @@ class Plotter:
 
     def _plot_legends(self):
         """Adds legends to the plot if the user has specified them."""
-        [ax.legend() for ax in self.axs.flatten() if ax.get_legend_handles_labels() != ([], [])]
+        [
+            ax.legend()  # bbox_to_anchor=(1.04, 1), loc="upper left"
+            for ax in self.axs.flatten()
+            if ax.get_legend_handles_labels() != ([], []) and not hasattr(ax, "bloch")
+        ]
+        [
+            ax.subax.legend()  # bbox_to_anchor=(1.04, 1), loc="upper left"
+            for ax in self.axs.flatten()
+            if hasattr(ax, "subax") and ax.subax.get_legend_handles_labels() != ([], [])
+        ]
+
+    def _make_axes_bold(self):
+        """Makes all axes labels bold."""
+        if not self.kwargs.get("bold_labels", True):
+            return
+
+        for ax in self.axs.flatten():
+            ax.xaxis.label.set_fontweight("bold")
+            ax.yaxis.label.set_fontweight("bold")
+
+            if hasattr(ax, "colorbar"):
+                for colorbar in ax.colorbar:
+                    colorbar.ax.yaxis.label.set_fontweight("bold")
+
+            if hasattr(ax, "xres"):
+                ax.xres.xaxis.label.set_fontweight("bold")
+                ax.xres.yaxis.label.set_fontweight("bold")
+
+            if hasattr(ax, "yres"):
+                ax.yres.xaxis.label.set_fontweight("bold")
+
+            if hasattr(ax, "subax"):
+                ax.subax.xaxis.label.set_fontweight("bold")
+                ax.subax.yaxis.label.set_fontweight("bold")
 
     def _final_formatting(self):
         """Performs final formatting on the plot."""
@@ -751,7 +988,10 @@ class Plotter:
             self._remove_ax_anotate = False
             self.ax_anotate.remove()
 
+        self._plot_legends()
+        self._make_axes_bold()
         self._rescale_axes()
+
         plt.tight_layout()
 
     def show(self, return_fig: bool = False):

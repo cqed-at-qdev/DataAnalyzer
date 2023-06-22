@@ -49,6 +49,7 @@ class Fitter:
         self.x_scaler = DataScaler()
         self._x = Valueclass.fromfloat(value, name="x data")
         self._x.value = self.x_scaler.fit(self._x.value)
+        self._x.error = self.x_scaler.transform(self._x.error)
 
     @property
     def x_scaled(self):
@@ -63,6 +64,7 @@ class Fitter:
         self.y_scaler = DataScaler()
         self._y = Valueclass.fromfloat(value, name="y data")
         self._y.value = self.y_scaler.fit(self._y.value)
+        # self._y.error = self.y_scaler.transform(self._y.error)
 
     @property
     def y_scaled(self):

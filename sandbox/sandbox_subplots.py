@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # Load data
 path = r"A:\Labber\20221114_Soprano_V2_CharacterizationCooldown\2022\11\Data_1117\q2_T2_inital_scan_3.hdf5"
 path = "/Users/malthenielsen/Desktop/QDev/Sample data for plotter/q2_T2_inital_scan_3.hdf5"
-(duration, repetition), (pulse, _) = load_labber_file(path, insepct=False)
+(duration, repetition), (pulse, _) = load_labber_file(path)
 
 # Take real part of data
 pulse = pulse.real

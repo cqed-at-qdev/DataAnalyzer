@@ -5,7 +5,7 @@ It can be sliced, added, subtracted, multiplied and divided with other Valueclas
 It uses some of the same functionality as seen in the Labber GUI (See .traces() method).
 """
 
-from copy import deepcopy
+from copy import deepcopy, copy
 from dataclasses import asdict, dataclass
 from typing import Optional, Union, Dict, Any
 
@@ -29,10 +29,14 @@ class Valueclass:
 
     value: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
     error: Union[float, list, tuple, np.ndarray] = ()  # type: ignore
-    name: str = ""
+    tag: str = ""
+    name: Optional[str] = None
     unit: str = ""
     fft_type: Union[str, bool] = False
     sweep_idx: Optional[int] = None
+    hardware_loop: bool = True
+    relative: bool = False
+    scale: bool = False
 
     ####################################################################################################
     #                   Dunder Functions                                                               #
@@ -44,7 +48,8 @@ class Valueclass:
             str : String representation of the Valueclass object.
         """
         error = np.nan if np.isnan(self.error).all() else self.error
-        return f"{self.name}:\n(value={self.value}, error={error}, unit={self.unit})\n\n"
+        tag_str = f"tag={self.tag}, " if self.tag else ""
+        return f"{self.name}:\n({tag_str}value={self.value}, error={error}, unit={self.unit})\n\n"
 
     def __getitem__(self, key) -> "Valueclass":
         """Returns a slice of the Valueclass object.
@@ -56,7 +61,7 @@ class Valueclass:
             item: Sliced Valueclass object.
         """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
-            return Valueclass(self.value[key], self.error[key], self.name, self.unit)
+            return Valueclass(self.value[key], self.error[key], self.tag, self.name, self.unit)
         return self[key]
 
     def __setitem__(self, key, value) -> None:
@@ -68,7 +73,7 @@ class Valueclass:
         """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
             if not isinstance(value, Valueclass):
-                value = Valueclass(value, self.error[key], self.name, self.unit)
+                value = Valueclass(value, self.error[key], self.tag, self.name, self.unit)
             self.value[key] = value.value
             self.error[key] = value.error
         else:
@@ -110,30 +115,27 @@ class Valueclass:
 
     def __mul__(self, other) -> "Valueclass":
         selfcopy = self.copy()
-        if "Valueclass" not in str(type(other)):
-            selfcopy.value *= other
-            selfcopy.error *= other
-        else:
-            return Valueclass(
-                self.value * other.value,
-                np.sqrt((self.error * other.value) ** 2 + (self.value * other.error) ** 2),
-                self.name,
-                self.unit,
-            )
+        if "Valueclass" in str(type(other)):
+            copy = selfcopy.copy()
+            copy.value *= other.value
+            copy.error = np.sqrt((self.error * other.value) ** 2 + (self.value * other.error) ** 2)
+            return copy
+        selfcopy.value *= other
+        selfcopy.error *= other
         return selfcopy
 
     def __truediv__(self, other) -> "Valueclass":
         selfcopy = self.copy()
-        if "Valueclass" not in str(type(other)):
-            selfcopy.value /= other
-            selfcopy.error /= other
-        else:
+        if "Valueclass" in str(type(other)):
             return Valueclass(
                 self.value / other.value,
                 np.sqrt((self.error / other.value) ** 2 + (self.value * other.error / other.value**2) ** 2),
                 self.name,
                 self.unit,
+                self.tag,
             )
+        selfcopy.value /= other
+        selfcopy.error /= other
         return selfcopy
 
     def __pow__(self, other) -> "Valueclass":
@@ -144,6 +146,7 @@ class Valueclass:
                 self.error * other * self.value ** (other - 1),  # TODO: make correct error propagation
                 self.name,
                 self.unit,
+                self.tag,
             )
         else:
             return Valueclass(
@@ -161,7 +164,11 @@ class Valueclass:
         return self + other
 
     def __rsub__(self, other) -> "Valueclass":
-        return other - self
+        if "Valueclass" in str(type(other)):
+            return other - self
+        selfcopy = self.copy()
+        selfcopy.value = other - selfcopy.value
+        return selfcopy
 
     def __rmul__(self, other) -> "Valueclass":
         return self * other
@@ -176,7 +183,44 @@ class Valueclass:
         return len(self.value)
 
     def __lt__(self, other) -> bool:
-        return self.value.max() < other.value.max()
+        if "Valueclass" in str(type(other)):
+            return self.value < other.value
+        return self.value < other
+
+    def vstack(self, other) -> "Valueclass":
+        """Stacks two Valueclass objects vertically.
+
+        Args:
+            other (Valueclass): Valueclass object to stack.
+
+        Returns:
+            Valueclass: Stacked Valueclass object.
+        """
+        return Valueclass(
+            np.vstack((self.value, other.value)),
+            np.vstack((self.error, other.error)),
+            name=self.name,
+            tag=self.tag,
+            unit=self.unit,
+        )
+
+    def hstack(self, other) -> "Valueclass":
+        """Stacks two Valueclass objects horizontally.
+
+        Args:
+            other (Valueclass): Valueclass object to stack.
+
+        Returns:
+            Valueclass: Stacked Valueclass object.
+        """
+
+        return Valueclass(
+            np.hstack((self.value, other.value)),
+            np.hstack((self.error, other.error)),
+            name=self.name,
+            tag=self.tag,
+            unit=self.unit,
+        )
 
     ####################################################################################################
     #                   Main Functions                                                                 #
@@ -204,6 +248,9 @@ class Valueclass:
 
         elif isinstance(value, np.ndarray):
             self._value = value
+
+        elif isinstance(value, str):
+            self._value = np.array([value])
 
     @property
     def error(self) -> np.ndarray:
@@ -258,23 +305,17 @@ class Valueclass:
 
     @property
     def real(self):
-        return Valueclass(
-            np.real(self.value),
-            np.real(self.error),
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        copy = self.copy()
+        copy.value = np.real(copy.value)
+        copy.error = np.real(copy.error)
+        return copy
 
     @property
     def imag(self):
-        return Valueclass(
-            np.imag(self.value),
-            np.imag(self.error),
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        copy = self.copy()
+        copy.value = np.imag(copy.value)
+        copy.error = np.imag(copy.error)
+        return copy
 
     @property
     def I(self):
@@ -286,17 +327,18 @@ class Valueclass:
 
     @property
     def abs(self):
-        return Valueclass(np.abs(self.value), np.abs(self.error), self.name, self.unit)
+        copy = self.copy()
+        copy.value = np.abs(copy.value)
+        copy.error = np.abs(copy.error)
+        return copy
 
     @property
     def phase(self):
-        return Valueclass(
-            np.unwrap(np.angle(self.value)),
-            np.array(np.angle(self.error)),
-            self.name,
-            "rad",
-            self.fft_type,
-        )
+        copy = self.copy()
+        copy.value = np.unwrap(np.angle(copy.value))
+        copy.error = np.array(np.angle(copy.error))
+        copy.unit = "rad"
+        return copy
 
     @property
     def angle(self):
@@ -305,6 +347,18 @@ class Valueclass:
     @property  # TODO: Hej Malthe, denne funktion er rar at have, hvis du har et godt sted til den kan du godt flytte den. mvh Jacob
     def has_unit(self):
         return self.unit != ""
+
+    @property
+    def name(self):
+        if self._name is None:
+            return self._tag
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if name is None:
+            self._name = self._tag
+        self._name = name
 
     ####################################################################################################
     #                   Property Functions                                                             #
@@ -327,25 +381,31 @@ class Valueclass:
 
     @property
     def T(self):
-        return Valueclass(self.value.T, self.error.T, self.name, self.unit, self.fft_type)
+        copy = self.copy()
+        copy.value = self.value.T
+        copy.error = self.error.T
+        return copy
 
     @property
     def sprt(self):
-        return Valueclass(
-            np.sqrt(self.value),
-            self.error / (2 * np.sqrt(self.value)),
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
+        copy = self.copy()
+        copy.value = np.sqrt(self.value)
+        copy.error = copy.error / (2 * np.sqrt(self.value))
+        return copy
 
     ####################################################################################################
     #                   Math (Simple) Functions                                                        #
     ####################################################################################################
     def mean(self, axis=None) -> "Valueclass":
+        if axis is None:
+            copy = self.copy()
+            copy.value = np.mean(self.value)
+            copy.error = np.std(self.value) / np.sqrt(self.value.size)
+            return copy
+
         copy = self.copy()
         copy.value = np.mean(self.value, axis=axis)
-        copy.error = np.std(self.value, axis=axis)
+        copy.error = np.std(self.value, axis=axis) / np.sqrt(self.value.shape[axis])
         return copy
 
     def std(self, axis=None) -> "Valueclass":
@@ -354,10 +414,22 @@ class Valueclass:
         copy.error = np.std(self.error, axis=axis)
         return copy
 
-    def min(self, axis=None) -> np.ndarray:
+    def min(self, axis=None, keeptype=False) -> np.ndarray:
+        if keeptype:
+            copy = self.copy()
+            index = np.argmin(self.value, axis=axis).reshape(-1, 1)
+            copy.value = np.take_along_axis(self.value, index, axis=axis)
+            copy.error = np.take_along_axis(self.error, index, axis=axis)
+            return copy[..., 0]
         return np.min(self.value, axis=axis)
 
-    def max(self, axis=None) -> np.ndarray:
+    def max(self, axis=None, keeptype=False) -> np.ndarray:
+        if keeptype:
+            copy = self.copy()
+            index = np.argmax(self.value, axis=axis).reshape(-1, 1)
+            copy.value = np.take_along_axis(self.value, index, axis=axis)
+            copy.error = np.take_along_axis(self.error, index, axis=axis)
+            return copy[..., 0]
         return np.max(self.value, axis=axis)
 
     def argmin(self, axis=None) -> np.intp:
@@ -378,8 +450,11 @@ class Valueclass:
     def argmax_error(self, axis=None) -> np.intp:
         return np.argmax(self.error, axis=axis)
 
-    def sum(self, axis=None) -> np.ndarray:
-        return np.sum(self.value, axis=axis)  # type: ignore
+    def sum(self, axis=None):
+        selfCopy = self.copy()
+        selfCopy.value = np.sum(self.value, axis=axis)
+        selfCopy.error = np.sum(self.error, axis=axis)
+        return selfCopy
 
     def prod(self, axis=None) -> np.ndarray:
         return np.prod(self.value, axis=axis)
@@ -658,16 +733,8 @@ class Valueclass:
         return self.ddx.ddx
 
     def norm_zero_to_one(self, axis=None):
-        return Valueclass(
-            (self.value - np.min(self.value, axis=axis))
-            / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
-            self.error / (np.max(self.value, axis=axis) - np.min(self.value, axis=axis)),
-            self.name,
-            self.unit,
-            self.fft_type,
-        )
-
         copy = self.copy()
+        scale = np.max(self.value, axis=axis) - np.min(self.value, axis=axis)
         copy.value = (self.value - np.min(self.value, axis=axis)) / scale
         copy.error = self.error / scale
         return copy
@@ -861,10 +928,14 @@ class Valueclass:
         size_width=7,
         decimals=2,
         string_type="metadata",
+        line_length=100,
     ):
         """Converts Valueclass to a nice string, for printing. self.value and self.error are shown as number of points, minimum and maximum values."""
 
         def _getstr(self, scale_values: bool = True, decimals: int = 2):
+            if type(self.value[0]) in [str, np.str_]:
+                return f"{self.name}: {self.value} {self.unit}"
+
             if self.value.dtype == int:
                 decimals = 0
 
@@ -876,7 +947,10 @@ class Valueclass:
                 return f"{self.name}: ({self.value.size}); {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
 
             value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
-            return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
+            try:
+                return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
+            except ValueError:
+                return f"{self.name}: {value} {unit_prefix}{self.unit}"
 
         def _alginstr(vstr: str, algin: bool = True, name_width=40, size_width=7):
             if not algin:
@@ -887,17 +961,32 @@ class Valueclass:
 
             return f"{name_str : <{name_width}}{vstr}{size_str : <{size_width}}"
 
+        def _algin_to_line(vstr: str, line_length: int = 100):
+            (name_str, vstr) = vstr.split(":") if ":" in vstr else ("", vstr)
+            (size_str, vstr) = vstr.split(";") if ";" in vstr else ("", vstr)
+
+            return f"{vstr[1:]}{size_str}"
+
         def _getstr_value(self, scale_values: bool = True, decimals: int = 2):
             # string for printing only the value of the parameter
+            if type(self.value[0]) == str:
+                return f"{self.value} {self.unit}"
+
             value, unit_prefix, conversion_factor = self.value, "", 1
             if scale_values and self.has_unit:
                 value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
             value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
-            return f"{value:.{decimals}f} {unit_prefix}{self.unit}"
+            try:
+                return f"{value:.{decimals}f} {unit_prefix}{self.unit}"
+            except ValueError:
+                return f"{value} {unit_prefix}{self.unit}"
 
         if string_type == "metadata":
             vstr = _getstr(self, scale_values=scale_values, decimals=decimals)
             return _alginstr(vstr, algin, name_width, size_width)
+        elif string_type == "info":
+            vstr = _getstr(self, scale_values=scale_values, decimals=decimals)
+            return _algin_to_line(vstr, line_length)
         elif string_type == "value":
             return _getstr_value(self, scale_values=scale_values, decimals=decimals)
 
@@ -1069,13 +1158,277 @@ class Valueclass:
 
         return self
 
+    @staticmethod
+    def array(
+        name=None,
+        tag=None,
+        array=None,
+        start=None,
+        stop=None,
+        steps=None,
+        stepsize=None,
+        center=None,
+        span=None,
+        relative=None,
+        scale=None,
+        unit="",
+        defaults={},
+        **kwargs,
+    ):
+        """Creates a Valueclass object from an array.
+
+        Args:
+            name (str, optional): The name of the array. Defaults to 'None'.
+            array (np.ndarray, optional): The array to be converted. Defaults to None.
+            start (float, optional): The start value of the array. Defaults to None.
+            stop (float, optional): The stop value of the array. Defaults to None.
+            step (float, optional): The step value of the array. Defaults to None.
+            center (float, optional): The center value of the array. Defaults to None.
+            span (float, optional): The span value of the array. Defaults to None.
+            unit (str, optional): The unit of the array. Defaults to "".
+            scale (str, optional): The scale of the array. Defaults to "linear".
+
+        Returns:
+            Valueclass: The converted array.
+        """
+
+        if "min" in kwargs:
+            if start is not None:
+                raise ValueError("Cannot specify both 'start' and 'min'.")
+            start = kwargs.pop("min")
+
+        if "max" in kwargs:
+            if stop is not None:
+                raise ValueError("Cannot specify both 'stop' and 'max'.")
+            stop = kwargs.pop("max")
+
+        if "min" in defaults:
+            if "start" in defaults:
+                raise ValueError("Cannot specify both 'stop' and 'max'.")
+            defaults["start"] = defaults.pop("min")
+
+        if "max" in defaults:
+            if "stop" in defaults:
+                raise ValueError("Cannot specify both 'stop' and 'max'.")
+            defaults["stop"] = defaults.pop("max")
+
+        relative = relative if relative is not None else defaults.pop("relative", None)
+        scale = scale if scale is not None else defaults.pop("scale", None)
+        unit = unit if unit is not None else defaults.pop("unit", "")
+
+        input_defaults = {
+            "start": defaults.pop("start", None),
+            "stop": defaults.pop("stop", None),
+            "center": defaults.pop("center", None),
+            "span": defaults.pop("span", None),
+            "steps": defaults.pop("steps", None),
+            "stepsize": defaults.pop("stepsize", None),
+            "scale": defaults.pop("scale", None),
+        }
+
+        if array is None:
+            input_array_settings = {
+                "start": start,
+                "stop": stop,
+                "center": center,
+                "span": span,
+                "steps": steps,
+                "stepsize": stepsize,
+            }
+
+            # Check if no input is given and defaults array is not None
+            if all(value is None for value in input_array_settings.values()) and defaults.get("array") is not None:
+                array = defaults.pop("array")
+
+            else:
+                # Remove None values from input_array_settings
+                input_array_settings = {key: value for key, value in input_array_settings.items() if value is not None}
+
+                # Remove None values from input_defaults
+                input_defaults = {key: value for key, value in input_defaults.items() if value is not None}
+
+                # Check if the input is sufficient for creating array
+                input_array_settings = is_sufficient(input_array_settings, input_defaults)
+
+                # Create array
+                array = Valueclass.create_array(**input_array_settings, scale=scale)
+
+        # Transform array
+        if "dtype" in kwargs:
+            if kwargs.get("dtype") is not None:
+                array = array.astype(kwargs.pop("dtype"))
+        elif "dtype" in defaults:
+            array = array.astype(defaults.pop("dtype"))
+
+        if "unique" in kwargs:
+            if kwargs.pop("unique") is True:
+                array = np.unique(array)
+        elif "unique" in defaults:
+            if defaults.pop("unique") is True:
+                array = np.unique(array)
+
+        # Remove name, tag, array, unit, relative from defaults
+        defaults.pop("name", None)
+        defaults.pop("tag", None)
+        defaults.pop("array", None)
+        defaults.pop("unit", None)
+        defaults.pop("relative", None)
+
+        # Update kwargs with defaults if not there
+        kwargs = defaults | kwargs
+
+        # Create Valueclass
+        return Valueclass(
+            name=name,
+            tag=tag,
+            value=array,
+            unit=unit,
+            relative=relative,
+            **kwargs,
+        )
+
+    @staticmethod
+    def _get_start_stop(start=None, stop=None, center=None, span=None, steps=None, stepsize=None):
+        def check_none(args):
+            """Returns True if all values are not None."""
+            return all(arg is not None for arg in args)
+
+        if check_none([start, stop]):
+            return start, stop
+
+        if check_none([center, span]):
+            return center - span / 2, center + span / 2
+
+        if check_none([start, span]):
+            return start, start + span
+
+        if check_none([stop, span]):
+            return stop - span, stop
+
+        if check_none([start, center]):
+            return start, 2 * center - start
+
+        if check_none([stop, center]):
+            return 2 * center - stop, stop
+
+        if check_none([start, steps, stepsize]):
+            return start, start + steps * stepsize
+
+        if check_none([stop, steps, stepsize]):
+            return stop - steps * stepsize, stop
+
+        if check_none([center, steps, stepsize]):
+            return center - steps * stepsize / 2, center + steps * stepsize / 2
+
+        raise ValueError(
+            "Invalid combination of arguments. This should never happen. Contact the developer; malthe.asmus.nielsen@nbi.ku.dk (use subject: 'Valueclass.array, Errorcode: 2301')"
+        )
+
+    @staticmethod
+    def _get_array_from_start_stop(start, stop, steps=None, stepsize=None, scale="linear"):
+        if scale == "linear" or scale is None:
+            if steps is not None:
+                return np.linspace(start, stop, steps)
+
+            if stepsize is not None:
+                return np.arange(start, stop, stepsize)
+
+        elif scale == "log":
+            if steps is not None:
+                return np.logspace(start, stop, steps)
+
+            if stepsize is not None:
+                return np.logspace(start, stop, int((stop - start) / stepsize))
+
+        elif scale == "geomspace":
+            if steps is not None:
+                return np.geomspace(start, stop, steps)
+
+            if stepsize is not None:
+                return np.geomspace(start, stop, int((stop - start) / stepsize))
+        else:
+            raise ValueError(
+                "Invalid combination of arguments. This should never happen. Contact the developer; malthe.asmus.nielsen@nbi.ku.dk (use subject: 'Valueclass.array, Errorcode: 2302')"
+            )
+
+    @staticmethod
+    def create_array(scale="linear", **array_settings):
+        start, stop = Valueclass._get_start_stop(**array_settings)
+        array = Valueclass._get_array_from_start_stop(
+            start,
+            stop,
+            steps=array_settings.get("steps"),
+            stepsize=array_settings.get("stepsize"),
+            scale=scale,
+        )
+        return array
+
+
+def is_sufficient(settings: dict, defaults: dict = {}) -> dict:
+    """Check if the value is sufficient for conversion."""
+
+    def _is_bad_combination(settings: dict) -> bool:
+        if len(settings) < 3:
+            return False
+
+        bad_combination = ["span", "steps", "stepsize"]
+        return all(key in settings for key in bad_combination)
+
+    # Check if settings is empty and default array is given.
+    if not settings and defaults.get("array") is not None:
+        return {"array": defaults.pop("array")}
+
+    # Check if steps or stepsize is given.
+    if all(key not in settings for key in ["steps", "stepsize"]):
+        if "steps" in defaults:
+            settings["steps"] = defaults.pop("steps")
+        elif "stepsize" in defaults:
+            settings["stepsize"] = defaults.pop("stepsize")
+        else:
+            raise ValueError("No steps or stepsize given.")
+
+    if _is_bad_combination(settings):
+        raise ValueError(f"Invalid combination of arguments. Can not genereate array from: {settings.keys()}")
+
+    # Check if exactly 3 arguments are given.
+    if len(settings) == 3:
+        return settings
+
+    if len(settings) < 3:
+        for key, value in defaults.items():
+            if key not in settings:
+                settings[key] = value
+
+                if _is_bad_combination(settings):
+                    settings.pop(key)
+
+                if len(settings) == 3:
+                    return settings
+
+    raise ValueError(
+        f"Invalid number of arguments. Exactly three arguments are required. Arguments given: {settings.keys()}"
+    )
+
 
 if __name__ == "__main__":
     # Test the Valueclass class. (Mean fucntion)
     import numpy as np
 
-    test = Valueclass(name="test", unit="V", value=y)
-    test.plot()
-    test.remove_outliers(sigma=3, converge=True).plot()
+    # test = Valueclass(name="test", unit="V", value=np.random.normal(0, 1, 1000))
+    # test.plot()
+    # test.remove_outliers(sigma=3, converge=True).plot()
 
-    test = Valueclass(name="test", unit="V", value=y)
+    # # Make array from static method
+
+    test = Valueclass.array(
+        tag="test",
+        name="amplitude",
+        unit="V",
+        sweep_idx=0,
+        defaults={"start": 0.02, "stop": 0.04, "stepsize": 0.0005, "relative": True},
+    )
+
+    Valueclass(tag="test", name="amplitude", unit="V", value=np.linspace(0.02, 0.04, 41))
+    test.plot()
+
+    test.max()

@@ -1,13 +1,19 @@
 # Author: Malthe Asmus Marciniak Nielsen
 # figure size settings
-font.size: 14
+font.size: 12
 figure.figsize: 12, 7
 
 # axes settings
-axes.labelsize: 22
-ytick.labelsize: 22
-xtick.labelsize: 22
-# axes.titlesize: 14
+axes.labelsize: 12
+ytick.labelsize: 12
+xtick.labelsize: 12
+# axes.titlesize: 12
+
+legend.fontsize: 9
+
+
+# set default font family
+font.family: Arial
 
 
 # gridlines settings
@@ -16,9 +22,21 @@ grid.linewidth: 1
 grid.linestyle: :
 grid.color: k
 
+# set colors
+axes.prop_cycle: cycler('color', ['189BC4', 'FD8719', '762D34', '30A975', '021F52', 'D4002A', '70C6DD', 'FEBF7F', '9A5F65', '81CFAF', '5D7698', 'ED879D']) 
+
+
 # plot layout settings
-figure.constrained_layout.use: False
-figure.autolayout: False
+#figure.constrained_layout.use: True
+
+# Set w_pad and h_pad for constrained layout.
+figure.constrained_layout.w_pad: 0.15
+figure.constrained_layout.h_pad: 0.15
+
+# add padding between subplots
+figure.subplot.wspace: 0.9
+figure.subplot.hspace: 0.9
+
 
 # latex settings
 text.usetex: False

@@ -283,6 +283,13 @@ class Fitter:
         yv.value = self.y_scaler.inverse_transform(self.model.func(x=x_array, **params))
         return xv, yv
 
+    def get_array(self, x=None):
+        self._check_if_fitted()
+        x = self.x_scaler.inverse_transform(self.x.value) if x is None else x
+        # res = self.y_scaler.transform(self.model.func(x=x, **self.values))
+        # return self.y_scaler.inverse_transform(res)
+        return x, self.model.func(x=x, **self.values)
+
     def get_fit_array(self, x_min=None, x_max=None, n_points=1000):
         """Get the fit array."""
         self._check_if_fitted()

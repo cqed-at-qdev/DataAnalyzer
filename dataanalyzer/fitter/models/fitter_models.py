@@ -536,7 +536,7 @@ class LinearModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"f(x) = {params[0]} x + {params[1]}"
+        return rf"$f(x) = {params[0]} x + {params[1]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -594,7 +594,7 @@ class ProportionalModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"f(x) = {params[0]} x"
+        return rf"$f(x) = {params[0]} x$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -638,7 +638,7 @@ class GaussianModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"f(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)"
+        return rf"$f(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -714,7 +714,7 @@ class LorentzianModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
+        return rf"$f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -753,7 +753,7 @@ class LorentzianConstantModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
+        return rf"$f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -829,8 +829,8 @@ class SplitLorentzianModel(ModelABC):
         if not params:
             params = self._display_name_list
         return (
-            rf"f(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}"
-            rf"{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
+            rf"$f(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}$"
+            rf"${{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
         )
 
     @property
@@ -869,7 +869,7 @@ class PolynomialModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"f(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
+        return rf"$f(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -910,7 +910,7 @@ class PolynomialModel(ModelABC):
             extrema = c0 - c1**2 / (4 * c2)
             return {"value": extrema.n, "error": extrema.s}
         else:
-            raise NotImplementedError("get_extrema_y not implemented for degree > 2")
+            return self._find_mulitpolinomial_minima(params)
 
     def _find_mulitpolinomial_minima(self, params: dict):
         param_values = [p["value"] for p in params.values()][: self.poly_degree + 1][::-1]
@@ -979,7 +979,7 @@ class OscillationModel(ModelABC):
         if not params:
             params = self._display_name_list
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1073,7 +1073,7 @@ class DampedOscillationModel(ModelABC):
             params = self._display_name_list
 
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"f(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1149,7 +1149,7 @@ class SumOscillationModelOdd(ModelABC):
         if not params:
             params = self._display_name_list
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1201,7 +1201,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"f(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
+        return rf"$f(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1239,7 +1239,7 @@ class ExponentialDecayModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"f(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
+        return rf"$f(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1276,7 +1276,7 @@ class RBDecayModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{f(x)}} = {params[0]} {params[1]}^x + {params[2]}$"
+        return rf"$f(x) = {params[0]} {params[1]}^x + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1417,7 +1417,7 @@ class ConstantModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"f(x) = {params[0]}$"
+        return rf"$f(x) = {params[0]}$"
 
     @property
     def units(self) -> dict[str, str]:

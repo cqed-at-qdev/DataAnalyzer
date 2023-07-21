@@ -61,7 +61,9 @@ class Valueclass:
             item: Sliced Valueclass object.
         """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
-            return Valueclass(self.value[key], self.error[key], self.tag, self.name, self.unit)
+            return Valueclass(
+                self.value[key], self.error[key], self.tag, self.name, self.unit
+            )
         return self[key]
 
     def __setitem__(self, key, value) -> None:
@@ -73,7 +75,9 @@ class Valueclass:
         """
         if isinstance(key, (slice, np.integer, int, np.ndarray, list, tuple)):
             if not isinstance(value, Valueclass):
-                value = Valueclass(value, self.error[key], self.tag, self.name, self.unit)
+                value = Valueclass(
+                    value, self.error[key], self.tag, self.name, self.unit
+                )
             self.value[key] = value.value
             self.error[key] = value.error
         else:
@@ -118,7 +122,9 @@ class Valueclass:
         if "Valueclass" in str(type(other)):
             copy = selfcopy.copy()
             copy.value *= other.value
-            copy.error = np.sqrt((self.error * other.value) ** 2 + (self.value * other.error) ** 2)
+            copy.error = np.sqrt(
+                (self.error * other.value) ** 2 + (self.value * other.error) ** 2
+            )
             return copy
         selfcopy.value *= other
         selfcopy.error *= other
@@ -129,7 +135,10 @@ class Valueclass:
         if "Valueclass" in str(type(other)):
             return Valueclass(
                 self.value / other.value,
-                np.sqrt((self.error / other.value) ** 2 + (self.value * other.error / other.value**2) ** 2),
+                np.sqrt(
+                    (self.error / other.value) ** 2
+                    + (self.value * other.error / other.value**2) ** 2
+                ),
                 self.name,
                 self.unit,
                 self.tag,
@@ -143,7 +152,9 @@ class Valueclass:
         if "Valueclass" not in str(type(other)):
             return Valueclass(
                 self.value**other,
-                self.error * other * self.value ** (other - 1),  # TODO: make correct error propagation
+                self.error
+                * other
+                * self.value ** (other - 1),  # TODO: make correct error propagation
                 self.name,
                 self.unit,
                 self.tag,
@@ -153,7 +164,8 @@ class Valueclass:
                 self.value**other.value,
                 np.sqrt(
                     (self.error * other.value * self.value ** (other.value - 1)) ** 2
-                    + (self.value**other.value * other.error * np.log(self.value)) ** 2
+                    + (self.value**other.value * other.error * np.log(self.value))
+                    ** 2
                 ),
                 self.name,
                 self.unit,
@@ -265,7 +277,11 @@ class Valueclass:
             error (Union[float, list, tuple, np.ndarray]): Error to set.
         """
         if not hasattr(self, "_error") or self._error.shape != np.shape(self.value):
-            self._error = np.full(np.shape(self.value), np.nan) if self.value.size else np.empty(0)
+            self._error = (
+                np.full(np.shape(self.value), np.nan)
+                if self.value.size
+                else np.empty(0)
+            )
 
         if np.iscomplexobj(error):
             self._error.__setattr__("dtype", np.complex128)
@@ -292,6 +308,10 @@ class Valueclass:
                     self._error = error
                 else:
                     self._error[:w, :h] = error
+
+            # For any higher dimension
+            else:
+                self._error = error
 
     @property
     def v(self):
@@ -338,6 +358,12 @@ class Valueclass:
         copy.value = np.unwrap(np.angle(copy.value))
         copy.error = np.array(np.angle(copy.error))
         copy.unit = "rad"
+        return copy
+
+    @property
+    def unwrap(self):
+        copy = self.copy()
+        copy.value = np.unwrap(copy.value)
         return copy
 
     @property
@@ -408,6 +434,18 @@ class Valueclass:
         copy.error = np.std(self.value, axis=axis) / np.sqrt(self.value.shape[axis])
         return copy
 
+    def nanmean(self, axis=None) -> "Valueclass":
+        if axis is None:
+            copy = self.copy()
+            copy.value = np.nanmean(self.value)
+            copy.error = np.nanstd(self.value) / np.sqrt(self.value.size)
+            return copy
+
+        copy = self.copy()
+        copy.value = np.nanmean(self.value, axis=axis)
+        copy.error = np.nanstd(self.value, axis=axis) / np.sqrt(self.value.shape[axis])
+        return copy
+
     def std(self, axis=None) -> "Valueclass":
         copy = self.copy()
         copy.value = np.std(self.value, axis=axis)
@@ -473,8 +511,12 @@ class Valueclass:
         v_max = v_max or np.max(self.value)
         e_max = e_max or np.max(self.error)
 
-        value = np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
-        error = np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        value = (
+            np.clip(self.value, v_min, v_max, out_value) if clip_value else self.value
+        )
+        error = (
+            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        )
 
         return Valueclass(
             value,
@@ -483,7 +525,9 @@ class Valueclass:
             self.unit,
             self.fft_type,
         )
-        copy.error = np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        copy.error = (
+            np.clip(self.error, e_min, e_max, out_error) if clip_error else self.error
+        )
         return copy
 
     def round(self, decimals=0, out_value=None, out_error=None) -> "Valueclass":
@@ -492,13 +536,19 @@ class Valueclass:
         copy.error = np.round(self.error, decimals, out_error)
         return copy
 
-    def sort(self, axis=-1, sort_by="value", kind=None, order=None, reverse=False) -> "Valueclass":
+    def sort(
+        self, axis=-1, sort_by="value", kind=None, order=None, reverse=False
+    ) -> "Valueclass":
         sign = -1 if reverse else 1
 
         if sort_by == "value":
-            return self[np.argsort(sign * self.value, axis=axis, kind=kind, order=order)]
+            return self[
+                np.argsort(sign * self.value, axis=axis, kind=kind, order=order)
+            ]
         elif sort_by == "error":
-            return self[np.argsort(sign * self.error, axis=axis, kind=kind, order=order)]
+            return self[
+                np.argsort(sign * self.error, axis=axis, kind=kind, order=order)
+            ]
         else:
             raise ValueError("sort_by must be either 'value' or 'error'")
 
@@ -581,14 +631,18 @@ class Valueclass:
         iteration = 0
         while not (converged and iteration < max_iterations):
             iteration += 1
-            filtered = self[mask].savgol(x[mask], peak_width=width, return_baseline=True, x_output=x)
+            filtered = self[mask].savgol(
+                x[mask], peak_width=width, return_baseline=True, x_output=x
+            )
             baseline_removed = self - filtered
             new_mask = baseline_removed.remove_outliers(return_mask=True)
             if np.all(new_mask == mask):
                 converged = True
             mask = new_mask
 
-        filtered_output = self[mask].savgol(x[mask], peak_width=width, return_baseline=True, x_output=x_output)
+        filtered_output = self[mask].savgol(
+            x[mask], peak_width=width, return_baseline=True, x_output=x_output
+        )
         return filtered_output, mask
 
     def remove_baseline(
@@ -623,7 +677,9 @@ class Valueclass:
         elif baseline_type == "snip":
             bkg = baseline_fitter.snip(y, **kwargs)
         else:
-            raise ValueError("Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'.")
+            raise ValueError(
+                "Unknown baseline type. Choose from 'modpoly', 'asls', 'mor' or 'snip'."
+            )
 
         return bkg[0]
 
@@ -666,13 +722,17 @@ class Valueclass:
         return self_copy
 
     def remove_outliers(self, sigma=3, axis=None, return_mask=False, converge=True):
-        mask = np.abs(self.value - np.mean(self.value, axis=axis)) < sigma * np.std(self.value, axis=axis)
+        mask = np.abs(self.value - np.mean(self.value, axis=axis)) < sigma * np.std(
+            self.value, axis=axis
+        )
 
         if converge:
             mask_temp = np.ones_like(mask)
             while not np.all(mask == mask_temp):
                 mask_temp = mask
-                mask = np.abs(self.value - np.mean(self.value[mask])) < sigma * np.std(self.value[mask])
+                mask = np.abs(self.value - np.mean(self.value[mask])) < sigma * np.std(
+                    self.value[mask]
+                )
 
         return mask if return_mask else self[mask]
 
@@ -719,7 +779,9 @@ class Valueclass:
 
     @property
     def substract_mean(self):
-        return Valueclass(self.value - np.mean(self.value), self.error, self.name, self.unit)
+        return Valueclass(
+            self.value - np.mean(self.value), self.error, self.name, self.unit
+        )
 
     @property
     def ddx(self) -> "Valueclass":  # TODO: Chack if this is correct
@@ -766,12 +828,20 @@ class Valueclass:
             copy.value = value
 
         elif operation == "average":
-            copy.value = np.tile(np.mean(self.value, axis=0), (np.shape(self.value)[0], 1))
-            copy.error = np.tile(np.mean(self.error, axis=0), (np.shape(self.value)[0], 1))
+            copy.value = np.tile(
+                np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)
+            )
+            copy.error = np.tile(
+                np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)
+            )
 
         elif operation == "standard deviation":
-            copy.value = np.tile(np.std(self.value, axis=0), (np.shape(self.value)[0], 1))
-            copy.error = np.tile(np.std(self.error, axis=0), (np.shape(self.value)[0], 1))
+            copy.value = np.tile(
+                np.std(self.value, axis=0), (np.shape(self.value)[0], 1)
+            )
+            copy.error = np.tile(
+                np.std(self.error, axis=0), (np.shape(self.value)[0], 1)
+            )
 
         else:
             raise ValueError(
@@ -941,12 +1011,18 @@ class Valueclass:
 
             value, unit_prefix, conversion_factor = self.value, "", 1
             if scale_values and self.has_unit:
-                value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
+                value, unit_prefix, conversion_factor = convert_array_with_unit(
+                    self.value
+                )
 
             if self.value.size > 1:
                 return f"{self.name}: ({self.value.size}); {np.min(value):.{decimals}f}–{np.max(value):.{decimals}f} {unit_prefix}{self.unit}"
 
-            value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
+            value = (
+                value[0]
+                if np.isnan(self.error)
+                else round_on_error(value[0], self.error[0] * conversion_factor)
+            )
             try:
                 return f"{self.name}: {value:.{decimals}f} {unit_prefix}{self.unit}"
             except ValueError:
@@ -974,8 +1050,14 @@ class Valueclass:
 
             value, unit_prefix, conversion_factor = self.value, "", 1
             if scale_values and self.has_unit:
-                value, unit_prefix, conversion_factor = convert_array_with_unit(self.value)
-            value = value[0] if np.isnan(self.error) else round_on_error(value[0], self.error[0] * conversion_factor)
+                value, unit_prefix, conversion_factor = convert_array_with_unit(
+                    self.value
+                )
+            value = (
+                value[0]
+                if np.isnan(self.error)
+                else round_on_error(value[0], self.error[0] * conversion_factor)
+            )
             try:
                 return f"{value:.{decimals}f} {unit_prefix}{self.unit}"
             except ValueError:
@@ -1114,8 +1196,14 @@ class Valueclass:
             Valueclass: The converted dataframe.
         """
         if isinstance(df, pd.DataFrame):
-            value = df[value_col].to_numpy() if value_col in df.columns else df.to_numpy()
-            error = df[error_col].to_numpy() if error_col in df.columns else np.zeros_like(value)
+            value = (
+                df[value_col].to_numpy() if value_col in df.columns else df.to_numpy()
+            )
+            error = (
+                df[error_col].to_numpy()
+                if error_col in df.columns
+                else np.zeros_like(value)
+            )
 
         elif isinstance(df, pd.Series):
             value = df.to_numpy()
@@ -1237,18 +1325,31 @@ class Valueclass:
             }
 
             # Check if no input is given and defaults array is not None
-            if all(value is None for value in input_array_settings.values()) and defaults.get("array") is not None:
+            if (
+                all(value is None for value in input_array_settings.values())
+                and defaults.get("array") is not None
+            ):
                 array = defaults.pop("array")
 
             else:
                 # Remove None values from input_array_settings
-                input_array_settings = {key: value for key, value in input_array_settings.items() if value is not None}
+                input_array_settings = {
+                    key: value
+                    for key, value in input_array_settings.items()
+                    if value is not None
+                }
 
                 # Remove None values from input_defaults
-                input_defaults = {key: value for key, value in input_defaults.items() if value is not None}
+                input_defaults = {
+                    key: value
+                    for key, value in input_defaults.items()
+                    if value is not None
+                }
 
                 # Check if the input is sufficient for creating array
-                input_array_settings = is_sufficient(input_array_settings, input_defaults)
+                input_array_settings = is_sufficient(
+                    input_array_settings, input_defaults
+                )
 
                 # Create array
                 array = Valueclass.create_array(**input_array_settings, scale=scale)
@@ -1288,7 +1389,9 @@ class Valueclass:
         )
 
     @staticmethod
-    def _get_start_stop(start=None, stop=None, center=None, span=None, steps=None, stepsize=None):
+    def _get_start_stop(
+        start=None, stop=None, center=None, span=None, steps=None, stepsize=None
+    ):
         def check_none(args):
             """Returns True if all values are not None."""
             return all(arg is not None for arg in args)
@@ -1325,7 +1428,9 @@ class Valueclass:
         )
 
     @staticmethod
-    def _get_array_from_start_stop(start, stop, steps=None, stepsize=None, scale="linear"):
+    def _get_array_from_start_stop(
+        start, stop, steps=None, stepsize=None, scale="linear"
+    ):
         if scale == "linear" or scale is None:
             if steps is not None:
                 return np.linspace(start, stop, steps)
@@ -1388,7 +1493,9 @@ def is_sufficient(settings: dict, defaults: dict = {}) -> dict:
             raise ValueError("No steps or stepsize given.")
 
     if _is_bad_combination(settings):
-        raise ValueError(f"Invalid combination of arguments. Can not genereate array from: {settings.keys()}")
+        raise ValueError(
+            f"Invalid combination of arguments. Can not genereate array from: {settings.keys()}"
+        )
 
     # Check if exactly 3 arguments are given.
     if len(settings) == 3:
@@ -1428,7 +1535,9 @@ if __name__ == "__main__":
         defaults={"start": 0.02, "stop": 0.04, "stepsize": 0.0005, "relative": True},
     )
 
-    Valueclass(tag="test", name="amplitude", unit="V", value=np.linspace(0.02, 0.04, 41))
+    Valueclass(
+        tag="test", name="amplitude", unit="V", value=np.linspace(0.02, 0.04, 41)
+    )
     test.plot()
 
     test.max()

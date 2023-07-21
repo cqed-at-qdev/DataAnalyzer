@@ -536,7 +536,7 @@ class LinearModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"$\mathrm{{linear}}(x) = {params[0]} x + {params[1]}"
+        return rf"$f(x) = {params[0]} x + {params[1]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -594,7 +594,7 @@ class ProportionalModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"$\mathrm{{proportional}}(x) = {params[0]} x"
+        return rf"$f(x) = {params[0]} x$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -638,7 +638,7 @@ class GaussianModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{gaussian}}(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)"
+        return rf"$f(x) = {params[0]} \exp(-((x - {params[1]}) / {params[2]})^2)$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -714,7 +714,7 @@ class LorentzianModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
+        return rf"$f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -753,7 +753,7 @@ class LorentzianConstantModel(ModelABC):
         if not params:
             params = self._display_name_list
 
-        return rf"$\mathrm{{lorentzian}}(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
+        return rf"$f(x) = \frac{{{params[0]}{params[2]}^2}}{{(x-{params[1]})^2+{params[2]}^2}} + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -829,8 +829,8 @@ class SplitLorentzianModel(ModelABC):
         if not params:
             params = self._display_name_list
         return (
-            rf"$\mathrm{{split\ lorentzian}}(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}"
-            rf"{{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
+            rf"$f(x) = \frac{{2 {params[0]} / ({params[2]} + {params[3]})}}$"
+            rf"${{({params[2]}^2 + (x - {params[1]})^2) + ({params[3]}^2 + (x - {params[1]})^2)}}$"
         )
 
     @property
@@ -869,7 +869,7 @@ class PolynomialModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{polynomial}}(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
+        return rf"$f(x) = {params[0]} + {params[1]} x + {' + '.join(f'{params[i]} x^{i}' for i in range(2, self.poly_degree +1))}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -910,7 +910,7 @@ class PolynomialModel(ModelABC):
             extrema = c0 - c1**2 / (4 * c2)
             return {"value": extrema.n, "error": extrema.s}
         else:
-            raise NotImplementedError("get_extrema_y not implemented for degree > 2")
+            return self._find_mulitpolinomial_minima(params)
 
     def _find_mulitpolinomial_minima(self, params: dict):
         param_values = [p["value"] for p in params.values()][: self.poly_degree + 1][::-1]
@@ -979,7 +979,7 @@ class OscillationModel(ModelABC):
         if not params:
             params = self._display_name_list
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1073,7 +1073,7 @@ class DampedOscillationModel(ModelABC):
             params = self._display_name_list
 
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"$\mathrm{{damped\ oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1149,7 +1149,7 @@ class SumOscillationModelOdd(ModelABC):
         if not params:
             params = self._display_name_list
         f = f"{params[1]}" if self.angular else f"2π{params[1]}"
-        return rf"$\mathrm{{oscillation}}(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) + {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1201,7 +1201,7 @@ class RandomizedCliffordBenchmarkModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{randomized\ clifford}}(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
+        return rf"$f(x) = {params[0]} {params[1]} ^ x + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1239,7 +1239,7 @@ class ExponentialDecayModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{exponential\ decay}}(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
+        return rf"$f(x) = {params[0]} \exp(-x / {params[1]}) + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1276,7 +1276,7 @@ class RBDecayModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{f(x)}} = {params[0]} {params[1]}^x + {params[2]}$"
+        return rf"$f(x) = {params[0]} {params[1]}^x + {params[2]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1417,7 +1417,7 @@ class ConstantModel(ModelABC):
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$\mathrm{{constant}}(x) = {params[0]}$"
+        return rf"$f(x) = {params[0]}$"
 
     @property
     def units(self) -> dict[str, str]:
@@ -1488,7 +1488,7 @@ class FreqSpectrumModel(ModelABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def func(self, x, v_per_phi0=1, flux_offset=0, max_freq=1, Ec=1, d=0.5):
+    def func(self, x, v_per_phi0=1, flux_offset=0, max_freq=1, Ec=1):
         """Function to fit the frequency spectrum of a qubit.
 
         Args:
@@ -1497,11 +1497,13 @@ class FreqSpectrumModel(ModelABC):
             flux_offset (float): Flux offset (in units of Phi_0)
             max_freq (float): Maximum frequency
             Ec (float): Charging energy
-            d (float): Asymmetry parameter
 
         Returns:
             array: f(x)
         """
+
+        d = 0  # turn this into a fit parameter for asymmetric transmons (0<d<1 for asymmetric transmons)
+
         x = np.array(x)
         return (max_freq + Ec) * (
             d**2 + (1 - d**2) * (np.cos(np.pi * (x / v_per_phi0 + flux_offset))) ** 2
@@ -1514,89 +1516,24 @@ class FreqSpectrumModel(ModelABC):
         v_per_phi0 = 500
         flux_offset = -150 / v_per_phi0
         Ec = -0.274
-        d = 0.1
 
-        return self._get_parameters_as_dict(
-            v_per_phi0=v_per_phi0, flux_offset=flux_offset, max_freq=max_freq, Ec=Ec, d=d
-        )
+        return self._get_parameters_as_dict(v_per_phi0=v_per_phi0, flux_offset=flux_offset, max_freq=max_freq, Ec=Ec)
 
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$f(x) = ({params[2]} + {params[3]}) \cdot ({params[4]}^2 + (1 - {params[4]}^2) \cdot (\cos(\pi \cdot (\frac{{x}}{{{params[0]}}} + {params[1]})))^2)^{{1/4}} - {params[4]}$"
+        return rf"$f(x) = ({params[2]} + {params[3]}) \cdot (d^2 + (1 - d^2) \cdot (\cos(\pi \cdot (\frac{{x}}{{{params[0]}}} + {params[1]})))^2)^{{1/4}} - {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
-        return {"v_per_phi0": "x", "max_freq": "y", "flux_offset": "", "Ec": "y", "d": ""}
+        return {"v_per_phi0": "x", "max_freq": "y", "flux_offset": "", "Ec": "y"}
 
     @property
     def symbols(self) -> dict[str, str]:
-        return {
-            "v_per_phi0": "V_{\Phi_0}",
-            "max_freq": "f_{max}",
-            "flux_offset": "\Phi_{offset}",
-            "Ec": "E_C",
-            "d": "d",
-        }
+        return {"v_per_phi0": "V_{\Phi_0}", "max_freq": "f_{max}", "flux_offset": "\Phi_{offset}", "Ec": "E_C"}
 
     def get_extrema(self, params: dict) -> dict[str, float]:
         return -params["flux_offset"] * params["v_per_phi0"]
 
-
-####################################################################################################
-#                   Frequency Spectrum Model V2                                                    #
-####################################################################################################
-class FreqSpectrumModelv2(ModelABC):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def func(self, x, v_per_phi0=1, flux_offset=0):
-        """Function to fit the frequency spectrum of a qubit.
-
-        Args:
-            x (array): Input data (in V).
-            v_per_phi0 (float): Period of frequency spectrum (in V)
-            flux_offset (float): Flux offset (in units of Phi_0)
-            max_freq (float): Maximum frequency
-            Ec (float): Charging energy
-            d (float): Asymmetry parameter
-
-        Returns:
-            array: f(x)
-        """
-
-        max_freq = 5.985
-        Ec = -0.274
-        d = 0
-
-        x = np.array(x)
-        return (max_freq + Ec) * (
-            d**2 + (1 - d**2) * (np.cos(np.pi * (x / v_per_phi0 + flux_offset))) ** 2
-        ) ** 0.25 - Ec
-
-    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict[str, Fitparam]:
-        x, y = np.array(x), np.array(y)
-
-        # max_freq = np.max(y)
-        v_per_phi0 = 800
-        flux_offset = -150 / v_per_phi0
-        # Ec = -0.300
-        # d = 0.3
-
-        return self._get_parameters_as_dict(v_per_phi0=v_per_phi0, flux_offset=flux_offset)
-
-    def funcname(self, *params) -> str:
-        if not params:
-            params = self._display_name_list
-        return rf"$f(x) = ...$"
-
-    @property
-    def units(self) -> dict[str, str]:
-        return {"v_per_phi0": "x", "max_freq": "y"}
-
-    @property
-    def symbols(self) -> dict[str, str]:
-        return {"v_per_phi0": "V_{\Phi_0}", "flux_offset": "\Phi_{offset}"}
-
-    def get_extrema(self, params: dict) -> dict[str, float]:
-        return -params["flux_offset"] * params["v_per_phi0"]
+    def get_extrema_y(self, params: dict) -> dict[str, float]:
+        return params["max_freq"]

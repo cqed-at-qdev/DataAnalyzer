@@ -1,5 +1,5 @@
 import xarray as xr
-from dataanalyzer.data_handling.utilities import attrs_to_string
+from dataanalyzer.data_handling.utilities import attrs_to_string, string_to_attrs
 
 
 def save(ds: xr.Dataset, path: str) -> None:
@@ -11,4 +11,5 @@ def save(ds: xr.Dataset, path: str) -> None:
 def format_loaded_dataset(ds: xr.Dataset) -> xr.Dataset:
     """Formats the loaded dataset, version 0.0.2
     No formats are needed in this version, so this function just returns the dataset"""
+    ds = string_to_attrs(ds, str(type(None)), lambda s: None)
     return ds

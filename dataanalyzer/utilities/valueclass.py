@@ -234,6 +234,42 @@ class Valueclass:
             unit=self.unit,
         )
 
+    def reshape(self, *args, **kwargs) -> "Valueclass":
+        """Reshapes the Valueclass object.
+
+        Args:
+            *args: Arguments to pass to numpy.reshape.
+            **kwargs: Keyword arguments to pass to numpy.reshape.
+
+        Returns:
+            Valueclass: Reshaped Valueclass object.
+        """
+        return Valueclass(
+            np.reshape(self.value, *args, **kwargs),
+            np.reshape(self.error, *args, **kwargs),
+            name=self.name,
+            tag=self.tag,
+            unit=self.unit,
+        )
+
+    def moveaxis(self, *args, **kwargs) -> "Valueclass":
+        """Moves the axis of the Valueclass object.
+
+        Args:
+            *args: Arguments to pass to numpy.moveaxis.
+            **kwargs: Keyword arguments to pass to numpy.moveaxis.
+
+        Returns:
+            Valueclass: Moved Valueclass object.
+        """
+        return Valueclass(
+            np.moveaxis(self.value, *args, **kwargs),
+            np.moveaxis(self.error, *args, **kwargs),
+            name=self.name,
+            tag=self.tag,
+            unit=self.unit,
+        )
+
     ####################################################################################################
     #                   Main Functions                                                                 #
     ####################################################################################################
@@ -372,7 +408,7 @@ class Valueclass:
 
     @property  # TODO: Hej Malthe, denne funktion er rar at have, hvis du har et godt sted til den kan du godt flytte den. mvh Jacob
     def has_unit(self):
-        return self.unit != ""
+        return self.unit not in ["", None]
 
     @property
     def name(self):
@@ -1053,9 +1089,13 @@ class Valueclass:
                 value, unit_prefix, conversion_factor = convert_array_with_unit(
                     self.value
                 )
+
+            if len(self.value) > 1:
+                return f"{value} {unit_prefix}{self.unit}"
+
             value = (
                 value[0]
-                if np.isnan(self.error)
+                if np.isnan(self.error).any()
                 else round_on_error(value[0], self.error[0] * conversion_factor)
             )
             try:
@@ -1071,6 +1111,8 @@ class Valueclass:
             return _algin_to_line(vstr, line_length)
         elif string_type == "value":
             return _getstr_value(self, scale_values=scale_values, decimals=decimals)
+        elif string_type == "name_value":
+            return f"{self.name}: {_getstr_value(self, scale_values=scale_values, decimals=decimals)}"
 
     @staticmethod
     def fromdict(newdict: dict) -> "Valueclass":

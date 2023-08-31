@@ -5,17 +5,15 @@ from typing import Any, Tuple, Union
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import gridspec, ticker
+import qutip as qt
+from matplotlib import gridspec, rc, ticker
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib import rc
-
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from dataanalyzer.fitter import Fitter
 from dataanalyzer.plotter.plotter_decorators import matplotlib_decorator
 from dataanalyzer.utilities import Valueclass, convert_array_with_unit
-
-import qutip as qt
 
 
 ####################################################################################################
@@ -113,7 +111,9 @@ class Plotter:
         # from the quantum_calibrator.mplstyle file
         if default_settings == "quantum_calibrator":
             dirname = os.path.dirname(__file__)
-            plt.style.use(os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle"))
+            plt.style.use(
+                os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle")
+            )
 
         # If the user wants to use the presentation settings, load the presentation
         # settings from the presentation.mplstyle file
@@ -136,24 +136,41 @@ class Plotter:
 
         # If the user passes anything else, raise an error
         else:
-            raise ValueError("default_settings must be either a dict, a string or a boolean")
+            raise ValueError(
+                "default_settings must be either a dict, a string or a boolean"
+            )
 
     @staticmethod
     def set_style(style) -> None:
         Plotter.set_default_settings(style)
 
     ############# 1D Plotting Functions ############################################################
-    def plot_fit(self, fit_obejct: Fitter, ax: tuple = (), **kwargs):
+    def plot_fit(
+        self,
+        fit_obejct: Fitter,
+        ax: tuple = (),
+        force_fit: bool = False,
+        flip_axis: bool = False,
+        plot_data: bool = True,
+        plot_guess: bool = True,
+        plot_fit: bool = True,
+        plot_residuals: bool = True,
+        plot_metadata: bool = True,
+        **kwargs,
+    ):
         """Plots a fit object. This function is a wrapper for matplotlib.pyplot.plot
 
         Args:
             fit_obejct (object): The fit object to plot.
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
-        flip_axis = kwargs.pop("flip_axis", False)
+
         ls_start = kwargs.pop("linspace_start", None)
         ls_stop = kwargs.pop("linspace_stop", None)
         ls_steps = kwargs.pop("linspace_steps", 1000)
+
+        fit_line_color = kwargs.pop("fit_line_color", "xkcd:dark grey")
+        fit_line_width = kwargs.pop("fit_line_style", 1)
 
         if isinstance(ax, plt.Axes):
             self.ax = ax
@@ -163,10 +180,10 @@ class Plotter:
         else:
             self.ax = self.axs[ax] if ax else self.ax
 
-        if kwargs.pop("force_fit", False) or not fit_obejct._fitted:
+        if force_fit or not fit_obejct._fitted:
             fit_obejct.do_fit()
 
-        if kwargs.pop("plot_data", True):
+        if plot_data:
             x, y = fit_obejct.x_scaled, fit_obejct.y_scaled
             y.error = fit_obejct.yerr_scaled.value
 
@@ -174,9 +191,20 @@ class Plotter:
                 x, y = y, x
 
             # self.scatter(x, y, ax=ax, label="Data", **kwargs.pop("kwargs_data", {}))
-            self.errorbar(x, y, label="Data", **kwargs.pop("kwargs_data", {}), ls="", marker=".")
+            self.errorbar(
+                x,
+                y,
+                label="Data",
+                **kwargs.pop("kwargs_data", {}),
+                ls="",
+                marker=".",
+                # markerfacecolor="white",
+                # # color="black",
+                # linewidth=1.5,
+                # markersize=8,
+            )
 
-        if kwargs.pop("plot_guess", True):
+        if plot_guess:
             x_guess, y_guess = fit_obejct.get_guess_array(ls_start, ls_stop, ls_steps)
             x_guess = Valueclass.fromfloat(x_guess, "X guess")
             y_guess = Valueclass.fromfloat(y_guess, "Y guess")
@@ -186,7 +214,7 @@ class Plotter:
 
             self.plot(x_guess, y_guess, ls="--", color="grey", label="Guess")
 
-        if kwargs.pop("plot_fit", True):
+        if plot_fit:
             x_fit, y_fit = fit_obejct.get_fit_array(ls_start, ls_stop, ls_steps)
 
             x_fit = Valueclass.fromfloat(x_fit, "X fitted")
@@ -195,9 +223,9 @@ class Plotter:
             if flip_axis:
                 x_fit, y_fit = y_fit, x_fit
 
-            self.plot(x_fit, y_fit, label="Fit", c="orange")
+            self.plot(x_fit, y_fit, label="Fit", c=fit_line_color, lw=fit_line_width)
 
-        if kwargs.pop("plot_residuals", True):
+        if plot_residuals:
             x_res, y_res = fit_obejct.get_residuals()
 
             if flip_axis:
@@ -206,7 +234,7 @@ class Plotter:
             else:
                 self.add_xresiuals(x_res, y_res)
 
-        if kwargs.pop("plot_metadata", True):
+        if plot_metadata:
             self.add_metadata(fit_obejct.get_report())  # fit_obejct._report_string
 
     @matplotlib_decorator
@@ -242,7 +270,8 @@ class Plotter:
             ax (tuple, optional): The ax to use. If None, self._last_ax is used. Defaults to ().
         """
         # kwargs.setdefault("marker", "x")
-        kwargs.setdefault("s", 15)
+        kwargs.setdefault("s", kwargs.pop("size", 20))
+        kwargs.setdefault("facecolor", kwargs.pop("fc", "white"))
 
         if z is not None:
             kwargs.setdefault("c", z.value)
@@ -255,9 +284,15 @@ class Plotter:
 
         except ValueError:
             try:
-                [self.ax.scatter(x.value, y.value[i], **kwargs) for i in range(y.value.shape[0])]
+                [
+                    self.ax.scatter(x.value, y.value[i], **kwargs)
+                    for i in range(y.value.shape[0])
+                ]
             except ValueError:
-                [self.ax.scatter(x.value, y.value[:, i], **kwargs) for i in range(y.value.shape[1])]
+                [
+                    self.ax.scatter(x.value, y.value[:, i], **kwargs)
+                    for i in range(y.value.shape[1])
+                ]
                 print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
@@ -290,6 +325,8 @@ class Plotter:
         kwargs.setdefault("capsize", 3)
         kwargs.setdefault("ls", "")
         kwargs.setdefault("marker", ".")
+        kwargs.setdefault("markerfacecolor", kwargs.pop("mfc", "white"))
+        kwargs.setdefault("markersize", kwargs.pop("ms", 7))
 
         yerr = kwargs.pop("yerr", y.error)
         xerr = kwargs.pop("xerr", x.error)
@@ -348,7 +385,7 @@ class Plotter:
             ValueError: If plot_type is not a valid option.
         """
         keep_colorbar = kwargs.pop("keep_colorbar", False)
-        kwargs.setdefault("cmap", "RdBu_r")
+        kwargs.setdefault("cmap", "RdYlBu_r")
         kwargs.setdefault("vmin", np.nanmin(z.value))
         kwargs.setdefault("vmax", np.nanmax(z.value))
 
@@ -391,8 +428,12 @@ class Plotter:
             c = axdummy.scatter(x=[0, 1], y=[0, 1], c=[z.value.min(), z.value.max()])
             axdummy.remove()
 
-        cbar_ax = self.ax.inset_axes([0.7, 1.05, 0.3, 0.05], transform=self.ax.transAxes)
-        colorbar = self.fig.colorbar(c, ax=self.ax, cax=cbar_ax, orientation="horizontal")
+        cbar_ax = self.ax.inset_axes(
+            [0.7, 1.05, 0.3, 0.05], transform=self.ax.transAxes
+        )
+        colorbar = self.fig.colorbar(
+            c, ax=self.ax, cax=cbar_ax, orientation="horizontal"
+        )
         colorbar.ax.xaxis.set_ticks_position("top")
         colorbar.ax.set_ylabel(label)
         colorbar.ax.yaxis.label.set(rotation="horizontal", ha="right", va="center")
@@ -404,7 +445,9 @@ class Plotter:
                 else:
                     ax.colorbar.append(colorbar)
 
-    def pcolormesh(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def pcolormesh(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.pcolormesh
 
         Args:
@@ -415,7 +458,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="pcolormesh", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def heatmap(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def heatmap(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.pcolormesh
 
         Args:
@@ -426,7 +471,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="pcolormesh", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def contour(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def contour(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.contour
 
         Args:
@@ -437,7 +484,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="contour", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def contourf(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def contourf(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.contourf
 
         Args:
@@ -448,7 +497,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="contourf", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def tricontour(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tricontour(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tricontour
 
         Args:
@@ -459,7 +510,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="tricontour", x=x, y=y, z=z, ax=ax, **kwargs)
 
-    def tricontourf(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tricontourf(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tricontourf
 
         Args:
@@ -470,7 +523,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="tricontourf", x=x, y=y, z=z, ax=ax, **kwargs)
 
-    def tripcolor(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tripcolor(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tripcolor
 
         Args:
@@ -573,7 +628,9 @@ class Plotter:
             self.ax.yres.axvline(x=0, linestyle=":", color="red")
             self.ax.yres.sharey(self.ax)
 
-            xlabel = kwargs.pop("xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals")
+            xlabel = kwargs.pop(
+                "xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals"
+            )
             self.ax.yres.set_xlabel(xlabel)
 
         self.ax.yres.scatter(x.value, y.value, **kwargs)
@@ -602,7 +659,9 @@ class Plotter:
                 self.ax.xres.set_xlabel(self.ax.get_xlabel())
                 self.ax.label_outer()  # type: ignore
 
-                ylabel = kwargs.pop("ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals")
+                ylabel = kwargs.pop(
+                    "ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals"
+                )
                 self.ax.xres.set_ylabel(ylabel)
 
         self.ax.xres.scatter(x.value, y.value, **kwargs)
@@ -644,9 +703,13 @@ class Plotter:
     ############# Metadata Functions ###############################################################
     def add_metadata(
         self,
-        *metadata: Union[str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]],
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
         ax: tuple = (),
         overwrite: bool = False,
+        fontsize: int = 12,
+        max_numb_of_lines: int = 30,
         **kwargs,
     ):
         """Adds metadata to the plot. This is done by adding a text box to the plot.
@@ -667,20 +730,34 @@ class Plotter:
             "transform": self.ax_anotate.transAxes,
             "fontdict": {"family": "monospace"},
         }
+
         kwargs = default_kwargs | kwargs  # type: ignore
         algin = kwargs.pop("algin", True)
 
-        kwargs_metadata = {k.removeprefix("tostr_"): kwargs.pop(k) for k in list(kwargs) if k.startswith("tostr_")}
-        metadata_str = self._convert_metadata_to_str(*metadata, algin=algin, **kwargs_metadata)
+        kwargs_metadata = {
+            k.removeprefix("tostr_"): kwargs.pop(k)
+            for k in list(kwargs)
+            if k.startswith("tostr_")
+        }
+        metadata_str = self._convert_metadata_to_str(
+            *metadata, algin=algin, **kwargs_metadata
+        )
         self.metadata = metadata_str if overwrite else f"{self.metadata}{metadata_str}"
 
+        # Check if the metadata is to long
+        relative_size = self.metadata.count("\n") / max_numb_of_lines
+        if relative_size > 1:
+            fontsize /= relative_size
+
         self.ax_anotate.texts.clear()
-        self.ax_anotate.text(s=self.metadata, **kwargs)
+        self.ax_anotate.text(s=self.metadata, fontsize=fontsize, **kwargs)
         self._remove_ax_anotate = False
 
     def _convert_metadata_to_str(
         self,
-        *metadata: Union[str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]],
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
         algin: bool = True,
         add_parameter_header: bool = True,
         **kwargs,
@@ -752,7 +829,9 @@ class Plotter:
         """
 
         font_size = kwargs.pop("font_size", 14)
-        point_size = kwargs.pop("point_size", [55, 62, 65, 75])  # [7,7,7,7] for many points
+        point_size = kwargs.pop(
+            "point_size", [55, 62, 65, 75]
+        )  # [7,7,7,7] for many points
         view = kwargs.pop("view", [-60, 30])
 
         if isinstance(ax, plt.Axes):
@@ -827,7 +906,9 @@ class Plotter:
 
         # Check if bloch sphere exists
         if not hasattr(self.ax, "bloch"):
-            self.add_bloch_sphere(ax=ax, font_size=font_size, point_size=point_size, view=view)
+            self.add_bloch_sphere(
+                ax=ax, font_size=font_size, point_size=point_size, view=view
+            )
 
         if point_color is not None:
             if len(np.array(point_color)) == 1:
@@ -858,11 +939,41 @@ class Plotter:
             self._add_colorbar(c=c, z=z, keep_colorbar=keep_colorbar)
 
     ############# Other Functions ##################################################################
+    def clear_ax(
+        self,
+        ax: plt.Axes = None,
+        clear_title: bool = True,
+        clear_xlabel: bool = True,
+        clear_xticklabels: bool = True,
+        clear_ylabel: bool = True,
+        clear_yticklabels: bool = True,
+        clear_colorbar: bool = True,
+    ) -> None:
+        if ax is None:
+            ax = self.ax
+
+        if clear_title:
+            ax.set_title("")
+        if clear_xlabel:
+            ax.set_xlabel("")
+        if clear_xticklabels:
+            ax.set_xticklabels([])
+        if clear_ylabel:
+            ax.set_ylabel("")
+        if clear_yticklabels:
+            ax.set_yticklabels([])
+        if clear_colorbar:
+            ax.colorbar[0].remove()
+
     def _get_default_transform(self):
         axarg = np.where(self.axs == self.ax)[0][0]
         right_axs = self.axs[axarg, np.size(self.axs, axis=1) - 1]
 
-        return right_axs.colorbar.ax.transAxes if hasattr(right_axs, "colorbar") else self.ax.transAxes
+        return (
+            right_axs.colorbar.ax.transAxes
+            if hasattr(right_axs, "colorbar")
+            else self.ax.transAxes
+        )
 
     def _label_with_unit_prefix(self, label: str, unit_prefix: str):
         return (

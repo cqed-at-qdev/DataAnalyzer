@@ -69,6 +69,9 @@ def convert_array_with_unit(
     # Determine the maximum value of the array
     # and convert it to a decimal
     max_value = np.max(np.abs(array))
+    if max_value == 0:
+        return np.array(array), "", 1
+
     deci = (decimal.Decimal(str(max_value)) * shift).normalize()
 
     # Split the decimal into its mantissa and exponent
@@ -90,7 +93,9 @@ def convert_array_with_unit(
     return converted_array, unit_prefix, conversion_factor
 
 
-def round_on_error(value: Union[float, int], error: Union[float, int], n_digits: int = 1) -> str:
+def round_on_error(
+    value: Union[float, int], error: Union[float, int], n_digits: int = 1
+) -> str:
     """Rounds a value and its error to a given number of significant digits.
 
     Args:
@@ -119,10 +124,16 @@ def round_on_error(value: Union[float, int], error: Union[float, int], n_digits:
     value_rounded = round(value, power_round)
 
     # Return the rounded value and error as a string
-    return f"{value:.{power_round}f} ± {error:.{power_round}f}" if power < 0 else f"{value_rounded} ± {error_rounded}"
+    return (
+        f"{value:.{power_round}f} ± {error:.{power_round}f}"
+        if power < 0
+        else f"{value_rounded} ± {error_rounded}"
+    )
 
 
-def convert_unit_to_str_or_float(f: str, x: Union[float, str, None], y: Union[float, str, None]):
+def convert_unit_to_str_or_float(
+    f: str, x: Union[float, str, None], y: Union[float, str, None]
+):
     if type(f) != str:
         raise ValueError(f"f must be a string, not {type(f)}: {f}")
 
@@ -189,5 +200,10 @@ def split_by_condition(params: list, condition: object):
 
 def sort_by(params: list, attr: str):
     """Sorts a list of Valueclasses by a given attribute."""
-    idx_max = max(0 if getattr(param, attr) == None else getattr(param, attr) for param in params)
-    return sorted(params, key=lambda x: idx_max + 1 if getattr(x, attr) == None else getattr(x, attr))
+    idx_max = max(
+        0 if getattr(param, attr) == None else getattr(param, attr) for param in params
+    )
+    return sorted(
+        params,
+        key=lambda x: idx_max + 1 if getattr(x, attr) == None else getattr(x, attr),
+    )

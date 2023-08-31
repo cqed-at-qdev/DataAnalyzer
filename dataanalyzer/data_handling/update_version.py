@@ -7,13 +7,41 @@ def update_to_latest(ds: xr.Dataset) -> xr.Dataset:
     is_updated = False
     while not is_updated:
         current_version = ds.attrs["data_version"].replace(".", "_")
-        update_module_name = (
-            f"dataanalyzer.data_handling.update_versions.update_from_{current_version}"
+        update_module = importlib.import_module(
+            name=f"dataanalyzer.data_handling.update_versions.version_{current_version}"
         )
-        if importlib.util.find_spec(update_module_name) is None:
+
+        if update_module.NEXT_VERSION is None:
             is_updated = True
         else:
-            update_dataset = importlib.import_module(update_module_name).update_dataset
-            ds = update_dataset(ds)
+            ds = update_module.convert_up(ds)
     return ds
 
+
+def update_to_version(ds: xr.Dataset, version: str) -> xr.Dataset:
+    """Update the dataset to the given version
+
+    Args:
+        ds: Dataset to update
+        version: Version to update to, format "x_x_x" or "x.x.x"
+    """
+
+    version = version.replace(".", "_")
+
+    is_updated = False
+    while not is_updated:
+        current_version = ds.attrs["data_version"].replace(".", "_")
+        if current_version == version:
+            is_updated = True
+            break
+
+        update_module = importlib.import_module(
+            name=f"dataanalyzer.data_handling.update_versions.version_{current_version}"
+        )
+
+        if current_version > version:
+            ds = update_module.convert_down(ds)
+        else:
+            ds = update_module.convert_up(ds)
+
+    return ds

@@ -116,7 +116,7 @@ def seperate_from_unumpy(ds: xr.Dataset) -> xr.Dataset:
     ds.coords["value_error"].attrs["description"] = "values and errors"
 
     for key in ds.data_vars:
-        if _contains_unumpy(ds[key]):
+        if contains_unumpy(ds[key]):
             data = ds[key].data
             ds[key] = ds[key].expand_dims({"value_error": 2}).copy()
             ds[key].loc[{"value_error": "value"}] = unumpy.nominal_values(data)
@@ -148,8 +148,9 @@ def combine_to_unumpy(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def _contains_unumpy(da: xr.DataArray) -> bool:
+def contains_unumpy(da: xr.DataArray) -> bool:
+    """Checks whether the data array contains unumpy values"""
+
     import uncertainties
 
-    """Checks whether the data array contains unumpy values"""
     return isinstance(da.data.take(0), uncertainties.core.AffineScalarFunc)

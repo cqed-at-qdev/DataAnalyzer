@@ -1537,3 +1537,44 @@ class FreqSpectrumModel(ModelABC):
 
     def get_extrema_y(self, params: dict) -> dict[str, float]:
         return params["max_freq"]
+
+
+####################################################################################################
+#                   cos^4 + cos^2sin^2 + sin^4 model                                                                  #
+####################################################################################################
+class C4CS2S4Model(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, c_0=1.0, c_1=1.0, c_2=1.0):
+        x = np.array(x)
+        return c_0 * np.cos(x/2)**4 + c_1*np.cos(x/2)**2*np.sin(x/2)**2 + c_2*np.sin(x/2)**4
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        c_0 = y[0]
+        c_2 = y[-1]
+        c_1 = 4*y[len(y)//2] - c_0 - c_2
+        
+        return self._get_parameters_as_dict(
+            c_0=c_0,
+            c_1=c_1,
+            c_2=c_2,
+        )
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+
+        return (
+            rf"$f(x) = {params[0]} \mathrm{{cos}}^4(x/2) + {params[1]} \mathrm{{cos}}^2(x/2)\mathrm{{sin}}^2(x/2) + {params[2]} \mathrm{{sin}}^4(x/2) $"
+        )
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"c_0": "y", "c_1": "y", "c_2": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {"c_0": "c_0", "c_1": "c_1", "c_2": "c_2"}
+

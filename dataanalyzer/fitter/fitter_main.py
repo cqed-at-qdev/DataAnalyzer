@@ -135,6 +135,7 @@ class Fitter:
         """Return the units of the parameters of the fit."""
         if not self.x.has_unit or not self.y.has_unit:
             return {}  # No units available
+
         x_unit = self.x_scaler.unit_prefix + self.x.unit
         y_unit = self.y_scaler.unit_prefix + self.y.unit
         return self.model.get_units(x=x_unit, y=y_unit)

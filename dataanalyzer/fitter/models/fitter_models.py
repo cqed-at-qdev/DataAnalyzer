@@ -9,6 +9,8 @@ import scipy
 from dataanalyzer.fitter.fitter_classsetup import *
 from dataanalyzer.utilities.utilities import convert_unit_to_str_or_float
 
+from pybaselines import Baseline
+
 
 ####################################################################################################
 #                   ABC Model Class                                                                #
@@ -400,14 +402,11 @@ class SumModel(ModelABC):
         for model in self.models:
             # Get the function name and the function string
             func_name, func_str = model.funcname(*args, **kwargs).replace("$", "").split(" = ")
-
-            # Add the function name to the function names
-            func_names += f"{func_name} +"
             # Add the function string to the function strings
             func_strs += f"{func_str} +"
 
         # Return the function names and function strings
-        return f"${func_names[:-1]} = {func_strs[:-1]}$"
+        return f"$f(x) = {func_strs[:-1]}$"
 
     def units(self, x: Union[float, str, None], y: Union[float, str, None]):
         """Returns the units of the model.
@@ -632,7 +631,7 @@ class GaussianModel(ModelABC):
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
-
+        print(amplitude, center, sigma)
         return self._get_parameters_as_dict(amplitude=amplitude, center=center, sigma=sigma)
 
     def funcname(self, *params) -> str:
@@ -1011,6 +1010,82 @@ class OscillationModel(ModelABC):
 
 
 ####################################################################################################
+#                   Fixed Phase Oscillation Model                                                              #
+####################################################################################################
+class FixedPhaseOscillationModel(ModelABC):
+    def __init__(self, **kwargs):
+        self.angular = kwargs.pop("angular", False)
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.sin(frequency * x - np.pi / 2) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, frequency, offset] = self._oscillations_guess(x, y)
+
+        return self._get_parameters_as_dict(
+            amplitude=amplitude,
+            frequency=frequency,
+            offset=offset,
+        )
+
+    def _oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = y.mean()
+        yhat = fftpack.rfft(y - y.mean())
+        idx = (yhat**2).argmax()
+        dx = np.diff(x).mean()
+        freqs = fftpack.rfftfreq(len(x), d=dx / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+
+        indices_per_period = np.pi * 2 / w / dx
+
+        std_window = round(indices_per_period)
+
+        return [a, f, c]
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return rf"$f(x) = {params[0]} \sin({f} x - \pi / 2) + {params[2]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {
+            "amplitude": "y",
+            "frequency": "x**(-1)",
+            "offset": "y",
+        }
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "amplitude": "A",
+            "frequency": "f",
+            "offset": "c",
+        }
+
+    def get_period(self, params: dict) -> dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params["frequency"]["value"])
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2 / (2 * np.pi)
+        else:
+            period = 1 / params["frequency"]["value"]
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2
+
+        return {"value": period, "error": error}
+
+
+####################################################################################################
 #                   Damped Oscillation Model                                                       #
 ####################################################################################################
 class DampedOscillationModel(ModelABC):
@@ -1041,9 +1116,9 @@ class DampedOscillationModel(ModelABC):
         from scipy import fftpack
 
         a = (y.max() - y.min()) / 2
-        c = y.mean()
+        c = np.mean(y)
         T = x[round(len(x) / 2)]
-        yhat = fftpack.rfft(y - y.mean())
+        yhat = fftpack.rfft(y - c)
         idx = (yhat**2).argmax()
         dx = np.diff(x).mean()
         freqs = fftpack.rfftfreq(len(x), d=dx / (2 * np.pi))
@@ -1061,12 +1136,16 @@ class DampedOscillationModel(ModelABC):
                 break
 
         # print(f"y[0]: {y[0]}, c: {c}, a: {a}, f: {f}, T: {T}")
-        p = np.arcsin((y[0] - c) / a)
+        # p = np.arcsin((y[0] - c) / a)
 
-        if np.isnan(p):
-            p = 0
+        # if np.isnan(p):
+        #     p = 0
 
-        return [a, T, f, p, c]
+        # p -= 2 * np.pi * x[0] * f
+
+        p = np.angle(sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window] - np.pi / 2))))
+
+        return [a, T, f, p, c]  # amplitude, decay, frequency, phi, offset
 
     def funcname(self, *params) -> str:
         if not params:
@@ -1094,6 +1173,116 @@ class DampedOscillationModel(ModelABC):
             "decay": "τ",
             "offset": "c",
         }
+
+    def get_period(self, params: dict) -> dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params["frequency"]["value"])
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2 / (2 * np.pi)
+        else:
+            period = 1 / params["frequency"]["value"]
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2
+
+        return {"value": period, "error": error}
+
+
+####################################################################################################
+#                   Damped Cosine Model                                                            #
+####################################################################################################
+class DampedCosineModel(ModelABC):
+    def __init__(self, **kwargs):
+        self.angular = kwargs.pop("angular", False)
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, frequency=0.0, phi=0.0, decay=0.0, offset=0.0):
+        x = np.array(x)
+        if not self.angular:
+            frequency = frequency * 2 * np.pi
+        return amplitude * np.cos(frequency * x + phi) * np.exp(-x / decay) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        [amplitude, decay, frequency, phi, offset] = self._damped_oscillations_guess(x, y)
+
+        return self._get_parameters_as_dict(
+            amplitude=amplitude,
+            frequency=frequency,
+            phi=phi,
+            decay=decay,
+            offset=offset,
+        )
+
+    def _damped_oscillations_guess(self, x, y):
+        # Adapted from QDev wrappers, `qdev_fitter`
+        from scipy import fftpack
+
+        a = (y.max() - y.min()) / 2
+        c = np.mean(y)
+        T = x[round(len(x) / 2)]
+        yhat = fftpack.rfft(y - c)
+        idx = (yhat**2).argmax()
+        dx = np.diff(x).mean()
+        freqs = fftpack.rfftfreq(len(x), d=dx / (2 * np.pi))
+        w = freqs[idx]
+        f = w if self.angular else w / (2 * np.pi)
+
+        indices_per_period = np.pi * 2 / w / dx
+        std_window = round(indices_per_period)
+        initial_std = np.std(y[:std_window])
+        noise_level = np.std(y[-2 * std_window :])
+        for i in range(1, len(x) - std_window):
+            std = np.std(y[i : i + std_window])
+            if std < (initial_std - noise_level) * np.exp(-1):
+                T = x[i]
+                break
+
+        # print(f"y[0]: {y[0]}, c: {c}, a: {a}, f: {f}, T: {T}")
+        # p = np.arcsin((y[0] - c) / a)
+
+        # if np.isnan(p):
+        #     p = 0
+
+        # p -= 2 * np.pi * x[0] * f
+
+        p = np.angle(sum((y[:std_window] - c) * np.exp(-1j * (w * x[:std_window]))))
+
+        return [a, T, f, p, c]  # amplitude, decay, frequency, phi, offset
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+
+        f = f"{params[1]}" if self.angular else f"2π{params[1]}"
+        return rf"$f(x) = {params[0]} \sin({f} x + {params[2]}) \exp(-x / {params[3]}) + {params[4]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {
+            "amplitude": "y",
+            "frequency": "x**(-1)",
+            "phi": "rad",
+            "decay": "x",
+            "offset": "y",
+        }
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "amplitude": "A",
+            "frequency": "f",
+            "phi": "φ",
+            "decay": "τ",
+            "offset": "c",
+        }
+
+    def get_period(self, params: dict) -> dict[str, float]:
+        if self.angular:
+            period = 1 / (2 * np.pi * params["frequency"]["value"])
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2 / (2 * np.pi)
+        else:
+            period = 1 / params["frequency"]["value"]
+            error = params["frequency"]["error"] / params["frequency"]["value"] ** 2
+
+        return {"value": period, "error": error}
 
 
 ####################################################################################################
@@ -1400,6 +1589,69 @@ class LorentzianMultipleModel(ModelABC):
 
 
 ####################################################################################################
+#                   Lorentzian Constant Multiple Model                                             #
+####################################################################################################
+class LorentzianConstantMultipleModel(ModelABC):
+    def __init__(self, n_peaks: Union[str, int] = "auto", negative_peak=False, **kwargs):
+        super().__init__(**kwargs)
+        self.n_peaks = n_peaks
+        self.negative_peak = negative_peak
+        self._kwargs = kwargs
+
+        if isinstance(n_peaks, int):
+            self._model = LorentzianModel(negative_peak=negative_peak, **kwargs) * n_peaks + ConstantModel()
+            self.__dict__.update(self._model.__dict__)
+        else:
+            print(
+                "Warning: n_peaks is not set, using default value 'auto'.",
+                "The function 'guess' must be called before fitting, to set the number of peaks.",
+            )
+
+    def func(self, x, *args, **kwargs):
+        return self._model.func(x, *args, **kwargs)
+
+    def guess(
+        self,
+        x: Union[float, Iterable],
+        y: Union[float, Iterable],
+        n_peaks: Union[str, int, None] = None,
+        negative_peak=None,
+    ) -> dict:
+        if n_peaks is None:
+            n_peaks = self.n_peaks
+        if negative_peak is None:
+            negative_peak = self.negative_peak
+
+        x, y = np.array(x), np.array(y)
+
+        # Baseline removal (pybaselines)
+        baseline_fitter = Baseline(x)
+        bkg = baseline_fitter.asls(y, lam=10000, p=0.001)[0]
+        y -= bkg
+
+        offset = np.mean(bkg)
+
+        guess = guess_from_multipeaks(y=y, x=x, n_peaks=n_peaks, negative=negative_peak)
+
+        if n_peaks == "auto":
+            self.n_peaks = len(guess)
+            self._model = LorentzianModel(negative_peak=negative_peak, **self._kwargs) * self.n_peaks
+            self.__dict__.update(self._model.__dict__)
+
+        return self._get_parameters_as_dict(**guess, offset=offset)
+
+    def funcname(self, *params) -> str:
+        return self._model.funcname(*params)
+
+    def units(self, x: Union[float, str, None], y: Union[float, str, None]):
+        return self._model.units(x, y)
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return self._model.symbols
+
+
+####################################################################################################
 #                   Constant Model                                                                 #
 ####################################################################################################
 class ConstantModel(ModelABC):
@@ -1488,7 +1740,7 @@ class FreqSpectrumModel(ModelABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def func(self, x, v_per_phi0=1, flux_offset=0, max_freq=1, Ec=1):
+    def func(self, x, v_per_phi0=1, flux_offset=0, max_freq=1, Ec=1, d=0):
         """Function to fit the frequency spectrum of a qubit.
 
         Args:
@@ -1502,7 +1754,7 @@ class FreqSpectrumModel(ModelABC):
             array: f(x)
         """
 
-        d = 0  # turn this into a fit parameter for asymmetric transmons (0<d<1 for asymmetric transmons)
+        # d = 0  # turn this into a fit parameter for asymmetric transmons (0<d<1 for asymmetric transmons)
 
         x = np.array(x)
         return (max_freq + Ec) * (
@@ -1513,27 +1765,225 @@ class FreqSpectrumModel(ModelABC):
         x, y = np.array(x), np.array(y)
 
         max_freq = np.max(y)
-        v_per_phi0 = 500
+        v_per_phi0 = 1250
         flux_offset = -150 / v_per_phi0
-        Ec = -0.274
+        Ec = 5
+        d = 0
 
         return self._get_parameters_as_dict(v_per_phi0=v_per_phi0, flux_offset=flux_offset, max_freq=max_freq, Ec=Ec)
 
     def funcname(self, *params) -> str:
         if not params:
             params = self._display_name_list
-        return rf"$f(x) = ({params[2]} + {params[3]}) \cdot (d^2 + (1 - d^2) \cdot (\cos(\pi \cdot (\frac{{x}}{{{params[0]}}} + {params[1]})))^2)^{{1/4}} - {params[3]}$"
+        return rf"$f(x) = ({params[2]} + {params[3]}) \cdot ({params[4]}^2 + (1 - {params[4]}^2) \cdot (\cos(\pi \cdot (\frac{{x}}{{{params[0]}}} + {params[1]})))^2)^{{1/4}} - {params[3]}$"
 
     @property
     def units(self) -> dict[str, str]:
-        return {"v_per_phi0": "x", "max_freq": "y", "flux_offset": "", "Ec": "y"}
+        return {
+            "v_per_phi0": "x",
+            "max_freq": "y",
+            "flux_offset": "",
+            "Ec": "y",
+            "d": "",
+        }
 
     @property
     def symbols(self) -> dict[str, str]:
-        return {"v_per_phi0": "V_{\Phi_0}", "max_freq": "f_{max}", "flux_offset": "\Phi_{offset}", "Ec": "E_C"}
+        return {
+            "v_per_phi0": "V_{\Phi_0}",
+            "max_freq": "f_{max}",
+            "flux_offset": "\Phi_{offset}",
+            "Ec": "E_C",
+            "d": "d",
+        }
 
     def get_extrema(self, params: dict) -> dict[str, float]:
         return -params["flux_offset"] * params["v_per_phi0"]
 
     def get_extrema_y(self, params: dict) -> dict[str, float]:
         return params["max_freq"]
+
+
+####################################################################################################
+<<<<<<< HEAD
+#                   1/f Model                                                       #
+####################################################################################################
+class OneOverFModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1, alpha=1):
+        """Function to fit the frequency spectrum of a qubit.
+
+        Args:
+            x (array): Input data (in Hz).
+            amplitude (float): Amplitude of the 1/f noise
+            alpha (float): Exponent of the 1/f noise
+
+        Returns:
+            array: f(x)
+        """
+
+        x = np.array(x)
+        return amplitude * (x**-alpha)
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict[str, Fitparam]:
+        x, y = np.array(x), np.array(y)
+
+        amplitude = np.sqrt(np.median(y))
+        alpha = 1
+
+        return self._get_parameters_as_dict(amplitude=amplitude, alpha=alpha)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$f(x) = {params[0]}/x^{({params[1]})}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {
+            "amplitude": "y",
+            "alpha": "",
+        }
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "amplitude": "A",
+            "alpha": "alpha",
+        }
+
+
+####################################################################################################
+#                   1/f + Constant Model                                                       #
+####################################################################################################
+class OneOverFConstantModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1, alpha=1, offset=0):
+        """Function to fit the frequency spectrum of a qubit.
+
+        Args:
+            x (array): Input data (in Hz).
+            amplitude (float): Amplitude of the 1/f noise
+            alpha (float): Exponent of the 1/f noise
+            offset (float): Offset of the 1/f noise
+
+        Returns:
+            array: f(x)
+        """
+
+        x = np.array(x)
+        return amplitude * (x**-alpha) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict[str, Fitparam]:
+        x, y = np.array(x), np.array(y)
+
+        amplitude = np.sqrt(np.median(y))
+        alpha = 1
+        offset = np.min(y)
+
+        return self._get_parameters_as_dict(amplitude=amplitude, alpha=alpha, offset=offset)
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+        return rf"$f(x) = {params[0]}/x^{({params[1]})} + {params[2]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {
+            "amplitude": "y",
+            "alpha": "",
+            "offset": "y",
+        }
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "amplitude": "A",
+            "alpha": "alpha",
+            "offset": "c",
+        }
+
+
+####################################################################################################
+#                   Gaussian Exponential Decay Model                                                        #
+####################################################################################################
+class GaussianExponentialDecayModel(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, amplitude=1.0, Gamma=1.0, Gamma_e=1.0, offset=0.0):
+        x = np.array(x)
+        Gamma = not_zero(Gamma)
+        return amplitude * np.exp(-x * Gamma - (x * Gamma_e) ** 2) + offset
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        # offset = np.min(y[len(y)]) - 1e-4  # Small error added  TODO: why is this small error added?
+        # decay = (x[-1] - x[0]) / -np.log((y[-1] - offset) / (y[0] - offset))
+        # amplitude = (y[0] - offset) / np.exp(-x[0] / decay)
+
+        offset = np.mean(y[round(len(y) * 0.9) :])  # Use the last 10% of the data to determine the offset
+        amplitude = np.mean(y[:3]) - offset  # Use the first 3 points to determine the amplitude
+        Gamma = 1 / x[np.argmin(abs(y - (amplitude * np.exp(-1) + offset)))]
+        Gamma_e = Gamma / 2
+
+        return self._get_parameters_as_dict(amplitude=amplitude, Gamma=Gamma, Gamma_e=Gamma_e, offset=offset)
+=======
+#                   cos^4 + cos^2sin^2 + sin^4 model                                               #
+####################################################################################################
+class C4CS2S4Model(ModelABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self, x, c_0=1.0, c_1=1.0, c_2=1.0):
+        x = np.array(x)
+        return c_0 * np.cos(x / 2) ** 4 + c_1 * np.cos(x / 2) ** 2 * np.sin(x / 2) ** 2 + c_2 * np.sin(x / 2) ** 4
+
+    def guess(self, x: Union[float, Iterable], y: Union[float, Iterable]) -> dict:
+        x, y = np.array(x), np.array(y)
+        c_0 = y[0]
+        c_2 = y[-1]
+        c_1 = 4 * y[len(y) // 2] - c_0 - c_2
+
+        return self._get_parameters_as_dict(
+            c_0=c_0,
+            c_1=c_1,
+            c_2=c_2,
+        )
+>>>>>>> 32bb233cc771c6af1b4d93d262d8d1e6d325bd00
+
+    def funcname(self, *params) -> str:
+        if not params:
+            params = self._display_name_list
+<<<<<<< HEAD
+        return rf"$f(x) = {params[0]} \exp(-x * {params[1]} - (x*{params[2]})^2) + {params[3]}$"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"amplitude": "y", "Gamma": "1/x", "Gamma_e": "1/x", "offset": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {
+            "amplitude": "A",
+            "Gamma": "\Gamma",
+            "Gamma_e": "\Gamma_e",
+            "offset": "c",
+        }
+=======
+
+        return rf"$f(x) = {params[0]} \mathrm{{cos}}^4(x/2) + {params[1]} \mathrm{{cos}}^2(x/2)\mathrm{{sin}}^2(x/2) + {params[2]} \mathrm{{sin}}^4(x/2) $"
+
+    @property
+    def units(self) -> dict[str, str]:
+        return {"c_0": "y", "c_1": "y", "c_2": "y"}
+
+    @property
+    def symbols(self) -> dict[str, str]:
+        return {"c_0": "c_0", "c_1": "c_1", "c_2": "c_2"}
+>>>>>>> 32bb233cc771c6af1b4d93d262d8d1e6d325bd00

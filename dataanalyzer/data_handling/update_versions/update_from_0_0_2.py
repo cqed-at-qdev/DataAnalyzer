@@ -28,11 +28,9 @@ def update_dataset(ds: xr.Dataset) -> xr.Dataset:
 def _errors_to_unumpy(ds: xr.Dataset) -> xr.Dataset:
     """Merge data and errors into uarray"""
     for key in ds.data_vars:
-        if key.endswith("error"):
+        if key.endswith("__error"):
             error_key = key
             var_key = key[:-7]
-            ds[var_key].data = unumpy.uarray(
-                nominal_values=ds[var_key], std_devs=ds[error_key]
-            )
+            ds[var_key].data = unumpy.uarray(nominal_values=ds[var_key], std_devs=ds[error_key])
             ds = ds.drop(error_key)
     return ds

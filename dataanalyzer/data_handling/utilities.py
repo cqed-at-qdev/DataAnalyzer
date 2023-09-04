@@ -12,36 +12,42 @@ class HasAttrs(Protocol):
     attrs: dict[str, Any]
 
 
+def format_all_attrs(ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None]) -> xr.Dataset:
+    """Formats the attributes of the dataset, including attrs of coords, data variables, dimensions, 
+    and global attrs, using the given formatting function"""
+    ds = ds.copy()
+
+    # Replace attributes of coordinates
+    for coord_key in ds.coords:
+        formatting_fnc(ds.coords[coord_key])
+
+    # Replace attributes of dataarrays
+    for da_key in ds:
+        formatting_fnc(ds[da_key])
+
+    # Replace attributes of dimensions    
+    for dim_key in ds.dims:
+        formatting_fnc(ds[dim_key])
+
+    # Replace global attributes of dataset
+    formatting_fnc(ds)
+    return ds
+
+
 def attrs_to_string(ds: xr.Dataset, attr_type: type) -> xr.Dataset:
     """Replaces attrs of type attr_type with a string representation to allow saving to netcdf. Also adds a f"{key}__type" attribute to the attrs dict to allow restoring the original type.
     Intented for simple datatypes. For example, None type cannot be saved to netcdf, but str(None) can.
     Returns a copy of the dataset with the changed attributes"""
 
-    def _replace_in_data(data: HasAttrs) -> None:
-        to_be_added = {}
+    def _replace_type_with_str(data: HasAttrs) -> None:
+        type_identifiers = {}
         for attr_key, attr_value in data.attrs.items():
             if type(attr_value) == attr_type:
                 data.attrs[attr_key] = str(attr_value)
-                to_be_added[f"{attr_key}__type"] = str(type(attr_value))
-        data.attrs.update(to_be_added)
+                type_identifiers[f"{attr_key}__type"] = str(type(attr_value))
+        data.attrs.update(type_identifiers)
 
-    ds = ds.copy()
-
-    # Replace attributes of coordinates
-    for coord_key in ds.coords:
-        _replace_in_data(ds.coords[coord_key])
-
-    # Replace attributes of dataarrays
-    for da_key in ds:
-        _replace_in_data(ds[da_key])
-
-    # Replace attributes of dimensions
-    for dim_key in ds.dims:
-        _replace_in_data(ds[dim_key])
-
-    # Replace global attributes of dataset
-    _replace_in_data(ds)
-
+    ds = format_all_attrs(ds, _replace_type_with_str)
     return ds
 
 
@@ -61,24 +67,60 @@ def string_to_attrs(
         for key in to_be_deleted:
             del data.attrs[key]
 
-    # Restore attributes of coordinates
-    for coord_key in ds.coords:
-        _restore_attr(ds.coords[coord_key])
-
-    # Restore attributes of dataarrays
-    for da_key in ds:
-        _restore_attr(ds[da_key])
-
-    # Restore attributes of dimensions
-    for dim_key in ds.dims:
-        _restore_attr(ds[dim_key])
-
-    # Restore global attributes of dataset
-    _restore_attr(ds)
+    ds = format_all_attrs(ds, _restore_attr)
 
     return ds
 
 
+def flatten_attrs(ds: xr.Dataset) -> xr.Dataset:
+    """Flattens the attributes of the dataset, including attrs of coords, data variables, dimensions, 
+    and global attrs, into a single level dictionary for saving to netcdf.
+    Returns a copy of the dataset with the changed attributes"""
+
+    def _flatten_dict(d: dict, seperator: str='_._', flat_dict: dict={}, parent_key: str='') -> dict:
+        """Flattens a nested dictionary into a single level dictionary."""
+        for key, value in d.items():
+            
+            new_key = f"{parent_key}{seperator}{key}" if parent_key else key
+            if isinstance(value, dict):
+                flat_dict = _flatten_dict(value, flat_dict=flat_dict, parent_key=new_key)
+            else:
+                flat_dict[new_key] = value
+            
+        return flat_dict
+
+    def _flatten_attrs(data: HasAttrs) -> None:
+        data.attrs = _flatten_dict(data.attrs, flat_dict={}, parent_key='')
+
+    ds = format_all_attrs(ds, _flatten_attrs)
+    return ds
+
+
+def unflatten_attrs(ds: xr.Dataset) -> xr.Dataset:
+    """Unflattens the attributes of the dataset, including attrs of coords, data variables, dimensions,
+    and global attrs, into a nested dictionary.
+    Returns a copy of the dataset with the changed attributes"""
+
+    def _unflatten_dict(d: dict, seperator: str='_._') -> dict:
+        """Unflattens a single level dictionary into a nested dictionary using the seperator to determine nesting."""
+        nested_dict = {}
+        for key, value in d.items():
+            keys = key.split(seperator)
+            d2 = nested_dict
+            for k in keys[:-1]:
+                if k not in d2:
+                    d2[k] = {}
+                d2 = d2[k]        
+            d2[keys[-1]] = value
+        return nested_dict
+    
+    def _unflatten_attrs(data: HasAttrs) -> None:
+        data.attrs = _unflatten_dict(data.attrs)
+
+    ds = format_all_attrs(ds, _unflatten_attrs)
+    return ds
+
+        
 ####################################################################################################
 ### Version checking ###############################################################################
 ####################################################################################################

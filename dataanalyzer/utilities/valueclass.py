@@ -840,25 +840,25 @@ class Valueclass:
     def traces(self, operation="Show individual", axis=0) -> "Valueclass":
         copy = self.copy()
 
-        if operation == "substract first":
+        if operation == "subtract first":
             copy.value = self.value - self.value[0]
 
-        elif operation == "substract mean":
+        elif operation == "subtract mean":
             copy.value = self.value - np.mean(self.value, axis=axis)
 
-        elif operation == "substract last":
+        elif operation == "subtract last":
             copy.value = self.value - self.value[-1]
 
-        elif operation == "substract min":
+        elif operation == "subtract min":
             copy.value = self.value - np.min(self.value, axis=axis)
 
-        elif operation == "substract max":
+        elif operation == "subtract max":
             copy.value = self.value - np.max(self.value, axis=axis)
 
-        elif operation == "substract median":
+        elif operation == "subtract median":
             copy.value = self.value - np.median(self.value, axis=axis)
 
-        elif operation == "substract previous":
+        elif operation == "subtract previous":
             value = self.value - np.roll(self.value, 1, axis=axis)  # type: ignore
             value[0] = np.zeros(self.value.shape[1])
             copy.value = value
@@ -870,6 +870,21 @@ class Valueclass:
             copy.error = np.tile(
                 np.mean(self.error, axis=axis), (np.shape(self.value)[0], 1)
             )
+
+        elif operation == "log10":
+            copy.value = np.log10(self.value)
+            copy.unit = f"{copy.unit} (log10)"
+            # TODO: add propper errors
+
+        elif operation == "dBm":
+            if copy.unit != "W":
+                raise Warning("Unit is not W, but dBm is used anyway")
+            copy.value = 10 * np.log10(self.value / 1e3)
+            copy.unit = "dBm"
+            # TODO: add propper errors
+
+        elif operation == "db":
+            copy = copy.db
 
         elif operation == "standard deviation":
             copy.value = np.tile(
@@ -883,9 +898,9 @@ class Valueclass:
             raise ValueError(
                 f"Operation '{operation}' not recognized\n"
                 "self.traces() takes one of the following arguments:"
-                "'substract first', 'substract mean',"
-                "'substract last', 'substract min', 'substract max', 'substract median',"
-                "'substract previous', 'average', 'standard deviation'"
+                "'subtract first', 'subtract mean',"
+                "'subtract last', 'subtract min', 'subtract max', 'subtract median',"
+                "'subtract previous', 'average', 'standard deviation'"
             )
 
         return copy

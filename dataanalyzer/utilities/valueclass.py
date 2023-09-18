@@ -837,46 +837,46 @@ class Valueclass:
         copy.error = self.error / scale
         return copy
 
-    def traces(self, operation="Show individual") -> "Valueclass":
+    def traces(self, operation="Show individual", axis=0) -> "Valueclass":
         copy = self.copy()
 
         if operation == "substract first":
             copy.value = self.value - self.value[0]
 
         elif operation == "substract mean":
-            copy.value = self.value - np.mean(self.value, axis=0)
+            copy.value = self.value - np.mean(self.value, axis=axis)
 
         elif operation == "substract last":
             copy.value = self.value - self.value[-1]
 
         elif operation == "substract min":
-            copy.value = self.value - np.min(self.value, axis=0)
+            copy.value = self.value - np.min(self.value, axis=axis)
 
         elif operation == "substract max":
-            copy.value = self.value - np.max(self.value, axis=0)
+            copy.value = self.value - np.max(self.value, axis=axis)
 
         elif operation == "substract median":
-            copy.value = self.value - np.median(self.value, axis=0)
+            copy.value = self.value - np.median(self.value, axis=axis)
 
         elif operation == "substract previous":
-            value = self.value - np.roll(self.value, 1, axis=0)  # type: ignore
+            value = self.value - np.roll(self.value, 1, axis=axis)  # type: ignore
             value[0] = np.zeros(self.value.shape[1])
             copy.value = value
 
         elif operation == "average":
             copy.value = np.tile(
-                np.mean(self.value, axis=0), (np.shape(self.value)[0], 1)
+                np.mean(self.value, axis=axis), (np.shape(self.value)[0], 1)
             )
             copy.error = np.tile(
-                np.mean(self.error, axis=0), (np.shape(self.value)[0], 1)
+                np.mean(self.error, axis=axis), (np.shape(self.value)[0], 1)
             )
 
         elif operation == "standard deviation":
             copy.value = np.tile(
-                np.std(self.value, axis=0), (np.shape(self.value)[0], 1)
+                np.std(self.value, axis=axis), (np.shape(self.value)[0], 1)
             )
             copy.error = np.tile(
-                np.std(self.error, axis=0), (np.shape(self.value)[0], 1)
+                np.std(self.error, axis=axis), (np.shape(self.value)[0], 1)
             )
 
         else:

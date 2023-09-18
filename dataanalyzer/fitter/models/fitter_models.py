@@ -652,7 +652,7 @@ class GaussianModel(ModelABC):
 
         x, y = np.array(x), np.array(y)
         amplitude, center, sigma = guess_from_peak(y, x, negative_peak)
-        print(amplitude, center, sigma)
+
         return self._get_parameters_as_dict(
             amplitude=amplitude, center=center, sigma=sigma
         )

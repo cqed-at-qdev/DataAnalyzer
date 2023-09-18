@@ -844,19 +844,19 @@ class Valueclass:
             copy.value = self.value - self.value[0]
 
         elif operation == "subtract mean":
-            copy.value = self.value - np.mean(self.value, axis=axis)
+            copy.value = self.value - np.mean(self.value, axis=axis, keepdims=True)
 
         elif operation == "subtract last":
             copy.value = self.value - self.value[-1]
 
         elif operation == "subtract min":
-            copy.value = self.value - np.min(self.value, axis=axis)
+            copy.value = self.value - np.min(self.value, axis=axis, keepdims=True)
 
         elif operation == "subtract max":
-            copy.value = self.value - np.max(self.value, axis=axis)
+            copy.value = self.value - np.max(self.value, axis=axis, keepdims=True)
 
         elif operation == "subtract median":
-            copy.value = self.value - np.median(self.value, axis=axis)
+            copy.value = self.value - np.median(self.value, axis=axis, keepdims=True)
 
         elif operation == "subtract previous":
             value = self.value - np.roll(self.value, 1, axis=axis)  # type: ignore

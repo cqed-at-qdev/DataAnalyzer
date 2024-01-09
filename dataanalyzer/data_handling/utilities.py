@@ -34,35 +34,37 @@ def format_all_attrs(ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None])
     return ds
 
 
-def attrs_to_string(ds: xr.Dataset, attr_type: type) -> xr.Dataset:
-    """Replaces attrs of type attr_type with a string representation to allow saving to netcdf. Also adds a f"{key}__type" attribute to the attrs dict to allow restoring the original type.
+
+def format_attrs(ds: xr.Dataset, attr_type: type, format_fnc: Callable) -> xr.Dataset:
+    """Replaces attrs of type attr_type with a representation savable to netcdf, given by format_fnc. 
+    Also adds a f"{key}__type" attribute to the attrs dict to allow restoring the original type.
     Intented for simple datatypes. For example, None type cannot be saved to netcdf, but str(None) can.
     Returns a copy of the dataset with the changed attributes"""
 
-    def _replace_type_with_str(data: HasAttrs) -> None:
+    def _format_attrs(data: HasAttrs) -> None:
         type_identifiers = {}
         for attr_key, attr_value in data.attrs.items():
             if type(attr_value) == attr_type:
-                data.attrs[attr_key] = str(attr_value)
+                data.attrs[attr_key] = format_fnc(attr_value)
                 type_identifiers[f"{attr_key}__type"] = str(type(attr_value))
         data.attrs.update(type_identifiers)
 
-    ds = format_all_attrs(ds, _replace_type_with_str)
+    ds = format_all_attrs(ds, _format_attrs)
     return ds
 
 
-def string_to_attrs(
-    ds: xr.Dataset, type_string: str, str_to_type_fnc: Callable[[str], Any]
+def restore_attrs(
+    ds: xr.Dataset, attr_type: type, restore_fnc: Callable
 ) -> xr.Dataset:
-    """Replaces attrs of type type_string with the result of str_to_type_fnc.
-    Used to restore attributes that were replaced by attrs_to_string."""
-
+    """Replaces attrs of type attr_type with the result of restore_fnc.
+    Used to restore attributes that were replaced by format_attrs."""
+    type_string = str(attr_type)
     def _restore_attr(data: HasAttrs) -> None:
         to_be_deleted = []
         for attr_key, attr_value in data.attrs.items():
             if attr_key.endswith("__type") and attr_value == type_string:
                 attr_main_key = attr_key[:-6]
-                data.attrs[attr_main_key] = str_to_type_fnc(data.attrs[attr_main_key])
+                data.attrs[attr_main_key] = restore_fnc(data.attrs[attr_main_key])
                 to_be_deleted.append(attr_key)
         for key in to_be_deleted:
             del data.attrs[key]
@@ -70,6 +72,24 @@ def string_to_attrs(
     ds = format_all_attrs(ds, _restore_attr)
 
     return ds
+
+
+
+def format_none_type(ds: xr.Dataset) -> xr.Dataset:
+    return format_attrs(ds, type(None), lambda x: "None")
+
+def restore_none_type(ds: xr.Dataset) -> xr.Dataset:
+    return restore_attrs(ds, type(None), lambda x: None)
+
+def format_ufloat_type(ds: xr.Dataset) -> xr.Dataset:
+    from uncertainties.core import Variable
+    return format_attrs(ds, Variable, lambda x: [x._nominal_value, x.std_dev])
+
+def restore_ufloat_type(ds: xr.Dataset) -> xr.Dataset:
+    from uncertainties import ufloat
+    from uncertainties.core import Variable
+
+    return restore_attrs(ds, Variable, lambda x: ufloat(*x))
 
 
 def flatten_attrs(ds: xr.Dataset) -> xr.Dataset:
@@ -94,7 +114,7 @@ def flatten_attrs(ds: xr.Dataset) -> xr.Dataset:
 
     ds = format_all_attrs(ds, _flatten_attrs)
     return ds
-
+    
 
 def unflatten_attrs(ds: xr.Dataset) -> xr.Dataset:
     """Unflattens the attributes of the dataset, including attrs of coords, data variables, dimensions,

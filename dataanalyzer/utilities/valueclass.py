@@ -845,6 +845,7 @@ class Valueclass:
 
         elif operation == "subtract mean":
             copy.value = self.value - np.mean(self.value, axis=axis, keepdims=True)
+            copy.unit = f"{copy.unit} (mean subtracted)"
 
         elif operation == "subtract last":
             copy.value = self.value - self.value[-1]

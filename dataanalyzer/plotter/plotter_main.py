@@ -111,7 +111,9 @@ class Plotter:
         # from the quantum_calibrator.mplstyle file
         if default_settings == "quantum_calibrator":
             dirname = os.path.dirname(__file__)
-            plt.style.use(os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle"))
+            plt.style.use(
+                os.path.join(dirname, r"plot_styles/quantum_calibrator.mplstyle")
+            )
 
         # If the user wants to use the presentation settings, load the presentation
         # settings from the presentation.mplstyle file
@@ -134,7 +136,9 @@ class Plotter:
 
         # If the user passes anything else, raise an error
         else:
-            raise ValueError("default_settings must be either a dict, a string or a boolean")
+            raise ValueError(
+                "default_settings must be either a dict, a string or a boolean"
+            )
 
     @staticmethod
     def set_style(style) -> None:
@@ -280,9 +284,15 @@ class Plotter:
 
         except ValueError:
             try:
-                [self.ax.scatter(x.value, y.value[i], **kwargs) for i in range(y.value.shape[0])]
+                [
+                    self.ax.scatter(x.value, y.value[i], **kwargs)
+                    for i in range(y.value.shape[0])
+                ]
             except ValueError:
-                [self.ax.scatter(x.value, y.value[:, i], **kwargs) for i in range(y.value.shape[1])]
+                [
+                    self.ax.scatter(x.value, y.value[:, i], **kwargs)
+                    for i in range(y.value.shape[1])
+                ]
                 print("Warning: x and y have different shapes. Transposing y.")
 
     @matplotlib_decorator
@@ -415,11 +425,18 @@ class Plotter:
         if c is None:
             # Make a dummy plot with min and max values to get the colorbar
             axdummy = self.fig.add_subplot(111)
-            c = axdummy.scatter(x=[0, 1], y=[0, 1], c=[z.value.min(), z.value.max()])
+            c = axdummy.scatter(
+                x=[0, 1], y=[0, 1], c=[z.value.min(), z.value.max()], cmap="viridis"
+            )
             axdummy.remove()
 
-        cbar_ax = self.ax.inset_axes([0.7, 1.05, 0.3, 0.05], transform=self.ax.transAxes)
-        colorbar = self.fig.colorbar(c, ax=self.ax, cax=cbar_ax, orientation="horizontal")
+        cbar_ax = self.ax.inset_axes(
+            [0.7, 1.05, 0.3, 0.05], transform=self.ax.transAxes
+        )
+        colorbar = self.fig.colorbar(
+            c, ax=self.ax, cax=cbar_ax, orientation="horizontal"
+        )
+
         colorbar.ax.xaxis.set_ticks_position("top")
         colorbar.ax.set_ylabel(label)
         colorbar.ax.yaxis.label.set(rotation="horizontal", ha="right", va="center")
@@ -431,7 +448,9 @@ class Plotter:
                 else:
                     ax.colorbar.append(colorbar)
 
-    def pcolormesh(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def pcolormesh(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.pcolormesh
 
         Args:
@@ -442,7 +461,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="pcolormesh", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def heatmap(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def heatmap(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.pcolormesh
 
         Args:
@@ -453,7 +474,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="pcolormesh", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def contour(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def contour(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.contour
 
         Args:
@@ -464,7 +487,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="contour", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def contourf(self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs):
+    def contourf(
+        self, x: Valueclass, y: Valueclass, Z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.contourf
 
         Args:
@@ -475,7 +500,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="contourf", x=x, y=y, z=Z, ax=ax, **kwargs)
 
-    def tricontour(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tricontour(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tricontour
 
         Args:
@@ -486,7 +513,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="tricontour", x=x, y=y, z=z, ax=ax, **kwargs)
 
-    def tricontourf(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tricontourf(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tricontourf
 
         Args:
@@ -497,7 +526,9 @@ class Plotter:
         """
         self._2d_genereal_plot(plot_type="tricontourf", x=x, y=y, z=z, ax=ax, **kwargs)
 
-    def tripcolor(self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs):
+    def tripcolor(
+        self, x: Valueclass, y: Valueclass, z: Valueclass, ax: tuple = (), **kwargs
+    ):
         """plotting function for 2d data. This function is a wrapper for matplotlib.pyplot.tripcolor
 
         Args:
@@ -600,7 +631,9 @@ class Plotter:
             self.ax.yres.axvline(x=0, linestyle=":", color="red")
             self.ax.yres.sharey(self.ax)
 
-            xlabel = kwargs.pop("xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals")
+            xlabel = kwargs.pop(
+                "xlabel", f"Residuals [{x.unit}]" if x.unit else "Residuals"
+            )
             self.ax.yres.set_xlabel(xlabel)
 
         self.ax.yres.scatter(x.value, y.value, **kwargs)
@@ -629,7 +662,9 @@ class Plotter:
                 self.ax.xres.set_xlabel(self.ax.get_xlabel())
                 self.ax.label_outer()  # type: ignore
 
-                ylabel = kwargs.pop("ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals")
+                ylabel = kwargs.pop(
+                    "ylabel", f"Residuals [{y.unit}]" if y.unit else "Residuals"
+                )
                 self.ax.xres.set_ylabel(ylabel)
 
         self.ax.xres.scatter(x.value, y.value, **kwargs)
@@ -671,7 +706,9 @@ class Plotter:
     ############# Metadata Functions ###############################################################
     def add_metadata(
         self,
-        *metadata: Union[str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]],
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
         ax: tuple = (),
         overwrite: bool = False,
         fontsize: int = 12,
@@ -700,8 +737,14 @@ class Plotter:
         kwargs = default_kwargs | kwargs  # type: ignore
         algin = kwargs.pop("algin", True)
 
-        kwargs_metadata = {k.removeprefix("tostr_"): kwargs.pop(k) for k in list(kwargs) if k.startswith("tostr_")}
-        metadata_str = self._convert_metadata_to_str(*metadata, algin=algin, **kwargs_metadata)
+        kwargs_metadata = {
+            k.removeprefix("tostr_"): kwargs.pop(k)
+            for k in list(kwargs)
+            if k.startswith("tostr_")
+        }
+        metadata_str = self._convert_metadata_to_str(
+            *metadata, algin=algin, **kwargs_metadata
+        )
         self.metadata = metadata_str if overwrite else f"{self.metadata}{metadata_str}"
 
         # Check if the metadata is to long
@@ -715,7 +758,9 @@ class Plotter:
 
     def _convert_metadata_to_str(
         self,
-        *metadata: Union[str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]],
+        *metadata: Union[
+            str, Valueclass, list[Valueclass], tuple[Valueclass], dict[str, Valueclass]
+        ],
         algin: bool = True,
         add_parameter_header: bool = True,
         **kwargs,
@@ -787,7 +832,9 @@ class Plotter:
         """
 
         font_size = kwargs.pop("font_size", 14)
-        point_size = kwargs.pop("point_size", [55, 62, 65, 75])  # [7,7,7,7] for many points
+        point_size = kwargs.pop(
+            "point_size", [55, 62, 65, 75]
+        )  # [7,7,7,7] for many points
         view = kwargs.pop("view", [-60, 30])
 
         if isinstance(ax, plt.Axes):
@@ -862,7 +909,9 @@ class Plotter:
 
         # Check if bloch sphere exists
         if not hasattr(self.ax, "bloch"):
-            self.add_bloch_sphere(ax=ax, font_size=font_size, point_size=point_size, view=view)
+            self.add_bloch_sphere(
+                ax=ax, font_size=font_size, point_size=point_size, view=view
+            )
 
         if point_color is not None:
             if len(np.array(point_color)) == 1:
@@ -923,7 +972,11 @@ class Plotter:
         axarg = np.where(self.axs == self.ax)[0][0]
         right_axs = self.axs[axarg, np.size(self.axs, axis=1) - 1]
 
-        return right_axs.colorbar.ax.transAxes if hasattr(right_axs, "colorbar") else self.ax.transAxes
+        return (
+            right_axs.colorbar.ax.transAxes
+            if hasattr(right_axs, "colorbar")
+            else self.ax.transAxes
+        )
 
     def _label_with_unit_prefix(self, label: str, unit_prefix: str):
         return (

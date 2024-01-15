@@ -12,8 +12,10 @@ class HasAttrs(Protocol):
     attrs: dict[str, Any]
 
 
-def format_all_attrs(ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None]) -> xr.Dataset:
-    """Formats the attributes of the dataset, including attrs of coords, data variables, dimensions, 
+def format_all_attrs(
+    ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None]
+) -> xr.Dataset:
+    """Formats the attributes of the dataset, including attrs of coords, data variables, dimensions,
     and global attrs, using the given formatting function"""
     ds = ds.copy()
 
@@ -25,7 +27,7 @@ def format_all_attrs(ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None])
     for da_key in ds:
         formatting_fnc(ds[da_key])
 
-    # Replace attributes of dimensions    
+    # Replace attributes of dimensions
     for dim_key in ds.dims:
         formatting_fnc(ds[dim_key])
 
@@ -34,9 +36,8 @@ def format_all_attrs(ds: xr.Dataset, formatting_fnc: Callable[[HasAttrs], None])
     return ds
 
 
-
 def format_attrs(ds: xr.Dataset, attr_type: type, format_fnc: Callable) -> xr.Dataset:
-    """Replaces attrs of type attr_type with a representation savable to netcdf, given by format_fnc. 
+    """Replaces attrs of type attr_type with a representation savable to netcdf, given by format_fnc.
     Also adds a f"{key}__type" attribute to the attrs dict to allow restoring the original type.
     Intented for simple datatypes. For example, None type cannot be saved to netcdf, but str(None) can.
     Returns a copy of the dataset with the changed attributes"""
@@ -53,12 +54,11 @@ def format_attrs(ds: xr.Dataset, attr_type: type, format_fnc: Callable) -> xr.Da
     return ds
 
 
-def restore_attrs(
-    ds: xr.Dataset, attr_type: type, restore_fnc: Callable
-) -> xr.Dataset:
+def restore_attrs(ds: xr.Dataset, attr_type: type, restore_fnc: Callable) -> xr.Dataset:
     """Replaces attrs of type attr_type with the result of restore_fnc.
     Used to restore attributes that were replaced by format_attrs."""
     type_string = str(attr_type)
+
     def _restore_attr(data: HasAttrs) -> None:
         to_be_deleted = []
         for attr_key, attr_value in data.attrs.items():
@@ -74,16 +74,19 @@ def restore_attrs(
     return ds
 
 
-
 def format_none_type(ds: xr.Dataset) -> xr.Dataset:
     return format_attrs(ds, type(None), lambda x: "None")
+
 
 def restore_none_type(ds: xr.Dataset) -> xr.Dataset:
     return restore_attrs(ds, type(None), lambda x: None)
 
+
 def format_ufloat_type(ds: xr.Dataset) -> xr.Dataset:
     from uncertainties.core import Variable
+
     return format_attrs(ds, Variable, lambda x: [x._nominal_value, x.std_dev])
+
 
 def restore_ufloat_type(ds: xr.Dataset) -> xr.Dataset:
     from uncertainties import ufloat
@@ -93,35 +96,38 @@ def restore_ufloat_type(ds: xr.Dataset) -> xr.Dataset:
 
 
 def flatten_attrs(ds: xr.Dataset) -> xr.Dataset:
-    """Flattens the attributes of the dataset, including attrs of coords, data variables, dimensions, 
+    """Flattens the attributes of the dataset, including attrs of coords, data variables, dimensions,
     and global attrs, into a single level dictionary for saving to netcdf.
     Returns a copy of the dataset with the changed attributes"""
 
-    def _flatten_dict(d: dict, seperator: str='_._', flat_dict: dict={}, parent_key: str='') -> dict:
+    def _flatten_dict(
+        d: dict, seperator: str = "_._", flat_dict: dict = {}, parent_key: str = ""
+    ) -> dict:
         """Flattens a nested dictionary into a single level dictionary."""
         for key, value in d.items():
-            
             new_key = f"{parent_key}{seperator}{key}" if parent_key else key
             if isinstance(value, dict):
-                flat_dict = _flatten_dict(value, flat_dict=flat_dict, parent_key=new_key)
+                flat_dict = _flatten_dict(
+                    value, flat_dict=flat_dict, parent_key=new_key
+                )
             else:
                 flat_dict[new_key] = value
-            
+
         return flat_dict
 
     def _flatten_attrs(data: HasAttrs) -> None:
-        data.attrs = _flatten_dict(data.attrs, flat_dict={}, parent_key='')
+        data.attrs = _flatten_dict(data.attrs, flat_dict={}, parent_key="")
 
     ds = format_all_attrs(ds, _flatten_attrs)
     return ds
-    
+
 
 def unflatten_attrs(ds: xr.Dataset) -> xr.Dataset:
     """Unflattens the attributes of the dataset, including attrs of coords, data variables, dimensions,
     and global attrs, into a nested dictionary.
     Returns a copy of the dataset with the changed attributes"""
 
-    def _unflatten_dict(d: dict, seperator: str='_._') -> dict:
+    def _unflatten_dict(d: dict, seperator: str = "_._") -> dict:
         """Unflattens a single level dictionary into a nested dictionary using the seperator to determine nesting."""
         nested_dict = {}
         for key, value in d.items():
@@ -130,17 +136,17 @@ def unflatten_attrs(ds: xr.Dataset) -> xr.Dataset:
             for k in keys[:-1]:
                 if k not in d2:
                     d2[k] = {}
-                d2 = d2[k]        
+                d2 = d2[k]
             d2[keys[-1]] = value
         return nested_dict
-    
+
     def _unflatten_attrs(data: HasAttrs) -> None:
         data.attrs = _unflatten_dict(data.attrs)
 
     ds = format_all_attrs(ds, _unflatten_attrs)
     return ds
 
-        
+
 ####################################################################################################
 ### Version checking ###############################################################################
 ####################################################################################################
@@ -169,8 +175,8 @@ def is_version_update_compatible(
 ####################################################################################################
 
 
-def seperate_from_unumpy(ds: xr.Dataset) -> xr.Dataset:
-    """Seperate data wtih unumpy errors out to seperate dimension to enable dataset saving"""
+def separate_from_unumpy(ds: xr.Dataset) -> xr.Dataset:
+    """Separate data with unumpy errors out to separate dimension to enable dataset saving"""
     from uncertainties import unumpy
 
     ds = ds.copy()
@@ -188,7 +194,7 @@ def seperate_from_unumpy(ds: xr.Dataset) -> xr.Dataset:
 
 
 def combine_to_unumpy(ds: xr.Dataset) -> xr.Dataset:
-    """Combines data with errors along seperate dimension to unumpy array"""
+    """Combines data with errors along separate dimension to unumpy array"""
     from uncertainties import unumpy
 
     ds = ds.copy()
@@ -216,3 +222,55 @@ def contains_unumpy(da: xr.DataArray) -> bool:
     import uncertainties
 
     return isinstance(da.data.take(0), uncertainties.core.AffineScalarFunc)
+
+
+####################################################################################################
+### complex data handling functions ######################################################################
+####################################################################################################
+
+
+def separate_complex(ds: xr.Dataset) -> xr.Dataset:
+    """Separate complex data to separate dimension to enable dataset saving"""
+
+    ds = ds.copy()
+    ds.coords["real_imag"] = ["real", "imag"]
+    ds.coords["real_imag"].attrs["description"] = "real and imaginary parts"
+
+    for key in ds.data_vars:
+        if contains_complex(ds[key]):
+            data = ds[key].data
+            ds[key] = ds[key].astype("float")
+            ds[key] = ds[key].expand_dims({"real_imag": 2}).copy()
+            ds[key].loc[{"real_imag": "real"}] = data.real
+            ds[key].loc[{"real_imag": "imag"}] = data.imag
+
+    return ds
+
+
+def combine_to_complex(ds: xr.Dataset) -> xr.Dataset:
+    """Combines data with errors along separate dimension to unumpy array"""
+
+    ds = ds.copy()
+    if "real_imag" not in ds.coords:
+        return ds
+    for key in ds.data_vars:
+        if "real_imag" in ds[key].dims:
+            data_complex = (
+                ds[key].loc[{"real_imag": "real"}].data
+                + 1j * ds[key].loc[{"real_imag": "imag"}].data
+            )
+
+            ds[key] = ds[key].astype(complex)
+            ds[key].loc[{"real_imag": "real"}] = data_complex
+
+            # Remove error dimension from data array
+            ds[key] = ds[key].sel({"real_imag": "real"}, drop=True)
+
+    ds = ds.drop_dims("real_imag")
+    return ds
+
+
+def contains_complex(da: xr.DataArray) -> bool:
+    """Checks whether the data array contains complex values"""
+
+    return isinstance(da.data.take(0), complex)

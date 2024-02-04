@@ -752,7 +752,13 @@ class Plotter:
         if relative_size > 1:
             fontsize /= relative_size
 
-        self.ax_anotate.texts.clear()
+        try:
+            self.ax_anotate.texts.clear()
+        except:
+            texts = self.ax_anotate.texts
+            for text in texts:
+                text.set_text("")
+
         self.ax_anotate.text(s=self.metadata, fontsize=fontsize, **kwargs)
         self._remove_ax_anotate = False
 

@@ -9,7 +9,13 @@ import versioneer
 
 readme_file_path = Path(__file__).absolute().parent / "README.md"
 
-required_packages = ["opencensus-ext-azure"]
+required_packages = [
+    "opencensus-ext-azure",
+    "iminuit",
+    "pybaselines",
+    "qutip",
+    "mpl_point_clicker",
+]
 package_data = {"dataanalyzer": ["conf/telemetry.ini"]}
 
 
